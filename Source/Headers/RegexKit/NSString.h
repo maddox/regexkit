@@ -72,7 +72,6 @@
  @abstract   Takes a regular expression followed by a variable length list of capture subpattern <span class="argument">reference</span> and <span class="argument nobr">pointer to a pointer</span> type conversion specification pairs.
  @discussion <p>Following the regular expression <span class="argument">aRegex</span>, a variable length list of capture subpattern <span class="argument">reference</span> / <span class="argument nobr">pointer to a pointer</span> type conversion specification pairs is given, terminated with a <span class="code">nil</span>.  The calling sequence is similar to @link NSDictionary NSDictionary @/link @link NSDictionary/dictionaryWithObjectsAndKeys: dictionaryWithObjectsAndKeys: @/link except that <span class="argument">reference</span> proceeds <span class="argument nobr">pointer to a pointer</span> instead of the @link NSDictionary NSDictionary @/link pair ordering where <span class="argument nobr">object pointer</span> proceeds <span class="argument">reference</span>.</p>
  <p>The order in which the capture subpattern <span class="argument">reference</span> arguments appears does not matter, nor the number of times that a capture subpattern <span class="argument">reference</span> appears.</p>
- <p>Only the first match of the receiver by <span class="argument">aRegex</span> is used.  If <span class="argument">aRegex</span> does not match the receiver, none of the supplied <span class="argument nobr">pointer to a pointer</span> arguments are altered and <span class="code">NO</span> is returned.</p>
  <p>See <a href="NSString.html#CaptureSubpatternReferenceandTypeConversionSyntax" class="section-link">Capture Subpattern Reference and Type Conversion Syntax</a> for information on how to specify capture subpatterns and the different types of conversions that can be performed on the matched text.  If the optional type conversion is not specified then the default conversion to a @link NSString NSString @/link containing the text of the requested capture subpattern will be returned via <span class="argument nobr">pointer to a pointer</span>.</p>
  <p><b>Examples</b></p>
 <div class="box sourcecode">NSString *capture0 = nil, *capture1 = nil, *capture2 = nil;
@@ -105,7 +104,8 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @param aRegex A regular expression string or @link RKRegex RKRegex @/link object.
  @param ...  A comma-separated list of capture subpattern <span class="argument">reference</span> and <span class="argument nobr">pointer to a pointer</span> type conversion specification pairs, terminated with a <span class="code">nil</span>.
   <div class="box warning"><div class="table"><div class="row"><div class="label cell">Warning:</div><div class="message cell">Failure to terminate the argument list with a <span class="code">nil</span> will result in a crash.</div></div></div></div>
- @result Returns <span class="code">YES</span> if <span class="argument">aRegex</span> matched the receiver, <span class="code">NO</span> otherwise.
+ @result <p>If <span class="argument">aRegex</span> matches the receiver, the supplied <span class="argument nobr">pointer to a pointer</span> arguments are updated with the match results and <span class="code">YES</span> is returned.  If <span class="argument">aRegex</span> matches the receiver multiple times, only the first match is used.</p>
+ <p>If <span class="argument">aRegex</span> does not match the receiver, none of the supplied <span class="argument nobr">pointer to a pointer</span> arguments are altered and <span class="code">NO</span> is returned.</p>
  @seealso <a href="NSString.html#CaptureSubpatternReferenceandTypeConversionSyntax" class="section-link">Capture Subpattern Reference and Type Conversion Syntax</a>
 */
 - (BOOL)getCapturesWithRegexAndReferences:(id)aRegex, ...;
@@ -113,7 +113,8 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @method     getCapturesWithRegex:inRange:references:
  @tocgroup   NSString Capture Extraction and Conversion
  @abstract   Takes a regular expression and <span class="argument">range</span> of the receiver to search, followed by a variable length list of capture subpattern <span class="argument">reference</span> and <span class="argument nobr">pointer to a pointer</span> type conversion specification pairs.
- @result Returns <span class="code">YES</span> if <span class="argument">aRegex</span> matched the receiver, <span class="code">NO</span> otherwise.
+ @result <p>If <span class="argument">aRegex</span> matches the receiver within <span class="argument">range</span>, the supplied <span class="argument nobr">pointer to a pointer</span> arguments are updated with the match results and <span class="code">YES</span> is returned.  If <span class="argument">aRegex</span> matches the receiver multiple times, only the first match within <span class="argument">range</span> is used.</p>
+ <p>If <span class="argument">aRegex</span> does not match the receiver within <span class="argument">range</span>, none of the supplied <span class="argument nobr">pointer to a pointer</span> arguments are altered and <span class="code">NO</span> is returned.</p>
  @seealso <a href="NSString.html#CaptureSubpatternReferenceandTypeConversionSyntax" class="section-link">Capture Subpattern Reference and Type Conversion Syntax</a>
  @seealso @link getCapturesWithRegexAndReferences: - getCapturesWithRegexAndReferences: @/link
 */
