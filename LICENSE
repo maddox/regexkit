@@ -1,11 +1,11 @@
 Important Information
 ---------------------
 
-RegexKit uses the PCRE library, copyright and written by Philip Hazel, as
-its regular expression pattern matching engine.  Therefore, RegexKit
-requires and incorporates the PCRE library in to the framework executable.
-Because of this, you should be aware of the PCRE library licensing
-requirements.
+RegexKit uses the PCRE library, written by Philip Hazel and
+Copyright © 1997-2007 University of Cambridge, as its regular expression
+pattern matching engine.  Therefore, RegexKit requires and incorporates the
+PCRE library in to the framework executable. Because of this, you should be
+aware of the PCRE library licensing requirements.
 
 Website: http://www.pcre.org/
 License: http://www.pcre.org/license.txt

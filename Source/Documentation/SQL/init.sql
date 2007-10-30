@@ -331,6 +331,7 @@ tg.groupName AS groupName,
 tm.pos AS pos,
 toc.tocName || '.html' AS file,
 occl.class || '_' || CASE WHEN ocm.type = '+' THEN '.' ELSE '-' END || ocm.selector AS linkId,
+'//apple_ref/occ/' || CASE WHEN ocm.type = '+' THEN 'clm/' ELSE 'instm/' END || occl.class || '/' || ocm.selector AS apple_ref,
 va.text AS titleText,
 ocm.signature AS linkText
 FROM
@@ -352,6 +353,7 @@ tg.groupName AS groupName,
 tm.pos AS pos,
 toc.tocName || '.html' AS file,
 occl.class || '_' || occlcat.category || '_' || '_' || CASE WHEN ocm.type = '+' THEN '.' ELSE '-' END  || ocm.selector AS linkId,
+'//apple_ref/occ/' || CASE WHEN ocm.type = '+' THEN 'clm/' ELSE 'instm/' END || occl.class || '/' || ocm.selector AS apple_ref,
 va.text AS titleText,
 ocm.signature AS linkText
 FROM
@@ -387,6 +389,7 @@ UNION SELECT ocm.ocmid AS ocmid, ocm.type || ' ' || ocm.selector AS xref FROM ob
 UNION SELECT ocm.ocmid AS ocmid, ocm.type || ocm.selector AS xref FROM objcMethods AS ocm WHERE ocm.hdcid IS NOT NULL
 UNION SELECT ocm.ocmid AS ocmid, ocm.selector AS xref FROM objcMethods AS ocm WHERE ocm.hdcid IS NOT NULL
 UNION SELECT ocm.ocmid AS ocmid, ocm.signature AS xref FROM objcMethods AS ocm WHERE ocm.hdcid IS NOT NULL
+UNION SELECT xa.ocmid AS ocmid, xa.apple_ref AS xref FROM v_xaref_ocm AS xa
 ;
 
 CREATE VIEW v_xhref_ocm AS SELECT
@@ -401,6 +404,7 @@ xa.groupName AS groupName,
 xa.pos AS pos,
 xa.file AS file,
 xa.linkId AS linkId,
+xa.apple_ref AS apple_ref,
 xa.titleText AS titleText,
 xa.linkText AS linkText
 FROM v_xaref_ocm AS xa JOIN v_xbref_ocm AS xb ON xa.ocmid = xb.ocmid
@@ -420,6 +424,7 @@ tg.groupName AS groupName,
 tm.pos AS pos,
 toc.tocName || '.html' AS file,
 c.name AS linkId,
+'//apple_ref/c/data/' || c.name AS apple_ref,
 va.text AS titleText,
 c.name AS linkText
 FROM
@@ -443,6 +448,7 @@ NULL AS groupName,
 tm.pos AS pos,
 'Constants.html' AS file,
 c.name AS linkId,
+'//apple_ref/c/data/' || c.name AS apple_ref,
 va.text AS titleText,
 c.name AS linkText
 FROM
@@ -468,6 +474,7 @@ tg.groupName AS groupName,
 tm.pos AS pos,
 toc.tocName || '.html' AS file,
 d.defineName AS linkId,
+'//apple_ref/c/macro/' || d.defineName AS apple_ref,
 va.text AS titleText,
 d.defineName AS linkText
 FROM
@@ -492,6 +499,7 @@ d.defineName AS xref,
 tm.pos AS pos,
 'Constants.html' AS file,
 d.defineName AS linkId,
+'//apple_ref/c/macro/' || d.defineName AS apple_ref,
 va.text AS titleText,
 d.defineName AS linkText
 FROM
@@ -520,6 +528,7 @@ tg.groupName AS groupName,
 tm.pos AS pos,
 toc.tocName || '.html' AS file,
 td.name AS linkId,
+'//apple_ref/c/tdef/' || td.name AS apple_ref,
 va.text AS titleText,
 td.name AS linkText
 FROM
@@ -543,6 +552,7 @@ NULL AS groupName,
 tm.pos AS pos,
 'DataTypes.html' AS file,
 td.name AS linkId,
+'//apple_ref/c/tdef/' || td.name AS apple_ref,
 va.text AS titleText,
 td.name AS linkText
 FROM
@@ -568,6 +578,7 @@ NULL AS groupName,
 NULL AS pos,
 toc.tocName || '.html' AS file,
 td.name || '_' || ei.identifier AS linkId,
+'//apple_ref/c/econst/' || ei.identifier AS apple_ref,
 NULL AS titleText,
 NULL AS linkText
 FROM
@@ -592,6 +603,7 @@ NULL AS groupName,
 NULL AS pos,
 'DataTypes.html' AS file,
 td.name || '_' || ei.identifier AS linkId,
+'//apple_ref/c/econst/' || ei.identifier AS apple_ref,
 NULL AS titleText,
 NULL AS linkText
 FROM typedefEnum AS td JOIN enumIdentifier AS ei ON ei.tdeid = td.tdeid
@@ -611,6 +623,7 @@ NULL AS groupName,
 NULL AS pos,
 toc.tocName || '.html' AS file,
 td.name || '_' || ei.identifier AS linkId,
+'//apple_ref/c/econst/' || ei.identifier AS apple_ref,
 NULL AS titleText,
 NULL AS linkText
 FROM
@@ -635,6 +648,7 @@ NULL AS groupName,
 NULL AS pos,
 'DataTypes.html' AS file,
 td.name || '_' || ei.identifier AS linkId,
+'//apple_ref/c/econst/' || ei.identifier AS apple_ref,
 NULL AS titleText,
 NULL AS linkText
 FROM typedefEnum AS td JOIN enumIdentifier AS ei ON ei.tdeid = td.tdeid
@@ -654,6 +668,7 @@ tg.groupName AS groupName,
 tm.pos AS pos,
 toc.tocName || '.html' AS file,
 p.sym AS linkId,
+'//apple_ref/c/func/' || p.sym AS apple_ref,
 va.text AS titleText,
 p.sym AS linkText
 FROM
@@ -677,6 +692,7 @@ NULL AS groupName,
 tm.pos AS pos,
 'Functions.html' AS file,
 p.sym AS linkId,
+'//apple_ref/c/func/' || p.sym AS apple_ref,
 va.text AS titleText,
 p.sym AS linkText
 FROM
@@ -701,6 +717,7 @@ NULL AS groupName,
 NULL AS pos,
 v2.text || '.html' AS file,
 NULL AS linkId,
+'//apple_ref/occ/cl/' || occl.class AS apple_ref,
 va.text AS titleText,
 occl.class AS linkText
 FROM objcclass AS occl
@@ -720,14 +737,23 @@ UNION SELECT xref, coalesce(linkId, ""), coalesce(file || '#' || coalesce(linkId
 UNION SELECT xref, coalesce(linkId, ""), coalesce(file || '#' || coalesce(linkId, ""), file) AS href FROM v_xhref_class
 ;
 
+CREATE VIEW v_xxapple_ref AS 
+      SELECT xref, coalesce(apple_ref, ""), coalesce(file || '#' || coalesce(apple_ref, ""), file) AS href FROM v_xhref_const 
+UNION SELECT xref, coalesce(apple_ref, ""), coalesce(file || '#' || coalesce(apple_ref, ""), file) AS href FROM v_xhref_ocm
+UNION SELECT xref, coalesce(apple_ref, ""), coalesce(file || '#' || coalesce(apple_ref, ""), file) AS href FROM v_xhref_typedef
+UNION SELECT xref, coalesce(apple_ref, ""), coalesce(file || '#' || coalesce(apple_ref, ""), file) AS href FROM v_xhref_typedef_enum
+UNION SELECT xref, coalesce(apple_ref, ""), coalesce(file || '#' || coalesce(apple_ref, ""), file) AS href FROM v_xhref_func
+UNION SELECT xref, coalesce(apple_ref, ""), coalesce(file || '#' || coalesce(apple_ref, ""), file) AS href FROM v_xhref_class
+;
+
 CREATE VIEW v_xtoc AS 
-      SELECT tbl, idCol, id, hdcid, hdtype, xref, tocName, groupName, pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, titleText, linkText FROM v_xhref_const 
-UNION SELECT tbl, idCol, id, hdcid, hdtype, xref, tocName, groupName, pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, titleText, linkText FROM v_xhref_ocm
-UNION SELECT tbl, idCol, id, hdcid, hdtype, xref, tocName, groupName, pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, titleText, linkText FROM v_xhref_typedef
-UNION SELECT tbl, idCol, id, hdcid, hdtype, xref, NULL,    NULL,      pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, NULL,      NULL     FROM v_xhref_typedef_enum
-UNION SELECT tbl, idCol, id, hdcid, hdtype, xref, tocName, groupName, pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, titleText, linkText FROM v_xhref_func
-UNION SELECT tbl, idCol, id, hdcid, hdtype, xref, tocName, groupName, pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, titleText, linkText FROM v_xhref_class
-UNION SELECT tbl, idCol, id, hdcid, hdtype, xref, tocName, groupName, pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, titleText, linkText FROM v_xhref_define
+      SELECT tbl, idCol, id, hdcid, hdtype, xref, tocName, groupName, pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, coalesce(apple_ref, "") AS apple_ref, titleText, linkText FROM v_xhref_const 
+UNION SELECT tbl, idCol, id, hdcid, hdtype, xref, tocName, groupName, pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, coalesce(apple_ref, "") AS apple_ref, titleText, linkText FROM v_xhref_ocm
+UNION SELECT tbl, idCol, id, hdcid, hdtype, xref, tocName, groupName, pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, coalesce(apple_ref, "") AS apple_ref, titleText, linkText FROM v_xhref_typedef
+UNION SELECT tbl, idCol, id, hdcid, hdtype, xref, NULL,    NULL,      pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, coalesce(apple_ref, "") AS apple_ref, NULL,      NULL     FROM v_xhref_typedef_enum
+UNION SELECT tbl, idCol, id, hdcid, hdtype, xref, tocName, groupName, pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, coalesce(apple_ref, "") AS apple_ref, titleText, linkText FROM v_xhref_func
+UNION SELECT tbl, idCol, id, hdcid, hdtype, xref, tocName, groupName, pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, coalesce(apple_ref, "") AS apple_ref, titleText, linkText FROM v_xhref_class
+UNION SELECT tbl, idCol, id, hdcid, hdtype, xref, tocName, groupName, pos, file, coalesce(linkId, "") AS linkId, coalesce(file || '#' || linkId, file) AS href, coalesce(apple_ref, "") AS apple_ref, titleText, linkText FROM v_xhref_define
 ;
 
 
@@ -760,7 +786,6 @@ JOIN tags AS t ON hdc.hdcid = t.hdcid
 JOIN tagKeywords AS tk ON t.tkid = tk.tkid AND tk.arguments = 2
 JOIN tagArguments AS ta0 ON ta0.tid = t.tid AND ta0.argument = 0
 JOIN tagArguments AS ta1 ON ta1.tid = t.tid AND ta1.argument = 1
-ORDER BY hdc.hdcid, t.position
 ;
 
 
@@ -794,6 +819,44 @@ tocMembers AS tm
 JOIN toc ON toc.tocid = tm.tocid
 JOIN tocGroup AS tg ON tg.tgid = tm.tgid
 ;
+
+CREATE INDEX objCMethods_occlid_idx ON objCMethods (occlid);
+CREATE INDEX define_hdcid_idx ON define (hdcid);
+
+
+CREATE TABLE docset (
+dsid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+docset TEXT NOT NULL,
+UNIQUE (docset) ON CONFLICT REPLACE
+);
+
+CREATE TABLE files (
+fid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+dsid INTEGER,
+path TEXT NOT NULL,
+file TEXT NOT NULL,
+filePath TEXT NOT NULL,
+UNIQUE (path, file) ON CONFLICT IGNORE
+);
+
+CREATE INDEX files_dsid_path_file_idx ON files (dsid, path, file);
+CREATE INDEX files_filePath_idx ON files (filePath);
+
+CREATE TABLE nodeNames (
+refid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+fid INTEGER NOT NULL,
+anchor TEXT,
+href TEXT NOT NULL,
+name TEXT NOT NULL,
+UNIQUE (refid, anchor) ON CONFLICT REPLACE
+);
+
+CREATE INDEX nodeNames_fid ON nodeNames (fid);
+
+CREATE TRIGGER nodeNames_null_anchor_trig
+AFTER INSERT ON nodeNames
+FOR EACH ROW WHEN NEW.anchor IS NULL
+BEGIN DELETE FROM nodeNames WHERE nodeNames.anchor IS NULL AND nodeNames.fid = NEW.fid AND refid != NEW.refid; END;
 
 
 COMMIT;

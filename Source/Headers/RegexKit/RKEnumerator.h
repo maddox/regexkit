@@ -67,13 +67,13 @@
 
 
 @interface RKEnumerator : NSEnumerator {
-  RKRegex *regex;
+  RKRegex  *regex;
   NSString *string;
-  unsigned int atBufferLocation;
-  unsigned int regexCaptureCount;
+  RKUInteger atBufferLocation;
+  RKUInteger regexCaptureCount;
   NSRange searchRange;
-  NSRange *resultRanges;
-  unsigned int hasPerformedMatch:1;
+  RK_STRONG_REF NSRange *resultRanges;
+  RKUInteger hasPerformedMatch:1;
 }
 
 
@@ -152,7 +152,7 @@
  @result     Returns <span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span> if receiver has enumerated all the matches.
  @seealso    @link nextRangeForCapture: - nextRangeForCapture: @/link
 */
-- (NSRange)currentRangeForCapture:(const unsigned int)capture;
+- (NSRange)currentRangeForCapture:(const RKUInteger)capture;
 /*!
  @method     currentRangeForCaptureName:
  @tocgroup   RKEnumerator Current Match Information
@@ -199,7 +199,7 @@
  @result     Returns <span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span> if there are no additional matches.
  @seealso    @link currentRangeForCapture: - currentRangeForCapture: @/link
 */
-- (NSRange)nextRangeForCapture:(const unsigned int)capture;
+- (NSRange)nextRangeForCapture:(const RKUInteger)capture;
 /*!
  @method     nextRangeForCaptureName:
  @tocgroup   RKEnumerator Advancing to the Next Match
@@ -237,7 +237,7 @@
  @seealso    @link RKEnumerator/stringWithReferenceString: - stringWithReferenceString: @/link
  @seealso    @link nextRanges - nextRanges @/link
 */
-- (BOOL)getCapturesWithReferences:(NSString * const)firstReference, ...;
+- (BOOL)getCapturesWithReferences:(NSString * const)firstReference, ... RK_REQUIRES_NIL_TERMINATION;
 /*!
  @method     stringWithReferenceString:
  @tocgroup   RKEnumerator Creating Temporary Strings from the Current Enumerated Match
@@ -275,7 +275,6 @@
  @seealso    @link stringWithReferenceFormat: - stringWithReferenceFormat: @/link
 */
 - (NSString *)stringWithReferenceFormat:(NSString * const)referenceFormatString arguments:(va_list)argList;
-
 
 @end
 

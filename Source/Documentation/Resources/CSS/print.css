@@ -10,6 +10,7 @@ h5 { border-bottom: 1px solid black; font-family: palatino, "Times New Roman", t
 
 .frameworkabstract { margin-left: -0.5in; }
 
+.table, .box { background-color: white; }
 .code, .regex, .regex-textual, .regex-def, .header_file, .file, .build-phase, .xcode-group, .xcode-target, .window-name, .box.sourcecode, .guide .sourceLicense pre, .method > .signature, .function > .signature, .constants > .constant > .identifier  { font-size: 0.8334em; font-family: "Letter Gothic Std", monaco, courier, monospace; }
 .regex b           { font: bold 1.1000em "Letter Gothic Std", monaco, courier, monospace; }
 .syntax > .specification { font-family: "Letter Gothic Std", monaco, courier, monospace; }

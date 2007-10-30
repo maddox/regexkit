@@ -57,10 +57,10 @@ void *autoreleasedMalloc(const size_t length) RK_ATTRIBUTES(malloc, used, visibi
 
 #else // USE_AUTORELEASED_MALLOC == NO
 
-#ifdef USE_CORE_FOUNDATION
-#define RKAutoreleasedMalloc(x) (void *)CFDataGetMutableBytePtr((CFMutableDataRef)[(id)CFDataCreateMutable(NULL, x) autorelease])
+#ifdef USE_CORE_FOUNDATION 
+#define RKAutoreleasedMalloc(x) (void *)CFDataGetMutableBytePtr((CFMutableDataRef)(RKMakeCollectableOrAutorelease(CFDataCreateMutable(NULL, (CFIndex)x))))
 #else
-#define RKAutoreleasedMalloc(x) [[NSMutableData dataWithLength:x] mutableBytes]
+#define RKAutoreleasedMalloc(x) [[NSMutableData dataWithLength:((NSUInteger))x] mutableBytes]
 #endif
 
 #endif //USE_AUTORELEASED_MALLOC

@@ -35,10 +35,8 @@ export PROJECT_NAME=${PROJECT_NAME:?"Environment variable PROJECT_NAME must exis
 export RSYNC=${RSYNC:?"Environment variable RSYNC must exist, aborting."}
 export SQLITE=${SQLITE:?"Environment variable SQLITE must exist, aborting."}
 
-${PERL} -e 'require DBD::SQLite;' >/dev/null 2>&1
+"${PERL}" -e 'require DBD::SQLite;' >/dev/null 2>&1
 if [ $? != 0 ]; then echo "$0:$LINENO: error: The perl module 'DBD::SQLite' must be installed in order to build the the target '${TARGETNAME}'."; exit 1; fi;  
-
-#cd "${PROJECT_DIR}"
 
 TIMESTAMP_FILE="${DOCUMENTATION_TEMP_DIR}/buildDocumentation_timestamp"
 
@@ -51,10 +49,10 @@ if [ -f "${TIMESTAMP_FILE}" ]; then
   if [ "${NEWER_FILES}" != "" ]; then DOCS_UP_TO_DATE="No"; fi;
   NEWER_FILES=`"${FIND}" "${DOCUMENTATION_SOURCE_DIR}" -newer "${TIMESTAMP_FILE}"`;
   if [ "${NEWER_FILES}" != "" ]; then DOCS_UP_TO_DATE="No"; fi;
-  if [ $DOCS_UP_TO_DATE == "No" ]; then echo "debug: There are newer source files, rebuilding documentation."; fi;
+  if [ $DOCS_UP_TO_DATE == "No" ]; then echo "$0:$LINENO: note: There are newer source files, rebuilding documentation."; fi;
 fi;
 
-if [ $DOCS_UP_TO_DATE == "Yes" ]; then echo "debug: Documentation files are up to date."; exit 0; fi;
+if [ $DOCS_UP_TO_DATE == "Yes" ]; then echo "$0:$LINENO: note: Documentation files are up to date."; exit 0; fi;
 
 # Clear the time stamp.  It will be recreated if we are successful.
 rm -f "${TIMESTAMP_FILE}"
@@ -109,13 +107,13 @@ else
     rm -rf "${DOCUMENTATION_TARGET_DIR}"/*
 fi
 
-if [ ! -f ${DOCUMENTATION_TEMP_DIR}/cpp_defines.out ]; then
+#if [ ! -f "${DOCUMENTATION_TEMP_DIR}/cpp_defines.out" ]; then
   echo "Extracting C Preprocessor #defines."
-  gcc -E -Wp,-dM -std=gnu99 -x objective-c -I${PROJECT_HEADERS_ROOT} ${PROJECT_HEADERS_DIR}/RegexKitPrivate.h > ${DOCUMENTATION_TEMP_DIR}/cpp_defines.out
-fi
+  gcc -E -Wp,-dM -std=gnu99 -x objective-c "-I${PROJECT_HEADERS_ROOT}" "${PROJECT_HEADERS_DIR}/RegexKitPrivate.h" > "${DOCUMENTATION_TEMP_DIR}/cpp_defines.out"
+#fi
 
 # Extract the documentation from the header files.
-echo "$0:$LINENO: debug: Parsing headerdoc information from project headers into database."
+echo "$0:$LINENO: note: Parsing headerdoc information from project headers into database."
 "${DOCUMENTATION_PARSE_HEADERS_SCRIPT}" "${PROJECT_HEADERS_DIR}"/*.h
 
 
@@ -123,12 +121,12 @@ echo "$0:$LINENO: debug: Parsing headerdoc information from project headers into
 echo "Copying pcre HTML documentation from '${PCRE_HTML_DIR}'."
 if [ -d "${PCRE_HTML_DIR}" ]; then
     "${RSYNC}" -a --delete --cvs-exclude "${PCRE_HTML_DIR}/" "${DOCUMENTATION_TARGET_DIR}/pcre/"
-    if [ $PCRE_VERSION == "7.3" ]; then
+    if [ "${PCRE_VERSION}" == "7.3" ]; then
       "${SED}" -i "" -e 's/BACTRACKING/BACKTRACKING/g' "${DOCUMENTATION_TARGET_DIR}/pcre/pcrepattern.html"
     fi;
 else
-    echo "$0:$LINENO: error: The pcre HTML documentation directory ${PCRE_HTML_DIR} does not exist."
-    exit 1
+    echo "$0:$LINENO: error: The pcre HTML documentation directory '${PCRE_HTML_DIR}' does not exist.";
+    exit 1;
 fi
 
 
@@ -136,12 +134,12 @@ fi
 # A notable point is the TOC template executes the pcre_toc.pl script which parses through the PCRE
 # documentation files to generate a toc for it, along with the regex syntax toc section.
 
-echo "$0:$LINENO: debug: Generating documentation HTML files."
+echo "$0:$LINENO: note: Generating documentation HTML files."
 
 if [ ! -d "${GENERATED_HTML_DIR}" ]; then mkdir "${GENERATED_HTML_DIR}"; fi;
 
 # Replace PCRE_VERSION / PCRE_DATE comments with extracted values.
-"${PERL}" -e 'while(<>){$in.=$_;} $in =~ s/<\!-- PCRE_VERSION -->/$ENV{'PCRE_VERSION'}/sg; $in =~ s/<\!-- PCRE_DATE -->/$ENV{'PCRE_DATE'}/sg; print($in);' "${DOCUMENTATION_TEMPLATES_DIR}/content.tmpl" >"${GENERATED_HTML_DIR}/content.html"
+"${PERL}" -e 'while(<>){$in.=$_;} $in =~ s/<\!-- PCRE_VERSION -->/$ENV{"PCRE_VERSION"}/sg; $in =~ s/<\!-- PCRE_DATE -->/$ENV{"PCRE_DATE"}/sg; print($in);' "${DOCUMENTATION_TEMPLATES_DIR}/content.tmpl" >"${GENERATED_HTML_DIR}/content.html"
 
 # Execute the DOCUMENTATION_GENERATE_HTML_SCRIPT script.
 export SCRIPT_LINENO="$LINENO"; "${DOCUMENTATION_GENERATE_HTML_SCRIPT}"
@@ -151,7 +149,7 @@ if [ $? != 0 ] ; then echo "$0:$LINENO: error: Documentation HTML generation fai
 echo "Generating all opened toc for non-JavaScript browsers."
 "${PERL}" -e 'while (<>) { $in.=$_; } $in =~ s/closed/open/sgi; $in =~ s/<noscript>.*?<\/head>/<\/head>/si; $in =~ s/<div class="toc" id="tocID">/<div class="toc" id="tocID" title="The Table of Contents requires Javascript to open and close sections. Since Javascript is unavailable, all sections have been opened automatically.">/s; print $in;' "${GENERATED_HTML_DIR}/toc.html" >"${DOCUMENTATION_TARGET_DIR}/toc_opened.html"
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: Documentation HTML generation failed."; exit 1; fi;
-"${PERL}" -e 'while(<>){$in.=$_;} ($without_noscript = $in) =~ s#<\!--\s+NOSCRIPT_BLOCK\s+(.*?)-->##sm; open($WITHOUT, ">", "$ENV{'DOCUMENTATION_TARGET_DIR'}/content.html"); print($WITHOUT $without_noscript); close($WITHOUT); ($with_noscript = $in) =~ s#<\!--\s+NOSCRIPT_BLOCK\s+\n?(.*?)-->#$1#sm; open($WITH, ">", "$ENV{'DOCUMENTATION_TARGET_DIR'}/content_frame.html"); print($WITH $with_noscript); close($WITH);' "${GENERATED_HTML_DIR}/content.html"
+"${PERL}" -e 'while(<>){$in.=$_;} ($without_noscript = $in) =~ s#<\!--\s+NOSCRIPT_BLOCK\s+(.*?)-->##sm; open($WITHOUT, ">", "$ENV{DOCUMENTATION_TARGET_DIR}/content.html"); print($WITHOUT $without_noscript); close($WITHOUT); ($with_noscript = $in) =~ s#<\!--\s+NOSCRIPT_BLOCK\s+\n?(.*?)-->#$1#sm; open($WITH, ">", "$ENV{DOCUMENTATION_TARGET_DIR}/content_frame.html"); print($WITH $with_noscript); close($WITH);' "${GENERATED_HTML_DIR}/content.html"
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: Documentation HTML generation failed."; exit 1; fi;
 
 
@@ -165,10 +163,9 @@ for HTML_FILE in ${GENERATED_HTML_FILES}; do
   if [ ! -r "${GENERATED_HTML_DIR}/${HTML_FILE}" ]; then
   	echo "$0:$LINENO: warning: The generated html documentation file '${HTML_FILE}' in '${GENERATED_HTML_DIR}' does not exist as expected."
   else
-  	cp "${GENERATED_HTML_DIR}/${HTML_FILE}" "${DOCUMENTATION_TARGET_DIR}"
+  	"${CP}" "${GENERATED_HTML_DIR}/${HTML_FILE}" "${DOCUMENTATION_TARGET_DIR}"
   fi
 done;
-
 
 # Copy various support directories (css, images, etc) in to their final locations.
 for HTML_DIR in ${STATIC_HTML_DIRS}; do
@@ -184,10 +181,10 @@ for HTML_DIR in ${STATIC_HTML_DIRS}; do
   fi
 done;
 
-${DOCUMENTATION_CHECK_SPELLING_SCRIPT} && CHECK_SPELLING_OK="Yes";
-${DOCUMENTATION_CHECK_HTML_SCRIPT}     && CHECK_HTML_OK="Yes";
+"${DOCUMENTATION_CHECK_SPELLING_SCRIPT}" && CHECK_SPELLING_OK="Yes";
+"${DOCUMENTATION_CHECK_HTML_SCRIPT}"     && CHECK_HTML_OK="Yes";
 
 if [ "${CHECK_SPELLING_OK}" == "Yes" ] && [ "${CHECK_HTML_OK}" == "Yes" ]; then
-  echo "debug: Clean build, touching timestamp.";
+  echo "$0:$LINENO: note: Clean build, touching timestamp.";
   touch "${TIMESTAMP_FILE}";
 fi

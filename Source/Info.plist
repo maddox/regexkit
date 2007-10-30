@@ -17,11 +17,11 @@
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
   <key>CFBundleShortVersionString</key>
-  <string>${REGEXKIT_CURRENT_VERSION}</string>
+  <string>${PROJECT_CURRENT_VERSION}</string>
 	<key>CFBundleSignature</key>
 	<string>ZanG</string>
 	<key>CFBundleVersion</key>
-	<string>${REGEXKIT_CURRENT_VERSION}</string>
+	<string>${PROJECT_CURRENT_VERSION}</string>
   <key>NSHumanReadableCopyright</key>
   <string>© 2007, John Engelhart</string>
 	<key>NSPrincipalClass</key>

@@ -9,12 +9,15 @@
 
 #define RKPrettyObjectMethodString(stringArg, ...) ([NSString stringWithFormat:[NSString stringWithFormat:@"%p [%@ %@]: %@", self, NSStringFromClass([(id)self class]), NSStringFromSelector(_cmd), stringArg], ##__VA_ARGS__])
 
+void startGC(void);
+
 @implementation multithreading
 
 NSString *RKThreadWillExitNotification = @"RKThreadWillExitNotification";
 
 - (id) initWithInvocation:(NSInvocation *) anInvocation
 {
+  startGC();
   [self autorelease];  // In case anything goes wrong (ie, exception), we're guaranteed to be in the autorelease pool.  On successful initialization, we send ourselves a retain.
                        // If we create any ivars that are not autoreleased, they should release when the autorelease pool releases us and in turn we dealloc, releasing those resources.
 
@@ -38,7 +41,7 @@ NSString *RKThreadWillExitNotification = @"RKThreadWillExitNotification";
     globalLogString = [[NSMutableString alloc] init];
     globalLogArray = [[NSMutableArray alloc] init];
     timingResultsArray = [[NSMutableArray alloc] init];
-      
+    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acceptNotification:) name:RKThreadWillExitNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acceptNotification:) name:NSWillBecomeMultiThreadedNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acceptNotification:) name:SenTestSuiteDidStartNotification object:nil];
@@ -51,7 +54,7 @@ NSString *RKThreadWillExitNotification = @"RKThreadWillExitNotification";
     if(getenv("LEAK_CHECK") != NULL) { leakEnvString = [[NSString alloc] initWithCString:getenv("LEAK_CHECK") encoding:NSUTF8StringEncoding]; }
     if(getenv("TIMING") != NULL) { timingEnvString = [[NSString alloc] initWithCString:getenv("TIMING") encoding:NSUTF8StringEncoding]; }
     if(getenv("MULTITHREADING") != NULL) { multithreadingEnvString = [[NSString alloc] initWithCString:getenv("MULTITHREADING") encoding:NSUTF8StringEncoding]; }
-
+    
     NSLog(@"LEAK_CHECK = %@, DEBUG = %@, TIMING = %@, MULTITHREADING = %@", leakEnvString, debugEnvString, timingEnvString, multithreadingEnvString);
 
     [[RKRegex regexCache] setDebug:YES];
@@ -65,8 +68,9 @@ NSString *RKThreadWillExitNotification = @"RKThreadWillExitNotification";
       leakString = (NSString *)0xdeadbeef;
       
       if([leakEnvString intValue] > 1) {
-        NSString *leaksCommandString = [NSString stringWithFormat:@"/usr/bin/leaks -exclude \"+[%@ %@]\" -exclude \"+[NSTitledFrame initialize]\" -exclude \"+[NSLanguage initialize]\" -exclude \"NSPrintAutoreleasePools\" -exclude \"+[NSWindowBinder initialize]\" -exclude \"+[NSCollator initialize]\" -exclude \"+[NSCollatorElement initialize]\" %d", NSStringFromClass([self class]), NSStringFromSelector(_cmd), getpid()];
-        
+        //NSString *leaksCommandString = [NSString stringWithFormat:@"/usr/bin/leaks -exclude \"+[%@ %@]\" -exclude \"+[NSTitledFrame initialize]\" -exclude \"+[NSLanguage initialize]\" -exclude \"NSPrintAutoreleasePools\" -exclude \"+[NSWindowBinder initialize]\" -exclude \"+[NSCollator initialize]\" -exclude \"+[NSCollatorElement initialize]\" %d", NSStringFromClass([self class]), NSStringFromSelector(_cmd), getpid()];
+        NSString *leaksCommandString = [NSString stringWithFormat:@"/usr/bin/leaks  %d", getpid()];
+
         [NSAutoreleasePool showPools];
         NSLog(@"starting autoreleased objects: %u  Now: %u  Diff: %u", startAutoreleasedObjects, [NSAutoreleasePool totalAutoreleasedObjects], [NSAutoreleasePool totalAutoreleasedObjects] - startAutoreleasedObjects);
         NSLog(@"autoreleasedObjectCount: %u", [NSAutoreleasePool autoreleasedObjectCount]);
@@ -81,7 +85,22 @@ NSString *RKThreadWillExitNotification = @"RKThreadWillExitNotification";
     
     testStartCPUTime = [NSDate cpuTimeUsed];
   }
-
+/*
+#ifdef ENABLE_MACOSX_GARBAGE_COLLECTION
+  if([NSGarbageCollector defaultCollector] != NULL) {
+    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:logDateFormatter];
+    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:globalLogString];
+    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:globalLogArray];
+    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:timingResultsArray];
+    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:loggingTimer];
+    
+    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:leakEnvString];
+    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:debugEnvString];
+    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:timingEnvString];
+    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:multithreadingEnvString];
+  }
+#endif
+ */
   return([self retain]); // We have successfully initialized, so rescue ourselves from the autorelease pool.
 
 errorExit: // Catch point in case any clean up needs to be done.  Currently, none is neccesary.
@@ -107,8 +126,9 @@ errorExit: // Catch point in case any clean up needs to be done.  Currently, non
   NSLog(@"RKRegex cache flushed");
   
   if(([leakEnvString intValue] > 0)) {
-    leaksCommandString = [[NSString alloc] initWithFormat:@"/usr/bin/leaks -exclude \"+[%@ %@]\" -exclude \"+[NSTitledFrame initialize]\" -exclude \"+[NSLanguage initialize]\" -exclude \"NSPrintAutoreleasePools\" -exclude \"+[NSWindowBinder initialize]\" -exclude \"+[NSCollator initialize]\" -exclude \"+[NSCollatorElement initialize]\" %d", NSStringFromClass([self class]), NSStringFromSelector(_cmd), getpid()];
-    
+    //leaksCommandString = [[NSString alloc] initWithFormat:@"/usr/bin/leaks -exclude \"+[%@ %@]\" -exclude \"+[NSTitledFrame initialize]\" -exclude \"+[NSLanguage initialize]\" -exclude \"NSPrintAutoreleasePools\" -exclude \"+[NSWindowBinder initialize]\" -exclude \"+[NSCollator initialize]\" -exclude \"+[NSCollatorElement initialize]\" %d", NSStringFromClass([self class]), NSStringFromSelector(_cmd), getpid()];
+    leaksCommandString = [[NSString alloc] initWithFormat:@"/usr/bin/leaks  %d", getpid()];
+
     if([leakEnvString intValue] > 2) {
       [NSAutoreleasePool showPools];
       NSLog(@"starting autoreleased objects: %u  Now: %u  Diff: %u", startAutoreleasedObjects, [NSAutoreleasePool totalAutoreleasedObjects], [NSAutoreleasePool totalAutoreleasedObjects] - startAutoreleasedObjects);
@@ -245,7 +265,7 @@ exitNow:
 - (void)testSimpleMultiThreading
 {
   if(isInitialized == NO) { STFail(@"[%@ %@] is not initialized!", [self className], NSStringFromSelector(_cmd)); return; }
-  int pthread_err = 0, totalThreads = 13;
+  int pthread_err = 0, totalThreads = 19;
   
   [self thread:0 log:[NSString stringWithFormat:@"%@ is initializing.\n", NSStringFromSelector(_cmd)]];
   
@@ -743,7 +763,7 @@ exitNow:
 {
   NSString *regexString = @"^(Match)\\s+the\\s+(MAGIC)";
   NSString *subjectString = @"Match the MAGIC in this string";
-  unsigned int subjectLength = [subjectString length], captureCount = 0, x = 0;
+  RKUInteger subjectLength = [subjectString length], captureCount = 0, x = 0;
   NSRange *matchRanges = NULL;
   
   RKRegex *regex = [RKRegex regexWithRegexString:regexString options:0];
@@ -772,7 +792,7 @@ exitNow:
 {
   NSString *regexString = @"^(Match)\\s+the\\s+(MAGIC)$";
   NSString *subjectString = @"Match the MAGIC in this string";
-  unsigned int subjectLength = [subjectString length], captureCount = 0, x = 0;
+  RKUInteger subjectLength = [subjectString length], captureCount = 0, x = 0;
   NSRange *matchRanges = NULL;
   
   RKRegex *regex = [RKRegex regexWithRegexString:regexString options:0];
@@ -797,7 +817,7 @@ exitNow:
 {
   NSString *regexString = @"^(Match)\\s+the\\s+(MAGIC)";
   NSString *subjectString = @"Match the MAGIC in this string";
-  unsigned int subjectLength = [subjectString length], captureCount = 0, x = 0;
+  RKUInteger subjectLength = [subjectString length], captureCount = 0, x = 0;
   NSRange *matchRanges = NULL;
   
   RKRegex *regex = [RKRegex regexWithRegexString:regexString options:0];
@@ -914,11 +934,11 @@ exitNow:
   
   STAssertThrowsSpecificNamed([RKRegex regexWithRegexString:regexString options:0], NSException, RKRegexSyntaxErrorException, nil); // needs to have dup names option
   
-  RKRegex *regex = [RKRegex regexWithRegexString:regexString options:RKCompileDupNames];
+  RK_STRONG_REF RKRegex *regex = [RKRegex regexWithRegexString:regexString options:RKCompileDupNames];
   STAssertNotNil(regex, nil); if(regex == nil) { return; }
   STAssertTrue([regex captureCount] == 7, @"count: %u", [regex captureCount]);
 
-  NSArray *regexCaptureNameArray = [regex captureNameArray];
+  RK_STRONG_REF NSArray *regexCaptureNameArray = [regex captureNameArray];
   STAssertNotNil(regexCaptureNameArray, nil);
   STAssertTrue([regexCaptureNameArray count] == 7, @"count: %u", [regexCaptureNameArray count]);
   
@@ -1293,6 +1313,13 @@ exitNow:
   STAssertTrue([[dateCapture timeZone] isEqualToTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"EDT"]] == YES, [NSString stringWithFormat:@"timeZone name: %@, abbreviation: %@", [[dateCapture timeZone] name], [[dateCapture timeZone] abbreviation]]);
 }
 
+#if defined(__i386__)
+#warning Test mt_test_24 is disable on x86 architectures as it crashes the compiler
+- (void)mt_test_24 { }
+#endif
+
+#ifndef __i386__
+
 //- (void)testArrayExtensions
 - (void)mt_test_24
 {
@@ -1484,6 +1511,14 @@ exitNow:
 
 }
 
+#endif
+
+#if defined(__i386__)
+#warning Test mt_test_25 is disable on x86 architectures as it crashes the compiler
+- (void)mt_test_25 { }
+#endif
+
+#ifndef __i386__
 //- (void)testDictionaryExtensions
 - (void)mt_test_25
 {
@@ -1764,6 +1799,8 @@ exitNow:
   
 }
 
+#endif
+
 
 //- (void)testSetExtensions
 - (void)mt_test_26
@@ -1927,6 +1964,12 @@ exitNow:
   
 }
 
+#if defined(__i386__)
+#warning Test mt_test_27 is disable on x86 architectures as it crashes the compiler
+- (void)mt_test_27 { }
+#endif
+
+#ifndef __i386__
 
 //- (void)testRKEnumeratorInit
 - (void)mt_test_27
@@ -2003,6 +2046,7 @@ exitNow:
   STAssertThrowsSpecificNamed([subjectString matchEnumeratorWithRegex:NULL], NSException, NSInvalidArgumentException, nil);
 }
 
+#endif
 
 
 
@@ -2147,7 +2191,7 @@ exitNow:
   unsigned int x = 0;
   
   const char *subjectCharacters = " 1999 - 12 - 01 / 55 ";
-  int subjectLength = strlen(subjectCharacters);
+  RKInteger subjectLength = strlen(subjectCharacters);
   NSRange subjectRange = NSMakeRange(0, subjectLength);
   NSRange matchRanges[4096];
 
@@ -2170,7 +2214,7 @@ exitNow:
 {
   unsigned int x = 0;
   const char *subjectCharacters = " 1999 - 12 - 01 / 55 ";
-  int subjectLength = strlen(subjectCharacters);
+  RKInteger subjectLength = strlen(subjectCharacters);
   const char *regexCharacters = "(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))";
 
   BOOL returnValue = NO;

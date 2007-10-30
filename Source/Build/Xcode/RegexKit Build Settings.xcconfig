@@ -20,65 +20,79 @@ REGEXKIT_XCODE_CONFIG_FILE = ${BUILD_SOURCE_DIR}/Xcode/RegexKit\ Project.xcconfi
 
 // Project version information
 
-PROJECT_VERSION_MAJOR = 0
-PROJECT_VERSION_MINOR = 2
-PROJECT_VERSION_POINT = 0
+PROJECT_VERSION_MAJOR           = 0
+PROJECT_VERSION_MINOR           = 3
+PROJECT_VERSION_POINT           = 0
 
-PROJECT_CURRENT_VERSION = ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_POINT}
-PROJECT_COMPATIBLE_VERSION = 0.1.0
+PROJECT_CURRENT_VERSION         = ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_POINT}
+PROJECT_COMPATIBLE_VERSION      = 0.3.0
+
+// Enable parallel building where possible
+
+PARALLEL_BUILD                  = YES
+
+// The version of Mac OS X we are targeting
+
+SDKROOT                         = /Developer/SDKs/MacOSX10.5.sdk
+ARCHS                           = ppc ppc64 i386 x86_64
+
+// MACOSX_DEPLOYMENT_TARGET is also set in Makefile.pcre, ppc & i386 @ 10.4, ppc64 & x86_64 @ 10.5
+
+MACOSX_DEPLOYMENT_TARGET_ppc    = 10.4
+MACOSX_DEPLOYMENT_TARGET_i386   = 10.4
+MACOSX_DEPLOYMENT_TARGET_ppc64  = 10.5
+MACOSX_DEPLOYMENT_TARGET_x86_64 = 10.5
 
 // File that contains the symbols we export for the 'RegexKit Framework' target.
 
-PROJECT_EXPORTED_SYMBOLS_FILE = ${BUILD_XCODE_DIR}/projectExportedSymbols
+PROJECT_EXPORTED_SYMBOLS_FILE   = ${BUILD_XCODE_DIR}/projectExportedSymbols
 
 // Framework header information.
 
-PROJECT_HEADERS_ROOT                 = Source/Headers
-PROJECT_HEADERS_DIR                  = ${PROJECT_HEADERS_ROOT}/${PROJECT_NAME}
+PROJECT_HEADERS_ROOT                    = Source/Headers
+PROJECT_HEADERS_DIR                     = ${PROJECT_HEADERS_ROOT}/${PROJECT_NAME}
 
 //
 //  Overall build / compiler settings.
 //
 
-COPY_PHASE_STRIP = NO
-PREBINDING = NO
-ZERO_LINK = NO
+COPY_PHASE_STRIP                        = NO
+PREBINDING                              = NO
+ZERO_LINK                               = NO
 
-MACOSX_DEPLOYMENT_TARGET = 10.4
-SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk
-STRIP_INSTALLED_PRODUCT = NO
-STRIP_STYLE = debugging
+STRIP_INSTALLED_PRODUCT                 = NO
+STRIP_STYLE                             = debugging
 
 // GCC build settings.
 
-DEBUG_INFORMATION_FORMAT = dwarf
-GCC_DEBUGGING_SYMBOLS = full
-GCC_GENERATE_DEBUGGING_SYMBOLS = YES
-GCC_ENABLE_SYMBOL_SEPARATION = NO
+DEBUG_INFORMATION_FORMAT                = dwarf
+GCC_DEBUGGING_SYMBOLS                   = full
+GCC_GENERATE_DEBUGGING_SYMBOLS          = YES
+GCC_ENABLE_SYMBOL_SEPARATION            = NO
 
-GCC_OPTIMIZATION_LEVEL = z
-GCC_C_LANGUAGE_STANDARD = gnu99
+GCC_OPTIMIZATION_LEVEL                  = z
+GCC_C_LANGUAGE_STANDARD                 = gnu99
 
-GCC_ENABLE_CPP_EXCEPTIONS = NO
-GCC_ENABLE_CPP_RTTI = NO
-GCC_ENABLE_OBJC_EXCEPTIONS = YES
-GCC_ENABLE_PASCAL_STRINGS = NO
-GCC_FAST_OBJC_DISPATCH = YES
+GCC_ENABLE_CPP_EXCEPTIONS               = NO
+GCC_ENABLE_CPP_RTTI                     = NO
+GCC_ENABLE_OBJC_EXCEPTIONS              = YES
+GCC_ENABLE_PASCAL_STRINGS               = NO
+GCC_FAST_OBJC_DISPATCH                  = YES
 GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES
-GCC_INLINES_ARE_PRIVATE_EXTERN = YES
-GCC_MODEL_TUNING = G4
-GCC_PRECOMPILE_PREFIX_HEADER = YES
-GCC_PREFIX_HEADER = Source/RegexKit_Prefix.pch
+GCC_INLINES_ARE_PRIVATE_EXTERN          = YES
+GCC_MODEL_TUNING                        = G4
+GCC_PRECOMPILE_PREFIX_HEADER            = YES
+GCC_PREFIX_HEADER                       = Source/RegexKit_Prefix.pch
 
-GCC_WARN_ABOUT_RETURN_TYPE = YES
-GCC_WARN_CHECK_SWITCH_STATEMENTS = YES
-GCC_WARN_SHADOW = YES
-GCC_WARN_SIGN_COMPARE = YES
-GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES
-GCC_WARN_UNUSED_FUNCTION = YES
-GCC_WARN_UNUSED_PARAMETER = YES
-GCC_WARN_UNUSED_VALUE = YES
-GCC_WARN_UNUSED_VARIABLE = YES
+GCC_WARN_ABOUT_RETURN_TYPE              = YES
+GCC_WARN_CHECK_SWITCH_STATEMENTS        = YES
+GCC_WARN_SHADOW                         = YES
+GCC_WARN_SIGN_COMPARE                   = YES
+GCC_WARN_TYPECHECK_CALLS_TO_PRINTF      = YES
+GCC_WARN_UNUSED_FUNCTION                = YES
+GCC_WARN_UNUSED_PARAMETER               = YES
+GCC_WARN_UNUSED_VALUE                   = YES
+GCC_WARN_UNUSED_VARIABLE                = YES
 
 // Executables used by scripts.
 
@@ -180,6 +194,8 @@ PCRE_BUILT_WITH_ENV_FILE = ${PCRE_TEMP_ROOT}/built_with_env                    /
 PCRE_BUILT_WITH_SCRIPT   = ${PCRE_TEMP_ROOT}/built_with_script                 // Contains a copy of ${PCRE_BUILD_SCRIPT} that was used to build the pcre library.
 PCRE_BUILT_WITH_MAKEFILE = ${PCRE_TEMP_ROOT}/built_with_makefile               // Contains a copy of ${MAKEFILE_PCRE} that was used to build the pcre library.
 
+PCRE_PARALLEL_BUILD      = ${PARALLEL_BUILD}                                   // Allow `make` to build the PCRE target with up to hw.activecpu jobs at once.
+
 //
 // Settings that have to do with files in the 'Build/' directory.
 //
@@ -187,16 +203,20 @@ PCRE_BUILT_WITH_MAKEFILE = ${PCRE_TEMP_ROOT}/built_with_makefile               /
 BUILD_SOURCE_DIR                     = Source/Build
 BUILD_DISTRIBUTION_DIR               = ${BUILD_SOURCE_DIR}/Distribution
 BUILD_MAKEFILE_DIR                   = ${BUILD_SOURCE_DIR}/Makefiles
+BUILD_PACKAGEMAKER_DIR               = ${BUILD_SOURCE_DIR}/Packagemaker
 BUILD_SCRIPTS_DIR                    = ${BUILD_SOURCE_DIR}/Scripts
 BUILD_SQL_DIR                        = ${BUILD_SOURCE_DIR}/SQL
 BUILD_XCODE_DIR                      = ${BUILD_SOURCE_DIR}/Xcode
 
+MAKEFILE_DIST                        = ${BUILD_MAKEFILE_DIR}/Makefile.dist
 MAKEFILE_PCRE                        = ${BUILD_MAKEFILE_DIR}/Makefile.pcre
 
 BUILD_DISTRIBUTION_SCRIPT            = ${BUILD_SCRIPTS_DIR}/buildDistribution.sh
 BUILD_PCRE_SCRIPT                    = ${BUILD_SCRIPTS_DIR}/buildPCRE.sh
 STRIP_HEADERDOC_SCRIPT               = ${BUILD_SCRIPTS_DIR}/stripHeaderdoc.sh
 FILE_CHECK_SCRIPT                    = ${BUILD_SCRIPTS_DIR}/fileCheck.pl
+PLISTUTIL_SCRIPT                     = ${BUILD_SCRIPTS_DIR}/plistUtil.pl
+PACKAGEDIST_SCRIPT                   = ${BUILD_SCRIPTS_DIR}/packageDist.pl
 
 // When the source distribution is built, the Source/Headers/RegexKit/pcre.h
 // file that was copied from the pcre distribution is NOT copied in to the 
@@ -213,7 +233,6 @@ BUILD_DISTRIBUTION_TEMP_PCRE_HEADER_FILE = ${BUILD_DISTRIBUTION_DIR}/distributio
 
 DOCUMENTATION_SOURCE_DIR             = Source/Documentation
 DOCUMENTATION_MISC_DIR               = ${DOCUMENTATION_SOURCE_DIR}/Misc
-DOCUMENTATION_README_DIR             = ${DOCUMENTATION_SOURCE_DIR}/README
 DOCUMENTATION_RESOURCES_DIR          = ${DOCUMENTATION_SOURCE_DIR}/Resources
 DOCUMENTATION_SCRIPTS_DIR            = ${DOCUMENTATION_SOURCE_DIR}/Scripts
 DOCUMENTATION_SQL_DIR                = ${DOCUMENTATION_SOURCE_DIR}/SQL
@@ -221,17 +240,28 @@ DOCUMENTATION_TARGET_DIR             = ${TARGET_BUILD_DIR}/Documentation
 DOCUMENTATION_TEMP_DIR               = ${PROJECT_TEMP_DIR}/${CONFIGURATION}/Documentation.build
 DOCUMENTATION_TEMPLATES_DIR          = ${DOCUMENTATION_SOURCE_DIR}/Templates
 
+DOCUMENTAION_DOCSET_ID               = com.zang.RegexKit.Documentation.docset
+DOCUMENTAION_DOCSET_PACKAGED_FILE    = com.zang.RegexKit.Documentation.xar
+
 DOCUMENTATION_SQL_DATABASE_DIR       = ${DOCUMENTATION_TEMP_DIR}
 DOCUMENTATION_SQL_DATABASE_FILE      = ${DOCUMENTATION_SQL_DATABASE_DIR}/${PROJECT_NAME}_headerdoc.sqlitedb
 DOCUMENTATION_SQL_CONFIG_FILE        = ${DOCUMENTATION_SQL_DIR}/config.sql
 DOCUMENTATION_SQL_INIT_FILE          = ${DOCUMENTATION_SQL_DIR}/init.sql
 
 BUILD_DOCUMENTATION_SCRIPT           = ${DOCUMENTATION_SCRIPTS_DIR}/buildDocumentation.sh
+BUILD_DOCSET_SCRIPT                  = ${DOCUMENTATION_SCRIPTS_DIR}/buildDocSet.sh
 DOCUMENTATION_CHECK_HTML_SCRIPT      = ${DOCUMENTATION_SCRIPTS_DIR}/checkHTML.sh
 DOCUMENTATION_CHECK_SPELLING_SCRIPT  = ${DOCUMENTATION_SCRIPTS_DIR}/checkSpelling.sh
+DOCUMENTATION_CREATE_DOCSET_SCRIPT   = ${DOCUMENTATION_SCRIPTS_DIR}/createDocset.pl
 DOCUMENTATION_GENERATE_HTML_SCRIPT   = ${DOCUMENTATION_SCRIPTS_DIR}/generateHTML.pl
 DOCUMENTATION_PARSE_HEADERS_SCRIPT   = ${DOCUMENTATION_SCRIPTS_DIR}/parseHeaders.pl
 DOCUMENTATION_RESOLVE_LINKS_SCRIPT   = ${DOCUMENTATION_SCRIPTS_DIR}/resolveLinks.pl
+
+DOCUMENTATION_DOCSET_TEMP_DIR        = ${PROJECT_TEMP_DIR}/${CONFIGURATION}/DocSet.build
+DOCUMENTATION_DOCSET_TEMP_DOCS_DIR   = ${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}/Contents/Resources/Documents
+DOCUMENTATION_DOCSET_SOURCE_HTML     = ${DOCUMENTATION_TARGET_DIR}
+DOCUMENTATION_DOCSET_TARGET_DIR      = ${TARGET_BUILD_DIR}/DocSet
+
 
 //
 // All things distribution...
@@ -244,6 +274,7 @@ DISTRIBUTION_TEMP_DIR                = ${PROJECT_TEMP_DIR}/${CONFIGURATION}/Dist
 
 DISTRIBUTION_TEMP_BINARY_DIR         = ${DISTRIBUTION_TEMP_DIR}/Binary
 DISTRIBUTION_TEMP_SOURCE_DIR         = ${DISTRIBUTION_TEMP_DIR}/Source
+DISTRIBUTION_TEMP_PACKAGES_DIR       = ${DISTRIBUTION_TEMP_DIR}/Packages
 
 DISTRIBUTION_BASE_FILE_NAME          = ${DISTRIBUTION_ROOT_NAME}
 DISTRIBUTION_BASE_SOURCE_FILE_NAME   = ${DISTRIBUTION_BASE_FILE_NAME}_source
@@ -254,8 +285,27 @@ DISTRIBUTION_DMG_VOL_NAME            = ${DISTRIBUTION_ROOT_NAME}
 DISTRIBUTION_ROOT_NAME               = ${PROJECT_NAME}_${PROJECT_CURRENT_VERSION}
 DISTRIBUTION_ROOT_SOURCE_NAME        = ${PROJECT_NAME}_${PROJECT_CURRENT_VERSION}_source
 
-// SQL database with distribution configuration information
+// SQL database with distribution configuration information.
 DISTRIBUTION_SQL_DATABASE_FILE       = ${DISTRIBUTION_SQL_DATABASE_DIR}/${PROJECT_NAME}_distribution.sqlitedb
 DISTRIBUTION_SQL_FILES_FILE          = ${BUILD_SQL_DIR}/files.sql
 
+DISTRIBUTION_PARALLEL_BUILD          = ${PARALLEL_BUILD}   // Allow `make` to build the Distribution target with up to hw.activecpu jobs at once.
 
+// Optionally gzip the .pkg (really Contents/Archive.pax).
+// This is disable by default because it makes the final .dmg ~60-70K larger.
+DISTRIBUTION_GZIP_PACKAGES           = NO
+
+// Optionally include the ${PCRE_TARBALL_FILE_NAME} in the final Mac OS X Installer package.
+// This is disabled by default because it doubles the final .dmg size.
+DISTRIBUTION_INCLUDE_PCRE_PACKAGE    = NO
+
+// The default directory to install everything.
+DISTRIBUTION_DEFAULT_INSTALL_DIR     = /Developer/Local/
+
+
+DISTRIBUTION_PACKAGE_PLISTS_DIR           = ${BUILD_PACKAGEMAKER_DIR}/plists
+DISTRIBUTION_PACKAGE_FRAMEWORK            = RegexKit_Framework.pkg
+DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION   = RegexKit_HTML_Documentation.pkg
+DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION = RegexKit_DocSet_Documentation.pkg
+DISTRIBUTION_PACKAGE_SOURCECODE           = RegexKit_Sourcecode.pkg
+DISTRIBUTION_PACKAGE_SOURCECODE_PCRE      = RegexKit_Sourcecode_pcre.pkg

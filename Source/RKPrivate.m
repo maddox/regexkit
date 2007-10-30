@@ -48,7 +48,7 @@ void nsprintf(NSString * const formatString, ...) {
 }
 
 void vnsprintf(NSString * const formatString, va_list ap) {
-  NSString *logString = [[[NSString alloc] initWithFormat:formatString arguments:ap] autorelease];
+  NSString *logString = RKAutorelease([[NSString alloc] initWithFormat:formatString arguments:ap]);
   
   printf("%s", [logString UTF8String]);
 }
@@ -60,12 +60,12 @@ int RKRegexPCRECallout(pcre_callout_block * const callout_block RK_ATTRIBUTES(un
 
 NSArray *RKArrayOfPrettyNewlineTypes(NSString * const prefixString) {
   return([NSArray arrayWithObjects:
-    [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineDefault, prefixString), RKCompileNewlineDefault],
-    [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineCR,      prefixString), RKCompileNewlineCR],
-    [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineLF,      prefixString), RKCompileNewlineLF],
-    [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineCRLF,    prefixString), RKCompileNewlineCRLF],
-    [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineAnyCRLF, prefixString), RKCompileNewlineAnyCRLF],
-    [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineAny,     prefixString), RKCompileNewlineAny],
+    [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineDefault, prefixString), (unsigned int)RKCompileNewlineDefault],
+    [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineCR,      prefixString), (unsigned int)RKCompileNewlineCR],
+    [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineLF,      prefixString), (unsigned int)RKCompileNewlineLF],
+    [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineCRLF,    prefixString), (unsigned int)RKCompileNewlineCRLF],
+    [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineAnyCRLF, prefixString), (unsigned int)RKCompileNewlineAnyCRLF],
+    [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineAny,     prefixString), (unsigned int)RKCompileNewlineAny],
     
     NULL]);
 }  

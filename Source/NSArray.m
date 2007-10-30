@@ -47,12 +47,12 @@ typedef enum {
   RKArrayActionArrayMaxAction = 4
 } RKArrayAction;
 
-static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange *againstRange, id regexObject, const RKArrayAction performAction);
+static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange *againstRange, id regexObject, const RKArrayAction performAction, RKUInteger *UIntegerResult);
 
 @implementation NSArray (RegexKitAdditions)
 
-static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange *againstRange, id regexObject, const RKArrayAction performAction) {
-  unsigned int arrayCount = 0, atIndex = 0, matchedCount = 0, matchAgainstArrayCount = 0, *matchedIndexes = NULL;
+static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange *againstRange, id regexObject, const RKArrayAction performAction, RKUInteger *UIntegerResult) {
+  RKUInteger arrayCount = 0, atIndex = 0, matchedCount = 0, matchAgainstArrayCount = 0, *matchedIndexes = NULL, tempUIntegerResult = 23;
   RKRegex *regex = RKRegexFromStringOrRegex(self, _cmd, regexObject, RKCompileNoOptions, YES);
   id returnObject = NULL, *arrayObjects = NULL, *matchedObjects = NULL;
   NSRange matchRange = NSMakeRange(NSNotFound, 0);
@@ -60,33 +60,33 @@ static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange
   if(RK_EXPECTED(self == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"self == NULL.") userInfo:NULL] raise]; }
   if(RK_EXPECTED(_cmd == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"_cmd == NULL.") userInfo:NULL] raise]; }
   if(RK_EXPECTED(matchAgainstArray == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"matchAgainstArray == NULL.") userInfo:NULL] raise]; }
-  if(RK_EXPECTED(performAction > RKArrayActionArrayMaxAction, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"Unknown performAction = %u.", performAction) userInfo:NULL] raise]; }
+  if(RK_EXPECTED(performAction > RKArrayActionArrayMaxAction, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"Unknown performAction = %lu.", (unsigned long)performAction) userInfo:NULL] raise]; }
 
 #ifdef USE_CORE_FOUNDATION
-  matchAgainstArrayCount = CFArrayGetCount((CFArrayRef)matchAgainstArray);
+  matchAgainstArrayCount = (RKUInteger)CFArrayGetCount((CFArrayRef)matchAgainstArray);
 #else
   matchAgainstArrayCount = [matchAgainstArray count];
 #endif
   
   if(againstRange == NULL) { matchRange = NSMakeRange(0, matchAgainstArrayCount); } else { matchRange = *againstRange; }
 
-  if((RK_EXPECTED(matchRange.location > matchAgainstArrayCount, 0)) || (RK_EXPECTED((matchRange.location + matchRange.length) > matchAgainstArrayCount, 0))) { [[NSException exceptionWithName:NSRangeException reason:RKPrettyObjectMethodString(@"Range %@ exceeds array length of %u.", NSStringFromRange(matchRange), matchAgainstArrayCount) userInfo:NULL] raise]; }
+  if((RK_EXPECTED(matchRange.location > matchAgainstArrayCount, 0)) || (RK_EXPECTED((matchRange.location + matchRange.length) > matchAgainstArrayCount, 0))) { [[NSException exceptionWithName:NSRangeException reason:RKPrettyObjectMethodString(@"Range %@ exceeds array length of %lu.", NSStringFromRange(matchRange), (unsigned long)matchAgainstArrayCount) userInfo:NULL] raise]; }
   
   if((arrayCount = matchRange.length) == 0) { goto doAction; }
 
-  if(RK_EXPECTED((arrayObjects   = alloca(sizeof(id *)         * arrayCount)) == NULL, 0)) { return(NULL); }
-  if(RK_EXPECTED((matchedIndexes = alloca(sizeof(unsigned int) * arrayCount)) == NULL, 0)) { return(NULL); }
-  if(RK_EXPECTED((matchedObjects = alloca(sizeof(id *)         * arrayCount)) == NULL, 0)) { return(NULL); }
+  if(RK_EXPECTED((arrayObjects   = alloca(sizeof(id *)       * arrayCount)) == NULL, 0)) { return(NULL); }
+  if(RK_EXPECTED((matchedIndexes = alloca(sizeof(RKUInteger) * arrayCount)) == NULL, 0)) { return(NULL); }
+  if(RK_EXPECTED((matchedObjects = alloca(sizeof(id *)       * arrayCount)) == NULL, 0)) { return(NULL); }
   
 #ifdef USE_CORE_FOUNDATION
-  CFArrayGetValues((CFArrayRef)matchAgainstArray, (CFRange){matchRange.location, matchRange.length}, (const void **)(&arrayObjects[0]));
+  CFArrayGetValues((CFArrayRef)matchAgainstArray, (CFRange){(CFIndex)matchRange.location, (CFIndex)matchRange.length}, (const void **)(&arrayObjects[0]));
 #else
   [matchAgainstArray getObjects:&arrayObjects[0] range:matchRange];
 #endif
   
   for(atIndex = 0; atIndex < arrayCount; atIndex++) {
     if([arrayObjects[atIndex] isMatchedByRegex:regex] == YES) {
-      if(performAction == RKArrayActionIndexOfFirstMatch)    { returnObject = (id)(atIndex + matchRange.location); goto exitNow; }
+      if(performAction == RKArrayActionIndexOfFirstMatch)    { tempUIntegerResult = (atIndex + matchRange.location); goto exitNow; }
       matchedIndexes[matchedCount]   = (atIndex + matchRange.location);
       matchedObjects[matchedCount++] = arrayObjects[atIndex];
     }
@@ -94,64 +94,77 @@ static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange
 
 doAction:
   
-  returnObject = NULL;
   switch(performAction) {
-    case RKArrayActionIndexOfFirstMatch: NSCAssert(matchedCount == 0, @"array RKIndexOfFirstMatch, matched count > 0 in performAction switch statement."); if(matchedCount == 0) { returnObject = (id)NSNotFound; goto exitNow; } break;
-    case RKArrayActionCountOfMatchingObjects: returnObject = (id)matchedCount; goto exitNow; break;
-#ifdef USE_CORE_FOUNDATION        
-    case RKArrayActionArrayOfMatchingObjects: returnObject = (id)CFArrayCreate(kCFAllocatorDefault, (const void **)(&matchedObjects[0]), matchedCount, &kCFTypeArrayCallBacks); break;
+    case RKArrayActionIndexOfFirstMatch: NSCAssert(matchedCount == 0, @"array RKIndexOfFirstMatch, matched count > 0 in performAction switch statement."); if(matchedCount == 0) { tempUIntegerResult = NSNotFound; goto exitNow; } break;
+    case RKArrayActionCountOfMatchingObjects: tempUIntegerResult = matchedCount; goto exitNow; break;
+#ifdef USE_CORE_FOUNDATION
+    case RKArrayActionArrayOfMatchingObjects: returnObject = (id)RKMakeCollectable(CFArrayCreate(kCFAllocatorDefault, (const void **)(&matchedObjects[0]), (CFIndex)matchedCount, &kCFTypeArrayCallBacks)); break;
 #else
-    case RKArrayActionArrayOfMatchingObjects: returnObject = [[NSArray alloc] initWithObjects:&matchedObjects[0] count:matchedCount]; break;
+    case RKArrayActionArrayOfMatchingObjects: returnObject = [[NSArray alloc] initWithObjects:&matchedObjects[0] count:matchedCount];                          break;
 #endif
-    case RKArrayActionAddMatches:             for(unsigned int x = 0; x < matchedCount; x++) { [self addObject:matchedObjects[x]];               } goto exitNow; break;
-    case RKArrayActionRemoveMatches:          for(unsigned int x = 0; x < matchedCount; x++) { [self removeObjectAtIndex:matchedIndexes[x] - x]; } goto exitNow; break;
-    default: returnObject = NULL; NSCAssert1(1 == 0, @"Unknown RKArrayAction in switch block, performAction = %d", performAction); break;
+    case RKArrayActionAddMatches:             for(RKUInteger x = 0; x < matchedCount; x++) { [self addObject:matchedObjects[x]];               } goto exitNow; break;
+    case RKArrayActionRemoveMatches:          for(RKUInteger x = 0; x < matchedCount; x++) { [self removeObjectAtIndex:matchedIndexes[x] - x]; } goto exitNow; break;
+    default: returnObject = NULL; NSCAssert1(1 == 0, @"Unknown RKArrayAction in switch block, performAction = %lu", (unsigned long)performAction);             break;
   }
-  [returnObject autorelease];
-    
+
+  RKAutorelease(returnObject);
+
 exitNow:
-    return(returnObject);
+  if(UIntegerResult != NULL) { *UIntegerResult = tempUIntegerResult; }
+  return(returnObject);
 }
 
 
 -(NSArray *)arrayByMatchingObjectsWithRegex:(id)aRegex
 {
-  return(RKDoArrayAction(self, _cmd, self, NULL, aRegex, RKArrayActionArrayOfMatchingObjects)); 
+  return(RKDoArrayAction(self, _cmd, self, NULL, aRegex, RKArrayActionArrayOfMatchingObjects, NULL)); 
 }
 
 -(NSArray *)arrayByMatchingObjectsWithRegex:(id)aRegex inRange:(const NSRange)range
 {
-  return(RKDoArrayAction(self, _cmd, self, &range, aRegex, RKArrayActionArrayOfMatchingObjects)); 
+  return(RKDoArrayAction(self, _cmd, self, &range, aRegex, RKArrayActionArrayOfMatchingObjects, NULL)); 
 }
 
 -(BOOL)containsObjectMatchingRegex:(id)aRegex
 {
-  return((unsigned int)RKDoArrayAction(self, _cmd, self, NULL, aRegex, RKArrayActionIndexOfFirstMatch) != NSNotFound ? YES : NO); 
+  RKUInteger result = 0;
+  RKDoArrayAction(self, _cmd, self, NULL, aRegex, RKArrayActionIndexOfFirstMatch, &result);
+  return((RKUInteger)(result != NSNotFound ? YES : NO)); 
 }
 
 -(BOOL)containsObjectMatchingRegex:(id)aRegex inRange:(const NSRange)range
 {
-  return((unsigned int)RKDoArrayAction(self, _cmd, self, &range, aRegex, RKArrayActionIndexOfFirstMatch) != NSNotFound ? YES : NO); 
+  RKUInteger result = 0;
+  RKDoArrayAction(self, _cmd, self, &range, aRegex, RKArrayActionIndexOfFirstMatch, &result);
+  return((RKUInteger)(result != NSNotFound ? YES : NO)); 
 }
 
--(unsigned int)countOfObjectsMatchingRegex:(id)aRegex
+-(RKUInteger)countOfObjectsMatchingRegex:(id)aRegex
 {
-  return((unsigned int)RKDoArrayAction(self, _cmd, self, NULL, aRegex, RKArrayActionCountOfMatchingObjects)); 
+  RKUInteger result = 0;
+  RKDoArrayAction(self, _cmd, self, NULL, aRegex, RKArrayActionCountOfMatchingObjects, &result);
+  return(result);
 }
 
--(unsigned int)countOfObjectsMatchingRegex:(id)aRegex inRange:(const NSRange)range
+-(RKUInteger)countOfObjectsMatchingRegex:(id)aRegex inRange:(const NSRange)range
 {
-  return((unsigned int)RKDoArrayAction(self, _cmd, self, &range, aRegex, RKArrayActionCountOfMatchingObjects)); 
+  RKUInteger result = 0;
+  RKDoArrayAction(self, _cmd, self, &range, aRegex, RKArrayActionCountOfMatchingObjects, &result);
+  return(result);
 }
 
--(unsigned int)indexOfObjectMatchingRegex:(id)aRegex
+-(RKUInteger)indexOfObjectMatchingRegex:(id)aRegex
 {
-  return((unsigned int)RKDoArrayAction(self, _cmd, self, NULL, aRegex, RKArrayActionIndexOfFirstMatch)); 
+  RKUInteger result = NSNotFound;
+  RKDoArrayAction(self, _cmd, self, NULL, aRegex, RKArrayActionIndexOfFirstMatch, &result);
+  return(result);
 }
 
--(unsigned int)indexOfObjectMatchingRegex:(id)aRegex inRange:(const NSRange)range
+-(RKUInteger)indexOfObjectMatchingRegex:(id)aRegex inRange:(const NSRange)range
 {
-  return((unsigned int)RKDoArrayAction(self, _cmd, self, &range, aRegex, RKArrayActionIndexOfFirstMatch)); 
+  RKUInteger result = NSNotFound - 1;
+  RKDoArrayAction(self, _cmd, self, &range, aRegex, RKArrayActionIndexOfFirstMatch, &result); 
+  return(result);
 }
 
 @end
@@ -162,17 +175,17 @@ exitNow:
 - (void)addObjectsFromArray:(NSArray *)otherArray matchingRegex:(id)aRegex;
 {
   if(RK_EXPECTED(otherArray == NULL, 0)) { [[NSException exceptionWithName:NSInvalidArgumentException reason:RKPrettyObjectMethodString(@"otherArray == NULL.") userInfo:NULL] raise]; }
-  RKDoArrayAction(self, _cmd, otherArray, NULL, aRegex, RKArrayActionAddMatches);
+  RKDoArrayAction(self, _cmd, otherArray, NULL, aRegex, RKArrayActionAddMatches, NULL);
 }
 
 -(void)removeObjectsMatchingRegex:(id)aRegex
 {
-  RKDoArrayAction(self, _cmd, self, NULL, aRegex, RKArrayActionRemoveMatches);
+  RKDoArrayAction(self, _cmd, self, NULL, aRegex, RKArrayActionRemoveMatches, NULL);
 }
 
 -(void)removeObjectsMatchingRegex:(id)aRegex inRange:(const NSRange)range
 {
-  RKDoArrayAction(self, _cmd, self, &range, aRegex, RKArrayActionRemoveMatches);
+  RKDoArrayAction(self, _cmd, self, &range, aRegex, RKArrayActionRemoveMatches, NULL);
 }
 
 @end

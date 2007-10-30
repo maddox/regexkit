@@ -48,7 +48,8 @@ static RKRegexPlaceholder *singletonRKRegexPlaceholder = NULL;
   if(RK_EXPECTED(singletonRKRegexPlaceholder != NULL, 1)) { return(singletonRKRegexPlaceholder); }
   
   id tempPlaceholder = [[self alloc] init];
-  if(RKAtomicCompareAndSwapPtr(NULL, tempPlaceholder, &singletonRKRegexPlaceholder) == 0) { [tempPlaceholder release]; } // Should always fail, alloc sets
+  if(RKAtomicCompareAndSwapPtr(NULL, tempPlaceholder, &singletonRKRegexPlaceholder) == 0) { RKRelease(tempPlaceholder); }
+  RKDisableCollectorForPointer(singletonRKRegexPlaceholder);
   return(singletonRKRegexPlaceholder);
 }
 
@@ -67,9 +68,9 @@ static RKRegexPlaceholder *singletonRKRegexPlaceholder = NULL;
   return self;
 }
 
-- (unsigned)retainCount
+- (RKUInteger)retainCount
 {
-  return(INT_MAX-1);
+  return(RKIntegerMax-1);
 }
 
 - (void)release

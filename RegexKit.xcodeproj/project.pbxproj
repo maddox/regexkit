@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
+		120291B30CD1CC610045B036 /* DocSet */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 120291B70CD1CC610045B036 /* Build configuration list for PBXAggregateTarget "DocSet" */;
+			buildPhases = (
+				120291B60CD1CC610045B036 /* buildDocSet.sh */,
+			);
+			dependencies = (
+				120291BD0CD1CD4C0045B036 /* PBXTargetDependency */,
+			);
+			name = DocSet;
+			productName = "Build Documentation";
+		};
 		1264D5A00C7A59E10044B285 /* Documentation */ = {
 			isa = PBXAggregateTarget;
 			buildConfigurationList = 1264D5C10C7A59F50044B285 /* Build configuration list for PBXAggregateTarget "Documentation" */;
@@ -28,6 +40,7 @@
 			dependencies = (
 				1264D6F40C7A7A350044B285 /* PBXTargetDependency */,
 				1264D94C0C7AC3B00044B285 /* PBXTargetDependency */,
+				1261B78E0CD27CE100F2E972 /* PBXTargetDependency */,
 			);
 			name = Distribution;
 			productName = Distribution;
@@ -46,13 +59,13 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		122401EC0CCD5D89006F56F9 /* timing.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5700C7A50100044B285 /* timing.m */; };
+		122401ED0CCD5E15006F56F9 /* multithreading.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D56C0C7A50100044B285 /* multithreading.m */; };
 		1264D7880C7A95F80044B285 /* NSDate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5640C7A50100044B285 /* NSDate.m */; };
 		1264D7890C7A95F80044B285 /* core.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5660C7A50100044B285 /* core.m */; };
 		1264D83B0C7A9D7D0044B285 /* collectionAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5680C7A50100044B285 /* collectionAdditions.m */; };
 		1264D8560C7A9DF90044B285 /* stringConversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D56E0C7A50100044B285 /* stringConversion.m */; };
 		1264D8580C7A9E0F0044B285 /* functionality.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D56A0C7A50100044B285 /* functionality.m */; };
-		1264D85A0C7A9E1B0044B285 /* multithreading.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D56C0C7A50100044B285 /* multithreading.m */; };
-		1264D85C0C7A9E300044B285 /* timing.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5700C7A50100044B285 /* timing.m */; };
 		1264D97B0C7AC50E0044B285 /* Unit Tests-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1264D5710C7A50100044B285 /* Unit Tests-Info.plist */; };
 		1299AEAB0C78AE4A007F3859 /* pcre.h in Headers */ = {isa = PBXBuildFile; fileRef = 1299AEAA0C78AE4A007F3859 /* pcre.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		12D581810C80B75500674FA2 /* enumeration.m in Sources */ = {isa = PBXBuildFile; fileRef = 12D581800C80B75500674FA2 /* enumeration.m */; };
@@ -87,12 +100,25 @@
 		12DB1A260C787E3D00735165 /* RKRegex.m in Sources */ = {isa = PBXBuildFile; fileRef = 12DB1A180C787E3D00735165 /* RKRegex.m */; };
 		12DB1A270C787E3D00735165 /* RKUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = 12DB1A190C787E3D00735165 /* RKUtility.m */; };
 		12DB1A9C0C788DBB00735165 /* RegexKitDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 12DB1A9B0C788DBB00735165 /* RegexKitDefines.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		12F6B3FE0CA69B2F0094EDB5 /* checkSpelling.sh in Resources */ = {isa = PBXBuildFile; fileRef = 12F6B3FD0CA69B2F0094EDB5 /* checkSpelling.sh */; };
 		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		120291BC0CD1CD4C0045B036 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1264D5A00C7A59E10044B285;
+			remoteInfo = Documentation;
+		};
+		1261B78D0CD27CE100F2E972 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 120291B30CD1CC610045B036;
+			remoteInfo = DocSet;
+		};
 		1264D5C80C7A5A720044B285 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -135,9 +161,15 @@
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		089C1667FE841158C02AAC07 /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = Source/Resources/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
-		12222BC60CBB7F98001F0231 /* fileCheck.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = fileCheck.pl; path = Source/Build/Scripts/fileCheck.pl; sourceTree = "<group>"; };
-		12222BCC0CBB8077001F0231 /* files.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = files.sql; path = Source/Build/SQL/files.sql; sourceTree = "<group>"; };
-		124BF9DE0CAACEFC00D04C96 /* buildPCRE.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = buildPCRE.sh; path = Source/Build/Scripts/buildPCRE.sh; sourceTree = "<group>"; };
+		120291BE0CD1CDAD0045B036 /* buildDocSet.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = buildDocSet.sh; path = Source/Documentation/Scripts/buildDocSet.sh; sourceTree = "<group>"; };
+		12222BC60CBB7F98001F0231 /* fileCheck.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = fileCheck.pl; sourceTree = "<group>"; };
+		12222BCC0CBB8077001F0231 /* files.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = files.sql; sourceTree = "<group>"; };
+		122400F10CCD4587006F56F9 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = /System/Library/Frameworks/SenTestingKit.framework; sourceTree = "<absolute>"; };
+		124BF9DE0CAACEFC00D04C96 /* buildPCRE.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = buildPCRE.sh; sourceTree = "<group>"; };
+		1261B6F20CD24E6900F2E972 /* createDocSet.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = createDocSet.pl; path = Source/Documentation/Scripts/createDocSet.pl; sourceTree = "<group>"; };
+		1261B7870CD27AF400F2E972 /* DocSet_desc.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = DocSet_desc.plist; sourceTree = "<group>"; };
+		1261B7880CD27AF400F2E972 /* DocSet_info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = DocSet_info.plist; sourceTree = "<group>"; };
+		1261B80D0CD28A7C00F2E972 /* docset.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = docset.sql; path = Source/Documentation/SQL/docset.sql; sourceTree = "<group>"; };
 		1264D5050C7A4DCC0044B285 /* config.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config.sql; path = Source/Documentation/SQL/config.sql; sourceTree = "<group>"; };
 		1264D5060C7A4DCC0044B285 /* init.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = init.sql; path = Source/Documentation/SQL/init.sql; sourceTree = "<group>"; };
 		1264D5070C7A4DDE0044B285 /* buildDocumentation.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = buildDocumentation.sh; path = Source/Documentation/Scripts/buildDocumentation.sh; sourceTree = "<group>"; };
@@ -164,9 +196,9 @@
 		1264D5230C7A4E4E0044B285 /* triangle_open.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = triangle_open.png; path = Source/Documentation/Resources/Images/triangle_open.png; sourceTree = "<group>"; };
 		1264D5280C7A4E750044B285 /* common.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = common.js; path = Source/Documentation/Resources/JavaScript/common.js; sourceTree = "<group>"; };
 		1264D5290C7A4E750044B285 /* toc.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = toc.js; path = Source/Documentation/Resources/JavaScript/toc.js; sourceTree = "<group>"; };
-		1264D54F0C7A4F5B0044B285 /* buildDistribution.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = buildDistribution.sh; path = Source/Build/Scripts/buildDistribution.sh; sourceTree = "<group>"; };
-		1264D5530C7A4F5B0044B285 /* stripHeaderdoc.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = stripHeaderdoc.sh; path = Source/Build/Scripts/stripHeaderdoc.sh; sourceTree = "<group>"; };
-		1264D5560C7A4F8A0044B285 /* projectExportedSymbols */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = projectExportedSymbols; path = Source/Build/Xcode/projectExportedSymbols; sourceTree = "<group>"; };
+		1264D54F0C7A4F5B0044B285 /* buildDistribution.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = buildDistribution.sh; sourceTree = "<group>"; };
+		1264D5530C7A4F5B0044B285 /* stripHeaderdoc.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = stripHeaderdoc.sh; sourceTree = "<group>"; };
+		1264D5560C7A4F8A0044B285 /* projectExportedSymbols */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = projectExportedSymbols; sourceTree = "<group>"; };
 		1264D5620C7A50100044B285 /* debug.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = debug.sh; path = Source/unitTests/debug.sh; sourceTree = "<group>"; };
 		1264D5630C7A50100044B285 /* NSDate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSDate.h; path = Source/unitTests/NSDate.h; sourceTree = "<group>"; };
 		1264D5640C7A50100044B285 /* NSDate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSDate.m; path = Source/unitTests/NSDate.m; sourceTree = "<group>"; };
@@ -187,7 +219,8 @@
 		1264D68D0C7A67960044B285 /* index.html */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = index.html; path = Source/Documentation/Static/index.html; sourceTree = "<group>"; };
 		1264D77F0C7A95B60044B285 /* Unit Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1264DC100C7B3BFA0044B285 /* RegexKitImplementationTopics.html */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = RegexKitImplementationTopics.html; path = Source/Documentation/Static/RegexKitImplementationTopics.html; sourceTree = "<group>"; };
-		1299AE850C78AC97007F3859 /* Makefile.pcre */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; name = Makefile.pcre; path = Source/Build/Makefiles/Makefile.pcre; sourceTree = "<group>"; };
+		127B94390CC6EF92003E7257 /* Makefile.dist */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; path = Makefile.dist; sourceTree = "<group>"; };
+		1299AE850C78AC97007F3859 /* Makefile.pcre */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; path = Makefile.pcre; sourceTree = "<group>"; };
 		1299AEAA0C78AE4A007F3859 /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = Source/Headers/RegexKit/pcre.h; sourceTree = "<group>"; };
 		1299AFAA0C78C14F007F3859 /* Constants.tmpl */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = Constants.tmpl; path = Source/Documentation/Templates/Constants.tmpl; sourceTree = "<group>"; };
 		1299AFAB0C78C14F007F3859 /* content.tmpl */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = content.tmpl; path = Source/Documentation/Templates/content.tmpl; sourceTree = "<group>"; };
@@ -206,9 +239,11 @@
 		1299AFB80C78C14F007F3859 /* RKEnumerator.tmpl */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = RKEnumerator.tmpl; path = Source/Documentation/Templates/RKEnumerator.tmpl; sourceTree = "<group>"; };
 		1299AFB90C78C14F007F3859 /* RKRegex.tmpl */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = RKRegex.tmpl; path = Source/Documentation/Templates/RKRegex.tmpl; sourceTree = "<group>"; };
 		1299AFBA0C78C14F007F3859 /* toc.tmpl */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = toc.tmpl; path = Source/Documentation/Templates/toc.tmpl; sourceTree = "<group>"; };
+		12B8D2D40CC4BBBE00B47ECD /* pcre_desc.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = pcre_desc.plist; sourceTree = "<group>"; };
+		12B8D2D50CC4BBBE00B47ECD /* pcre_info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = pcre_info.plist; sourceTree = "<group>"; };
 		12BA3EA20CB86EE300F82B79 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		12BA3EBA0CB871C200F82B79 /* README.MacOSX */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.MacOSX; sourceTree = "<group>"; };
-		12BD451E0CB5F1E100EBA014 /* distribution_pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = distribution_pcre.h; path = Source/Build/Distribution/distribution_pcre.h; sourceTree = "<group>"; };
+		12BD451E0CB5F1E100EBA014 /* distribution_pcre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = distribution_pcre.h; sourceTree = "<group>"; };
 		12BD45740CB6AA9400EBA014 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		12BD48300CB6CD4B00EBA014 /* ChangeLog */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ChangeLog; sourceTree = "<group>"; };
 		12BD49A30CB75A6900EBA014 /* ReleaseNotes */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ReleaseNotes; sourceTree = "<group>"; };
@@ -245,13 +280,28 @@
 		12DB1A180C787E3D00735165 /* RKRegex.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKRegex.m; path = Source/RKRegex.m; sourceTree = "<group>"; };
 		12DB1A190C787E3D00735165 /* RKUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKUtility.m; path = Source/RKUtility.m; sourceTree = "<group>"; };
 		12DB1A9B0C788DBB00735165 /* RegexKitDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegexKitDefines.h; path = Source/Headers/RegexKit/RegexKitDefines.h; sourceTree = "<group>"; };
-		12EACB4A0CBC156C00175505 /* GNUmakefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = GNUmakefile; path = GNUstep/GNUmakefile; sourceTree = "<group>"; };
+		12EACB4A0CBC156C00175505 /* GNUmakefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; name = GNUmakefile; path = GNUstep/GNUmakefile; sourceTree = "<group>"; };
 		12EACB4B0CBC156C00175505 /* GNUmakefile.postamble */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = GNUmakefile.postamble; path = GNUstep/GNUmakefile.postamble; sourceTree = "<group>"; };
 		12EACB4C0CBC156C00175505 /* README.GNUstep */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.GNUstep; path = GNUstep/README.GNUstep; sourceTree = "<group>"; };
+		12EB3C8B0CC1610100162FCC /* packageDist.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = packageDist.pl; sourceTree = "<group>"; };
+		12EB3C8C0CC1610100162FCC /* plistUtil.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = plistUtil.pl; sourceTree = "<group>"; };
+		12EB3D5A0CC1707000162FCC /* Documentation_desc.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = Documentation_desc.plist; sourceTree = "<group>"; };
+		12EB3D5B0CC1707000162FCC /* Documentation_info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = Documentation_info.plist; sourceTree = "<group>"; };
+		12EB3D5C0CC1707000162FCC /* Framework_desc.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = Framework_desc.plist; sourceTree = "<group>"; };
+		12EB3D5D0CC1707000162FCC /* Framework_info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = Framework_info.plist; sourceTree = "<group>"; };
+		12EB3D5E0CC1707000162FCC /* Sourcecode_desc.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = Sourcecode_desc.plist; sourceTree = "<group>"; };
+		12EB3D5F0CC1707000162FCC /* Sourcecode_info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = Sourcecode_info.plist; sourceTree = "<group>"; };
+		12EB3D620CC1707000162FCC /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = English.lproj/Conclusion.rtf; sourceTree = "<group>"; };
+		12EB3D640CC1707000162FCC /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = English.lproj/License.rtf; sourceTree = "<group>"; };
+		12EB3D660CC1707000162FCC /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = English.lproj/Welcome.rtf; sourceTree = "<group>"; };
+		12EB3DAD0CC17AA500162FCC /* RegexKit_mpkg_info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_mpkg_info.plist; sourceTree = "<group>"; };
+		12EB3DCD0CC17DC600162FCC /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = English.lproj/ReadMe.rtf; sourceTree = "<group>"; };
+		12EB3DDA0CC17E2C00162FCC /* Documentation.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Documentation.html; sourceTree = "<group>"; };
+		12EB3DE00CC17F2B00162FCC /* Adding RegexKit to your Project.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "Adding RegexKit to your Project.html"; sourceTree = "<group>"; };
 		12F6B3FD0CA69B2F0094EDB5 /* checkSpelling.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = checkSpelling.sh; path = Source/Documentation/Scripts/checkSpelling.sh; sourceTree = "<group>"; };
 		12F6B43F0CA6A5CF0094EDB5 /* spelling_words */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = spelling_words; path = Source/Documentation/Misc/spelling_words; sourceTree = "<group>"; };
 		12F6B5300CA6B6680094EDB5 /* checkHTML.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = checkHTML.sh; path = Source/Documentation/Scripts/checkHTML.sh; sourceTree = "<group>"; };
-		12F901140CA99AAF00CEA3D0 /* RegexKit Build Settings.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "RegexKit Build Settings.xcconfig"; path = "Source/Build/Xcode/RegexKit Build Settings.xcconfig"; sourceTree = "<group>"; };
+		12F901140CA99AAF00CEA3D0 /* RegexKit Build Settings.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "RegexKit Build Settings.xcconfig"; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* RegexKit_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegexKit_Prefix.pch; path = Source/RegexKit_Prefix.pch; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Info.plist; path = Source/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* RegexKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RegexKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -327,6 +377,7 @@
 		1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				122400F10CCD4587006F56F9 /* SenTestingKit.framework */,
 				1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */,
 			);
 			name = "Linked Frameworks";
@@ -370,9 +421,11 @@
 		1264D5010C7A4DA00044B285 /* Scripts */ = {
 			isa = PBXGroup;
 			children = (
+				120291BE0CD1CDAD0045B036 /* buildDocSet.sh */,
 				1264D5070C7A4DDE0044B285 /* buildDocumentation.sh */,
 				12F6B5300CA6B6680094EDB5 /* checkHTML.sh */,
 				12F6B3FD0CA69B2F0094EDB5 /* checkSpelling.sh */,
+				1261B6F20CD24E6900F2E972 /* createDocSet.pl */,
 				1264D5080C7A4DDE0044B285 /* generateHTML.pl */,
 				1264D5090C7A4DDE0044B285 /* generatePCREToC.pl */,
 				1264D50A0C7A4DDE0044B285 /* parseHeaders.pl */,
@@ -384,6 +437,7 @@
 		1264D5040C7A4DB00044B285 /* SQL */ = {
 			isa = PBXGroup;
 			children = (
+				1261B80D0CD28A7C00F2E972 /* docset.sql */,
 				1264D5050C7A4DCC0044B285 /* config.sql */,
 				1264D5060C7A4DCC0044B285 /* init.sql */,
 			);
@@ -443,9 +497,12 @@
 		1264D5380C7A4EF80044B285 /* Distribution */ = {
 			isa = PBXGroup;
 			children = (
+				12EB3DE00CC17F2B00162FCC /* Adding RegexKit to your Project.html */,
 				12BD451E0CB5F1E100EBA014 /* distribution_pcre.h */,
+				12EB3DDA0CC17E2C00162FCC /* Documentation.html */,
 			);
 			name = Distribution;
+			path = Source/Build/Distribution;
 			sourceTree = "<group>";
 		};
 		1264D53B0C7A4F050044B285 /* SQL */ = {
@@ -454,6 +511,7 @@
 				12222BCC0CBB8077001F0231 /* files.sql */,
 			);
 			name = SQL;
+			path = Source/Build/SQL;
 			sourceTree = "<group>";
 		};
 		1264D54B0C7A4F130044B285 /* Scripts */ = {
@@ -462,9 +520,12 @@
 				1264D54F0C7A4F5B0044B285 /* buildDistribution.sh */,
 				124BF9DE0CAACEFC00D04C96 /* buildPCRE.sh */,
 				12222BC60CBB7F98001F0231 /* fileCheck.pl */,
+				12EB3C8B0CC1610100162FCC /* packageDist.pl */,
+				12EB3C8C0CC1610100162FCC /* plistUtil.pl */,
 				1264D5530C7A4F5B0044B285 /* stripHeaderdoc.sh */,
 			);
 			name = Scripts;
+			path = Source/Build/Scripts;
 			sourceTree = "<group>";
 		};
 		1264D54C0C7A4F1B0044B285 /* Xcode */ = {
@@ -474,6 +535,7 @@
 				12F901140CA99AAF00CEA3D0 /* RegexKit Build Settings.xcconfig */,
 			);
 			name = Xcode;
+			path = Source/Build/Xcode;
 			sourceTree = "<group>";
 		};
 		1264D5610C7A4FDE0044B285 /* Unit Tests */ = {
@@ -532,6 +594,7 @@
 			children = (
 				1264D5380C7A4EF80044B285 /* Distribution */,
 				1299AE840C78AC7A007F3859 /* Makefiles */,
+				12EB3D300CC16F3B00162FCC /* Packagemaker */,
 				1264D54B0C7A4F130044B285 /* Scripts */,
 				1264D53B0C7A4F050044B285 /* SQL */,
 				1264D54C0C7A4F1B0044B285 /* Xcode */,
@@ -542,9 +605,11 @@
 		1299AE840C78AC7A007F3859 /* Makefiles */ = {
 			isa = PBXGroup;
 			children = (
+				127B94390CC6EF92003E7257 /* Makefile.dist */,
 				1299AE850C78AC97007F3859 /* Makefile.pcre */,
 			);
 			name = Makefiles;
+			path = Source/Build/Makefiles;
 			sourceTree = "<group>";
 		};
 		1299AFA80C78C118007F3859 /* Documentation */ = {
@@ -588,8 +653,8 @@
 			isa = PBXGroup;
 			children = (
 				089C1665FE841158C02AAC07 /* Resources */,
-				124BFAD60CAAEBF800D04C96 /* Foundation Extensions */,
 				12DB19EB0C787DF400735165 /* Headers */,
+				124BFAD60CAAEBF800D04C96 /* Foundation Extensions */,
 				12DB1A110C787E3D00735165 /* RKAutoreleasedMemory.m */,
 				12DB1A120C787E3D00735165 /* RKCache.m */,
 				12DB1A130C787E3D00735165 /* RKCoder.m */,
@@ -647,6 +712,45 @@
 				12EACB4C0CBC156C00175505 /* README.GNUstep */,
 			);
 			name = GNUstep;
+			sourceTree = "<group>";
+		};
+		12EB3D300CC16F3B00162FCC /* Packagemaker */ = {
+			isa = PBXGroup;
+			children = (
+				12EB3D590CC1707000162FCC /* plists */,
+				12EB3D600CC1707000162FCC /* Resources */,
+			);
+			name = Packagemaker;
+			path = Source/Build/Packagemaker;
+			sourceTree = "<group>";
+		};
+		12EB3D590CC1707000162FCC /* plists */ = {
+			isa = PBXGroup;
+			children = (
+				1261B7870CD27AF400F2E972 /* DocSet_desc.plist */,
+				1261B7880CD27AF400F2E972 /* DocSet_info.plist */,
+				12EB3D5A0CC1707000162FCC /* Documentation_desc.plist */,
+				12EB3D5B0CC1707000162FCC /* Documentation_info.plist */,
+				12EB3D5C0CC1707000162FCC /* Framework_desc.plist */,
+				12EB3D5D0CC1707000162FCC /* Framework_info.plist */,
+				12EB3DAD0CC17AA500162FCC /* RegexKit_mpkg_info.plist */,
+				12EB3D5E0CC1707000162FCC /* Sourcecode_desc.plist */,
+				12EB3D5F0CC1707000162FCC /* Sourcecode_info.plist */,
+				12B8D2D40CC4BBBE00B47ECD /* pcre_desc.plist */,
+				12B8D2D50CC4BBBE00B47ECD /* pcre_info.plist */,
+			);
+			path = plists;
+			sourceTree = "<group>";
+		};
+		12EB3D600CC1707000162FCC /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				12EB3D610CC1707000162FCC /* Conclusion.rtf */,
+				12EB3D630CC1707000162FCC /* License.rtf */,
+				12EB3DCC0CC17DC600162FCC /* ReadMe.rtf */,
+				12EB3D650CC1707000162FCC /* Welcome.rtf */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		12F6B43C0CA6A5730094EDB5 /* Misc */ = {
@@ -741,15 +845,21 @@
 /* Begin PBXProject section */
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = NO;
+			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "RegexKit" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 0867D691FE84028FC02AAC07 /* RegexKit */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
 			projectDirPath = "";
+			projectRoot = "";
 			targets = (
 				8DC2EF4F0486A6940098B216 /* RegexKit Framework */,
 				1299AE6A0C78AB9C007F3859 /* PCRE */,
 				1264D5A00C7A59E10044B285 /* Documentation */,
+				120291B30CD1CC610045B036 /* DocSet */,
 				1264D6E40C7A79960044B285 /* Distribution */,
 				1264D77E0C7A95B60044B285 /* Unit Tests */,
 			);
@@ -762,7 +872,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				1264D97B0C7AC50E0044B285 /* Unit Tests-Info.plist in Resources */,
-				12F6B3FE0CA69B2F0094EDB5 /* checkSpelling.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -777,6 +886,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		120291B60CD1CC610045B036 /* buildDocSet.sh */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = buildDocSet.sh;
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#\n# The source to this script can be found at:\n# Right click on Targets > Documentation > buildDocSet.sh and choose Get Info\n#\n\nSHELL=${SHELL:?\"Environment variable SHELL must exist, aborting\"}\nBUILD_DOCUMENTATION_SCRIPT=${BUILD_DOCSET_SCRIPT:?\"Environment variable BUILD_DOCSET_SCRIPT must exist, aborting\"}\n\nif [ ! -x \"${BUILD_DOCSET_SCRIPT}\" ]; then\n  if [ -r \"${BUILD_DOCSET_SCRIPT}\" ] && [ ! -x \"${BUILD_DOCSET_SCRIPT}\" ]; then\n    echo \"$0:$LINENO: error: The command to build the DocSet, '${BUILD_DOCSET_SCRIPT}', exists but is not executable, aborting.\"\n    echo \"$0:$LINENO: error: Suggestion: 'chmod u+x ${BUILD_DOCSET_SCRIPT}'\"\n    exit 1\n  fi\n  echo \"$0:$LINENO: error: The command to build the DocSet, '${BUILD_DOCSET_SCRIPT}', does not exist, aborting.\";\n  exit 1\nelse\n  exec \"${SHELL}\" \"${BUILD_DOCSET_SCRIPT}\"\nfi\n";
+		};
 		1264D5950C7A58A20044B285 /* stripHeaderdoc.sh */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -789,7 +912,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "SHELL=${SHELL:?\"Environment variable SHELL must exist, aborting\"}\nSTRIP_HEADERDOC_SCRIPT=${STRIP_HEADERDOC_SCRIPT:?\"Environment variable STRIP_HEADERDOC_SCRIPT must exist, aborting\"}\n\nif [ ! -x ${STRIP_HEADERDOC_SCRIPT} ]; then\n    echo \"$0:$LINENO: error: The command to strip headerdoc comments, '${STRIP_HEADERDOC_SCRIPT}', does not exist, aborting\"\n    exit 1\nelse\n    exec ${SHELL} ${STRIP_HEADERDOC_SCRIPT}\nfi\n";
+			shellScript = "#\n# The source to this script can be found at:\n# Right click on Targets > RegexKit Framework > stripHeaderdoc.sh and choose Get Info\n#\n\nSHELL=${SHELL:?\"Environment variable SHELL must exist, aborting\"}\nSTRIP_HEADERDOC_SCRIPT=${STRIP_HEADERDOC_SCRIPT:?\"Environment variable STRIP_HEADERDOC_SCRIPT must exist, aborting\"}\n\nif [ ! -x \"${STRIP_HEADERDOC_SCRIPT}\" ]; then\n  if [ -r \"${STRIP_HEADERDOC_SCRIPT}\" ] && [ ! -x \"${STRIP_HEADERDOC_SCRIPT}\" ]; then\n    echo \"$0:$LINENO: error: The command to strip headerdoc comments, '${STRIP_HEADERDOC_SCRIPT}', exists but is not executable, aborting.\"\n    echo \"$0:$LINENO: error: Suggestion: 'chmod u+x ${STRIP_HEADERDOC_SCRIPT}'\"\n    exit 1\n  fi\n  echo \"$0:$LINENO: error: The command to strip headerdoc comments, '${STRIP_HEADERDOC_SCRIPT}', does not exist, aborting.\";\n  exit 1\nelse\n  exec \"${SHELL}\" \"${STRIP_HEADERDOC_SCRIPT}\"\nfi\n";
 		};
 		1264D5A30C7A59F20044B285 /* buildDocumentation.sh */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -803,7 +926,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "SHELL=${SHELL:?\"Environment variable SHELL must exist, aborting\"}\nBUILD_DOCUMENTATION_SCRIPT=${BUILD_DOCUMENTATION_SCRIPT:?\"Environment variable BUILD_DOCUMENTATION_SCRIPT must exist, aborting\"}\n\nif [ ! -x ${BUILD_DOCUMENTATION_SCRIPT} ]; then\n    echo \"$0:$LINENO: error: The command to build the documentation, '${BUILD_DOCUMENTATION_SCRIPT}', does not exist, aborting\"\n    exit 1\nelse\n    exec ${SHELL} ${BUILD_DOCUMENTATION_SCRIPT}\nfi\n";
+			shellScript = "#\n# The source to this script can be found at:\n# Right click on Targets > Documentation > buildDocumentation.sh and choose Get Info\n#\n\nSHELL=${SHELL:?\"Environment variable SHELL must exist, aborting\"}\nBUILD_DOCUMENTATION_SCRIPT=${BUILD_DOCUMENTATION_SCRIPT:?\"Environment variable BUILD_DOCUMENTATION_SCRIPT must exist, aborting\"}\n\nif [ ! -x \"${BUILD_DOCUMENTATION_SCRIPT}\" ]; then\n  if [ -r \"${BUILD_DOCUMENTATION_SCRIPT}\" ] && [ ! -x \"${BUILD_DOCUMENTATION_SCRIPT}\" ]; then\n    echo \"$0:$LINENO: error: The command to build the documentation, '${BUILD_DOCUMENTATION_SCRIPT}', exists but is not executable, aborting.\"\n    echo \"$0:$LINENO: error: Suggestion: 'chmod u+x ${BUILD_DOCUMENTATION_SCRIPT}'\"\n    exit 1\n  fi\n  echo \"$0:$LINENO: error: The command to build the documentation, '${BUILD_DOCUMENTATION_SCRIPT}', does not exist, aborting.\";\n  exit 1\nelse\n  exec \"${SHELL}\" \"${BUILD_DOCUMENTATION_SCRIPT}\"\nfi\n";
 		};
 		1264D6E70C7A79A70044B285 /* buildDistribution.sh */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -817,7 +940,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "SHELL=${SHELL:?\"Environment variable SHELL must exist, aborting.\"}\nBUILD_DISTRIBUTION_SCRIPT=${BUILD_DISTRIBUTION_SCRIPT:?\"Environment variable BUILD_DISTRIBUTION_SCRIPT must exist, aborting.\"}\n\nif [ ! -x ${BUILD_DISTRIBUTION_SCRIPT} ]; then\n    echo \"$0:$LINENO: error: The command to build the distribution, '${BUILD_DISTRIBUTION_SCRIPT}', does not exist, aborting.\"\n    exit 1\nelse\n    exec ${SHELL} ${BUILD_DISTRIBUTION_SCRIPT}\nfi\n";
+			shellScript = "#\n# The source to this script can be found at:\n# Right click on Targets > Distribution > buildDistribution.sh and choose Get Info\n#\n\nSHELL=${SHELL:?\"Environment variable SHELL must exist, aborting.\"}\nBUILD_DISTRIBUTION_SCRIPT=${BUILD_DISTRIBUTION_SCRIPT:?\"Environment variable BUILD_DISTRIBUTION_SCRIPT must exist, aborting.\"}\n\nif [ ! -x \"${BUILD_DISTRIBUTION_SCRIPT}\" ]; then\n  if [ -r \"${BUILD_DISTRIBUTION_SCRIPT}\" ] && [ ! -x \"${BUILD_DISTRIBUTION_SCRIPT}\" ]; then\n    echo \"$0:$LINENO: error: The command to build the distribution, '${BUILD_DISTRIBUTION_SCRIPT}', exists but is not executable, aborting.\"\n    echo \"$0:$LINENO: error: Suggestion: 'chmod u+x ${BUILD_DISTRIBUTION_SCRIPT}'\"\n    exit 1\n  fi\n  echo \"$0:$LINENO: error: The command to build the distribution, '${BUILD_DISTRIBUTION_SCRIPT}', does not exist, aborting.\";\n  exit 1\nelse\n  exec \"${SHELL}\" \"${BUILD_DISTRIBUTION_SCRIPT}\"\nfi\n";
 		};
 		1264D77D0C7A95B60044B285 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -830,7 +953,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\nif [ -x \"Source/unitTests/debug.sh\" ]; then\n  source \"Source/unitTests/debug.sh\"\nfi\n\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+			shellScript = "#\n# The source to this script can be found at:\n# Right click on Targets > Unit Tests > Run Script and choose Get Info\n#\n\n# Run the unit tests in this test bundle.\nif [ -x \"Source/unitTests/debug.sh\" ]; then\n  source \"Source/unitTests/debug.sh\"\nfi\n\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
 		};
 		1299AE690C78AB9C007F3859 /* buildPCRE.sh */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -844,7 +967,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "SHELL=${SHELL:?\"Environment variable SHELL must exist, aborting.\"}\nPCRE_BUILD_SCRIPT=${PCRE_BUILD_SCRIPT:?\"Environment variable PCRE_BUILD_SCRIPT must exist, aborting.\"}\n\nif [ ! -x ${PCRE_BUILD_SCRIPT} ]; then\n    echo \"$0:$LINENO: error: The command to build the distribution, '${PCRE_BUILD_SCRIPT}', does not exist, aborting.\"\n    exit 1\nelse\n    exec ${SHELL} ${PCRE_BUILD_SCRIPT}\nfi\n";
+			shellScript = "#\n# The source to this script can be found at:\n# Right click on Targets > PCRE > buildPCRE.sh and choose Get Info\n#\n\nSHELL=${SHELL:?\"Environment variable SHELL must exist, aborting.\"}\nPCRE_BUILD_SCRIPT=${PCRE_BUILD_SCRIPT:?\"Environment variable PCRE_BUILD_SCRIPT must exist, aborting.\"}\n\nif [ ! -x \"${PCRE_BUILD_SCRIPT}\" ]; then\n  if [ -r \"${PCRE_BUILD_SCRIPT}\" ] && [ ! -x \"${PCRE_BUILD_SCRIPT}\" ]; then\n    echo \"$0:$LINENO: error: The command to build the PCRE library, '${PCRE_BUILD_SCRIPT}', exists but is not executable, aborting.\"\n    echo \"$0:$LINENO: error: Suggestion: 'chmod u+x ${PCRE_BUILD_SCRIPT}'\"\n    exit 1\n  fi\n  echo \"$0:$LINENO: error: The command to build the PCRE library, '${PCRE_BUILD_SCRIPT}', does not exist, aborting.\";\n  exit 1\nelse\n  exec \"${SHELL}\" \"${PCRE_BUILD_SCRIPT}\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -858,8 +981,8 @@
 				1264D83B0C7A9D7D0044B285 /* collectionAdditions.m in Sources */,
 				1264D8580C7A9E0F0044B285 /* functionality.m in Sources */,
 				1264D8560C7A9DF90044B285 /* stringConversion.m in Sources */,
-				1264D85A0C7A9E1B0044B285 /* multithreading.m in Sources */,
-				1264D85C0C7A9E300044B285 /* timing.m in Sources */,
+				122401EC0CCD5D89006F56F9 /* timing.m in Sources */,
+				122401ED0CCD5E15006F56F9 /* multithreading.m in Sources */,
 				12D581810C80B75500674FA2 /* enumeration.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -888,6 +1011,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		120291BD0CD1CD4C0045B036 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1264D5A00C7A59E10044B285 /* Documentation */;
+			targetProxy = 120291BC0CD1CD4C0045B036 /* PBXContainerItemProxy */;
+		};
+		1261B78E0CD27CE100F2E972 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 120291B30CD1CC610045B036 /* DocSet */;
+			targetProxy = 1261B78D0CD27CE100F2E972 /* PBXContainerItemProxy */;
+		};
 		1264D5C90C7A5A720044B285 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 1299AE6A0C78AB9C007F3859 /* PCRE */;
@@ -924,9 +1057,55 @@
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
+		12EB3D610CC1707000162FCC /* Conclusion.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				12EB3D620CC1707000162FCC /* English */,
+			);
+			name = Conclusion.rtf;
+			sourceTree = "<group>";
+		};
+		12EB3D630CC1707000162FCC /* License.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				12EB3D640CC1707000162FCC /* English */,
+			);
+			name = License.rtf;
+			sourceTree = "<group>";
+		};
+		12EB3D650CC1707000162FCC /* Welcome.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				12EB3D660CC1707000162FCC /* English */,
+			);
+			name = Welcome.rtf;
+			sourceTree = "<group>";
+		};
+		12EB3DCC0CC17DC600162FCC /* ReadMe.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				12EB3DCD0CC17DC600162FCC /* English */,
+			);
+			name = ReadMe.rtf;
+			sourceTree = "<group>";
+		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		120291B80CD1CC610045B036 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "Build Documentation";
+			};
+			name = Debug;
+		};
+		120291B90CD1CC610045B036 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "Build Documentation";
+			};
+			name = Release;
+		};
 		1264D5C20C7A59F50044B285 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -958,7 +1137,11 @@
 		1264D7820C7A95B70044B285 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = "${BUILD_DIR}/${CONFIGURATION}";
+				FRAMEWORK_SEARCH_PATHS = (
+					"${BUILD_DIR}/${CONFIGURATION}",
+					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
+				);
+				GCC_ENABLE_OBJC_GC = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				INFOPLIST_FILE = "Source/unitTests/Unit Tests-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
@@ -984,8 +1167,11 @@
 		1264D7830C7A95B70044B285 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "${NATIVE_ARCH}";
-				FRAMEWORK_SEARCH_PATHS = "${BUILD_DIR}/${CONFIGURATION}";
+				FRAMEWORK_SEARCH_PATHS = (
+					"${BUILD_DIR}/${CONFIGURATION}",
+					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
+				);
+				GCC_ENABLE_OBJC_GC = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				INFOPLIST_FILE = "Source/unitTests/Unit Tests-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
@@ -1029,6 +1215,7 @@
 				DYLIB_CURRENT_VERSION = "${PROJECT_CURRENT_VERSION}";
 				EXPORTED_SYMBOLS_FILE = "${PROJECT_EXPORTED_SYMBOLS_FILE}";
 				FRAMEWORK_VERSION = A;
+				GCC_ENABLE_OBJC_GC = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"${PROJECT_HEADERS_ROOT}",
@@ -1058,6 +1245,7 @@
 				DYLIB_CURRENT_VERSION = "${PROJECT_CURRENT_VERSION}";
 				EXPORTED_SYMBOLS_FILE = "${PROJECT_EXPORTED_SYMBOLS_FILE}";
 				FRAMEWORK_VERSION = A;
+				GCC_ENABLE_OBJC_GC = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					NS_BLOCK_ASSERTIONS,
@@ -1086,7 +1274,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 12F901140CA99AAF00CEA3D0 /* RegexKit Build Settings.xcconfig */;
 			buildSettings = {
-				ARCHS = "${NATIVE_ARCH}";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				WARNING_CFLAGS = (
 					"$(inherited)",
@@ -1103,6 +1290,7 @@
 					"-Wdiv-by-zero",
 					"-Wmissing-field-initializers",
 					"-Wno-format-nonliteral",
+					"-Wshorten-64-to-32",
 				);
 			};
 			name = Debug;
@@ -1111,10 +1299,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 12F901140CA99AAF00CEA3D0 /* RegexKit Build Settings.xcconfig */;
 			buildSettings = {
-				ARCHS = (
-					ppc,
-					i386,
-				);
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				STRIP_INSTALLED_PRODUCT = YES;
 				WARNING_CFLAGS = (
@@ -1132,6 +1316,7 @@
 					"-Wdiv-by-zero",
 					"-Wmissing-field-initializers",
 					"-Wno-format-nonliteral",
+					"-Wshorten-64-to-32",
 				);
 			};
 			name = Release;
@@ -1139,6 +1324,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		120291B70CD1CC610045B036 /* Build configuration list for PBXAggregateTarget "DocSet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				120291B80CD1CC610045B036 /* Debug */,
+				120291B90CD1CC610045B036 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		1264D5C10C7A59F50044B285 /* Build configuration list for PBXAggregateTarget "Documentation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

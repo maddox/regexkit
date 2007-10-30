@@ -1,3 +1,207 @@
+Changes from 0.2.0 Beta to 0.3.0 Beta
+-------------------------------------
+
+o Xcode 3.0 DocSet Documentation
+  ------------------------------
+
+The DocSet documentation is essentially the HTML documentation with a few
+minor tweaks.  It is created by the scripts:
+
+Documentation/Scripts/buildDocSet.sh
+Documentation/Scripts/createDocSet.pl
+
+createDocSet.pl is pretty horrific, and was kludged together very quickly.
+It creates the required 'Nodes.xml' and 'Tokens.xml' by extracting the
+information from the documentation database and rewrites the anchors in
+the html files to use the '//apple_ref/' style format.  This is not used
+in the normal HTML documentation because it isn't valid HTML (tidy throws
+a fit and there's hundreds of warnings generated.)  However, the docset
+tool chain appears to be much happier with apple_ref style anchors, so the
+legal html name anchors are rewritten.
+
+Once all these pieces are in placed, and a Info.plist is created, the
+'docsetutil' command is run to build the DocSet index and that's pretty
+much it.
+
+o Garbage Collection
+  ------------------
+
+Mac OS X 10.5 Garbage Collection is controlled by the C Preprocessor flag
+ENABLE_MACOSX_GARBAGE_COLLECTION.  A number of macros were created to ease
+various portability issues.  Of special note is the framework global
+variable 'RKRegexGarbageCollect'.  If ENABLE_MACOSX_GARBAGE_COLLECTION is
+defined, then RKRegexGarbageCollect is a int32_t defined in RKRegex.m.
+If ENABLE_MACOSX_GARBAGE_COLLECTION is not defined, then RKRegexGarbageCollect
+is #defined in RegexKitPrivate.h as '0'.  Also in RegexKitPrivate.h are a
+number of macros for managing various Retain/Release/Autorelease.  
+
+If ENABLE_MACOSX_GARBAGE_COLLECTION is defined, then RKRegex.m, RKCache.m, and
+NSString.m will all check and see if the class 'NSGarbageCollector' exists,
+and if so, check to see if garbage collection is enabled in their +load
+methods.
+
+If ENABLE_MACOSX_GARBAGE_COLLECTION is not defined, then most of the macros
+become a compile time static conditional which the compiler will optimize away,
+so compiling on pre-10.5 or GNUstep is branchless.  It was the best I could
+come up with for maximum portability while still maintaining readability.
+
+In RKCache, if ENABLE_MACOSX_GARBAGE_COLLECTION is defined, AND if GC is
+enabled at load time, then the class switches to using the new NSMapTable
+class for managing the cache.  It places cached RKRegex objects in a NSMapTable
+with a weak reference to the object.  This should allow for auto trimming
+of the cache to the working set.  Not sure how it will work out in real life.
+
+o 64 bit support
+  --------------
+
+A set of macros was adopted to ease multi-platform 64 bit issues.  They are
+essentially parallel to the Leopard NSInteger / NSUInteger types, except that
+they are cpp macros.  They have the names RKInteger and RKUInteger / etc.
+They are re-written to either NSInteger or int depending on the detected
+run time environment.  This allows for type checking / compatibility to be
+maintained for each environment.  GNUstep still has things such as 'hash'
+defined as 'unsigned int', and for some of our objects we return the pointer
+to the instantiated object as the hash (there can be only one) and this
+causes truncation on GNUstep, but it should be OK.
+
+o GNUstep
+  -------
+
+Cleaned up various GNUstep pieces here and there while putting the 64 bit
+stuff in.  Should build much cleaner now, with only a handful of warnings
+when compiling on a 64 bit platform for various hash functions, but this
+shouldn't be a problem in the real world.
+
+
+o RegexKit.framework Info.plist version bug fix
+  ---------------------------------------------
+
+The Info.plist in RegexKit 0.2.0 had a bug in the Info.plist file.
+The settings for the keys CFBundleShortVersionString and CFBundleVersion
+where set to the variable ${REGEXKIT_CURRENT_VERSION} when they should
+have been set to ${PROJECT_CURRENT_VERSION}.  Since the variable
+${REGEXKIT_CURRENT_VERSION} was undefined, this ended up expanding to
+nothing, so the correct version number is missing.  This should be a
+fairly trivial bug in the grand scheme of things.
+
+o Mac OS X Installer .dmg distribution
+  ------------------------------------
+
+RegexKit 0.3.0 marks the introduction of a Mac OS X Installer based
+distribution.  It bundles together the Mac OS X Binary executable
+RegexKit.framework, the Documentation, and the source code in to one
+convenient package. Each is grouped in to their own package, and by
+default RegexKit.framework and Documentation are selected to install while
+the source code package is not.  There's some javascript code to disable
+a package if the version that is already installed is newer than the version
+that is attempting to install.  Also, there's some logic so that the source
+code package will automatically default to selected if it detects that
+a previous install of the source code has been performed, thus auto upgrading
+without having to think about it.
+
+The Installer has a volume check script that requires 10.4 or later in order
+to install on a volume, and an installation check that checks to see if the
+file '/Developer/Applications/Xcode.app' exists.  If it does not, it presents
+a warning that the Xcode Development Tools should be installed, but does not
+stop the installation.
+
+There's three main tuneables in the build configs:
+
+  DISTRIBUTION_GZIP_PACKAGES         YES | NO (NO = Default)
+  DISTRIBUTION_INCLUDE_PCRE_PACKAGE  YES | NO (NO = Default)
+  DISTRIBUTION_DEFAULT_INSTALL_DIR   /Developer/Local/RegexKit/
+
+Since the overall distribution package gets placed on to a .dmg disk image,
+which is then BZip2 compressed (-format UDBZ), compressing the packages with
+gzip actually causes the final .dmg size to grow by about ~60-70K, or roughly
+10% in size.  So, by default, we leave the packages uncompressed and let
+the disk image bzip2 deal with all the compression.
+
+The other option, DISTRIBUTION_INCLUDE_PCRE_PACKAGE, toggles whether or not
+the PCRE tarball used to build the framework is included in the Installer
+distribution.  By default the choice is NO since this causes the final .dmg
+disk image to nearly double in size.  There's some extra javascript logic so
+that the PCRE distribution is if and only if the source code package is
+selected to be installed.  If the user selects the source code package,
+the PCRE package then auto selects itself to be installed as well.  The
+PCRE package version is the PCRE Major.Minor, not the RegexKit version.
+Unlike the others it will allow an earlier version to be installed 'on
+top off' a newer version since this is largely harmless- Each PCRE
+tarball distribution is separate from the others.
+
+The file that creates the top level distribution package 'distribution.dist'
+file is in 'Source/Build/Scripts/packageDist.pl'.  It handles the logic
+of selectively inserting the PCRE choice depending on whether or not 
+DISTRIBUTION_INCLUDE_PCRE_PACKAGE is set to YES.  It also gathers some
+necessary information, such as a packages installed size, by using perls
+objective-c / foundation bridge to read the individual packages Info.plist
+files and extracting the appropriate keys.
+
+For each package (of which there are four, RegexKit.framework binary package,
+Documentation package, Source code package, and optionally the PCRE
+distribution package) there exists two .plist files, one info.plist and one
+desc.plist.  The important one is the info.plist, and it contains the 
+bundle identification and version information.  The version information is
+replaced dynamically at build time by the
+'Source/Build/Scripts/buildDistribution.sh' script.  That script makes a
+copy of the plists to a private build staging area.  Then, it calls the
+script 'Source/Build/Scripts/plistUtil.pl' which is a very simply perl script
+that again used the objective-c / foundation bridge to take three arguments:
+the plist file to operate on, the key to update, and the value to set the
+key to.  buildDistribution.sh uses this to update all the plists to the
+current RegexKit version as required by the package plist format.  An
+additional .plist file, RegexKit_mpkg.plist, is largely for cosmetic purposes.
+It gets the version updated as well, but its sole purpose is to provide a
+version string to the finder when a 'Get Info' is performed and that's it.
+
+The text that's displayed during the installation process comes from four
+files, though only two are currently used.  These are located in
+'Source/Build/Packagemaker/Resources/...', which is a localized .lproj style
+directory for localization purposes.  Currently only English.lproj is present.
+The files are currently simple .rtf files, but .rtfd and .html are supported
+as well.  Any changes to the file types would have to be updated in the
+packageDist.pl file (it should be obvious where).  Only 'ReadMe.rtf' and
+'License.rtf' are currently used, but both 'Welcome.rtf' and 'Conclusion.rtf'
+can be activated trivially by editing packageDist.pl.  They get copied in
+to the distribution package right now, but the necessary lines in
+'distribution.dist' that is created by packageDist.pl are missing.
+
+The tuneable DISTRIBUTION_DEFAULT_INSTALL_DIR is self-explanatory.
+
+o Minor bug fixes
+  ---------------
+
+There were a handful of very minor, single line changes to fix some trivial
+bugs.  These mostly had to do with inter-version differences between tools
+(ie, sqlite 3.1.3 -> later versions tweaks, minor accommodations to make
+building from the installer distribution run clean)
+
+o Build system tweaks
+  -------------------
+
+Replaced the 'debug: ' portion of various script status lines with 'note: '
+instead.  This is mostly cosmetic.  In the Makefile.pcre, added the makefile
+file name and line number of the message so clicking on it will take you
+right to that line.  Updated most status messages to always output the
+filename and line number with the status indicator.
+
+The PCRE build target is largely driven by Makefiles.  The scripts that invoke
+`make` were modified to set the -j argument, or the number of jobs to run
+in parallel, and the -l argument, or the load average where no new jobs can
+be started.  The values for these parameters are derived from the sysctl
+variable 'hw.activecpu'.  The -j parameter is set to the number of active
+CPU's, and the max load is set to the number of active CPU's + 2.  This should
+allow those of you with multiple CPU's to build the PCRE target faster. 
+However, sometimes building in parallel causes certain make dependency issues
+to crop up that don't happen when running sequentially.
+
+This can be disabled with the tuneable PCRE_PARALLEL_BUILD = NO.
+
+The Distribution target was also partially parallel build enabled as well.
+
+
+-----------------------------------------------------------------------------
+
 Changes from Alpha test distribution
 ------------------------------------
 

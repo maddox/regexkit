@@ -58,7 +58,7 @@
  @group Deriving New Arrays
 */
 
- @interface NSArray (RegexKitAdditions)
+@interface NSArray (RegexKitAdditions)
 /*!
  @method     arrayByMatchingObjectsWithRegex:
  @tocgroup   NSArray Deriving New Arrays
@@ -97,13 +97,13 @@
  @abstract   Returns the number of objects matching <span class="argument">aRegex</span> in the receiver.
  @seealso    @link countOfObjectsMatchingRegex:inRange: - countOfObjectsMatchingRegex:inRange: @/link
 */
--(unsigned int)countOfObjectsMatchingRegex:(id)aRegex;
+-(RKUInteger)countOfObjectsMatchingRegex:(id)aRegex;
 /*!
  @method     countOfObjectsMatchingRegex:inRange:
  @tocgroup   NSArray Querying an Array
  @abstract   Returns the number of objects matching <span class="argument">aRegex</span> in the receiver within the specified <span class="argument">range</span>.
 */
--(unsigned int)countOfObjectsMatchingRegex:(id)aRegex inRange:(const NSRange)range;
+-(RKUInteger)countOfObjectsMatchingRegex:(id)aRegex inRange:(const NSRange)range;
 /*!
  @method     indexOfObjectMatchingRegex:
  @tocgroup   NSArray Querying an Array
@@ -111,14 +111,14 @@
  @discussion If none of the objects in the receiver are matched by <span class="argument">aRegex</span>, @link indexOfObjectMatchingRegex: indexOfObjectMatchingRegex: @/link returns @link NSNotFound NSNotFound @/link.
  @seealso    @link indexOfObjectMatchingRegex:inRange: - indexOfObjectMatchingRegex:inRange: @/link
 */
--(unsigned int)indexOfObjectMatchingRegex:(id)aRegex;
+-(RKUInteger)indexOfObjectMatchingRegex:(id)aRegex;
 /*!
  @method     indexOfObjectMatchingRegex:inRange:
  @tocgroup   NSArray Querying an Array
  @abstract   Searches the specified <span class="argument">range</span> within the receiver for an object that matches <span class="argument">aRegex</span> and returns the lowest index whose corresponding array value is equal to the matched object.
  @discussion If none of the objects in the specified <span class="argument">range</span> are matched by <span class="argument">aRegex</span>, @link indexOfObjectMatchingRegex:inRange: indexOfObjectMatchingRegex:inRange: @/link returns @link NSNotFound NSNotFound @/link.
 */
--(unsigned int)indexOfObjectMatchingRegex:(id)aRegex inRange:(const NSRange)range;
+-(RKUInteger)indexOfObjectMatchingRegex:(id)aRegex inRange:(const NSRange)range;
 
  @end
 

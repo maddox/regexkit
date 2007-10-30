@@ -55,23 +55,23 @@
  @abstract   Regular Expression Pattern Matching Class
 */
 
- @interface RKRegex : NSObject <NSCoding, NSCopying> {
-  pcre       *_compiledPCRE;           // Pointer to pcre library type pcre.
-  pcre_extra *_extraPCRE;              // Pointer to pcre library type pcre_extra.
+@interface RKRegex : NSObject <NSCoding, NSCopying> {
+  RK_STRONG_REF pcre            *_compiledPCRE;          // Pointer to pcre library type pcre.
+  RK_STRONG_REF pcre_extra      *_extraPCRE;             // Pointer to pcre library type pcre_extra.
 
-  NSString *compiledRegexString;       // A copy of the regex string that was compiled.
-  RKCompileOption compileOption;       // The options used to compile this regex.
-  unsigned int captureCount;           // The number of captures in the compiled regex string.
-  char *captureNameTable;              // Pointer to capture names structure.
-  unsigned int captureNameTableLength; // Number of entries in the capture name structure
-  unsigned int captureNameLength;      // The length of a capture name entry.
-  NSArray *captureNameArray;           // An array that maps capture index values to capture names.  nil if no named captures.
-
-  int referenceCountMinusOne;          // Keep track of the reference count ourselves.
-  unsigned int hash;                   // Hash value for this object.
+                NSString        *compiledRegexString;    // A copy of the regex string that was compiled.
+                RKCompileOption  compileOption;          // The options used to compile this regex.
+                RKUInteger       captureCount;           // The number of captures in the compiled regex string.
+  RK_STRONG_REF char            *captureNameTable;       // Pointer to capture names structure.
+                RKUInteger       captureNameTableLength; // Number of entries in the capture name structure
+                RKUInteger       captureNameLength;      // The length of a capture name entry.
+                NSArray         *captureNameArray;       // An array that maps capture index values to capture names.  nil if no named captures.
+   
+                int              referenceCountMinusOne; // Keep track of the reference count ourselves.
+                RKUInteger       hash;                   // Hash value for this object.
 
 #ifdef REGEXKIT_DEBUGGING
-  unsigned int debugRetainCount:1;
+                RKUInteger       debugRetainCount:1;
 #endif
 }
 
@@ -114,16 +114,16 @@
  @method     PCREMajorVersion
  @tocgroup   RKRegex PCRE Library Information
  @abstract   Returns the <a href="pcre/index.html"><i>PCRE</i></a> library major version.
- @result     Returns an <span class="code">unsigned int</span> of the major version in @link PCREVersionString PCREVersionString @/link.
+ @result     Returns an @link RKUInteger RKUInteger @/link of the major version in @link PCREVersionString PCREVersionString @/link.
 */
-+ (unsigned int)PCREMajorVersion;
++ (int32_t)PCREMajorVersion;
 /*!
  @method     PCREMinorVersion
  @tocgroup   RKRegex PCRE Library Information
  @abstract   Returns the <a href="pcre/index.html"><i>PCRE</i></a> library minor version.
- @result     Returns an <span class="code">unsigned int</span> of the minor version in @link PCREVersionString PCREVersionString @/link.
+ @result     Returns an @link RKUInteger RKUInteger @/link of the minor version in @link PCREVersionString PCREVersionString @/link.
 */
-+ (unsigned int)PCREMinorVersion;
++ (int32_t)PCREMinorVersion;
 /*!
  @method     PCREBuildConfig
  @tocgroup   RKRegex PCRE Library Information
@@ -214,7 +214,7 @@
  @seealso    <a href="pcre/pcrepattern.html#SEC11" class="section-link">Regular Expression Subpatterns</a>
 */
 
-- (unsigned int)captureCount;
+- (RKUInteger)captureCount;
 /*!
  @method     captureNameArray
  @tocgroup   RKRegex Named Capture Information
@@ -238,7 +238,7 @@
  @param      captureNameString The name of the desired capture index.
  <div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">Raises a @link NSInvalidArgumentException NSInvalidArgumentException @/link if <span class="argument">captureNameString</span> is <span class="code">nil</span> or is not a valid capture name for the receivers regular expression.</div></div></div></div>
 */
-- (unsigned int)captureIndexForCaptureName:(NSString * const)captureNameString;
+- (RKUInteger)captureIndexForCaptureName:(NSString * const)captureNameString;
 /*!
  @method     captureNameForCaptureIndex:
  @tocgroup   RKRegex Named Capture Information
@@ -247,7 +247,7 @@
  <div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">Raises a @link NSInvalidArgumentException NSInvalidArgumentException @/link if <span class="argument">captureIndex</span> is not valid for the receivers regular expression.</div></div></div></div>
  @result     Returns the capture name for <span class="argument">captureIndex</span>, otherwise <span class="code">nil</span> if <span class="argument">captureIndex</span> does not have a name associated with it.
 */
-- (NSString *)captureNameForCaptureIndex:(const unsigned int)captureIndex;
+- (NSString *)captureNameForCaptureIndex:(const RKUInteger)captureIndex;
 /*!
  @method     captureIndexForCaptureName:inMatchedRanges:
  @tocgroup   RKRegex Named Capture Information
@@ -261,7 +261,7 @@
  <div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">Raises a @link NSInvalidArgumentException NSInvalidArgumentException @/link if <span class="argument">matchedRanges</span> is <span class="code">NULL</span>.</div></div></div></div>
  @result     The first capture index that matched in <span class="argument">matchedRanges</span> for <span class="argument">captureNameString</span>, otherwise @link NSNotFound NSNotFound @/link is returned if there were no successful matches for any of the captures indexes of <span class="argument">captureNameString</span>.
 */
-- (unsigned int)captureIndexForCaptureName:(NSString * const RK_C99(restrict))captureNameString inMatchedRanges:(const NSRange * const RK_C99(restrict))matchedRanges;
+- (RKUInteger)captureIndexForCaptureName:(NSString * const RK_C99(restrict))captureNameString inMatchedRanges:(const NSRange * const RK_C99(restrict))matchedRanges;
 
 /*!
  @method     matchesCharacters:length:inRange:options:
@@ -277,7 +277,7 @@
  @result     <span class="code">YES</span> if the receiver matches <span class="argument">matchCharacters</span> of length <span class="argument">length</span> within <span class="argument">searchRange</span> with <span class="argument">options</span>, otherwise <span class="code">NO</span>.
 */
 
-- (BOOL)matchesCharacters:(const void * const RK_C99(restrict))matchCharacters length:(const unsigned int)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options;
+- (BOOL)matchesCharacters:(const void * const RK_C99(restrict))matchCharacters length:(const RKUInteger)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options;
 /*!
  @method     rangeForCharacters:length:inRange:captureIndex:options:
  @tocgroup   RKRegex Matching Regular Expressions
@@ -293,7 +293,7 @@
  @param      options A mask of options specified by combining @link RKMatchOption RKMatchOption @/link flags with the C bitwise OR operator.
  @result     A @link NSRange NSRange @/link structure giving the location and length of <span class="argument">captureIndex</span> for the first match in <span class="argument">matchCharacters</span> of length <span class="argument">length</span> inside <span class="argument">searchRange</span>  with <span class="argument">options</span> that is matched by the receiver. Returns <span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span> if the receiver does not match <span class="argument">matchCharacters</span>.
 */
-- (NSRange)rangeForCharacters:(const void * const RK_C99(restrict))matchCharacters length:(const unsigned int)length inRange:(const NSRange)searchRange captureIndex:(const unsigned int)captureIndex options:(const RKMatchOption)options;
+- (NSRange)rangeForCharacters:(const void * const RK_C99(restrict))matchCharacters length:(const RKUInteger)length inRange:(const NSRange)searchRange captureIndex:(const RKUInteger)captureIndex options:(const RKMatchOption)options;
 /*!
  @method     rangesForCharacters:length:inRange:options:
  @tocgroup   RKRegex Matching Regular Expressions
@@ -322,7 +322,7 @@ if(captureRanges != NULL) {
  @result     <p>A pointer to an autoreleased allocation of memory that is <span class="nobr"><span class="code">sizeof(</span>@link NSRange NSRange@/link<span class="code">) * [self</span> @link captureCount captureCount@/link<span class="code">]</span></span> bytes long and contains @link captureCount captureCount @/link @link NSRange NSRange @/link structures with the location and length for the capture indexes of the first match in <span class="argument">matchCharacters</span> of length <span class="argument">length</span> within the range <span class="argument">searchRange</span> using <span class="argument">options</span>.</p>
     <p>Returns <span class="code">NULL</span> if the receiver does not match <span class="argument">matchCharacters</span> using the supplied arguments.</p>
 */
-- (NSRange *)rangesForCharacters:(const void * const RK_C99(restrict))matchCharacters length:(const unsigned int)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options;
+- (NSRange *)rangesForCharacters:(const void * const RK_C99(restrict))matchCharacters length:(const RKUInteger)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options;
 /*!
  @method    getRanges:withCharacters:length:inRange:options:
  @tocgroup   RKRegex Matching Regular Expressions
@@ -340,7 +340,7 @@ if(captureRanges != NULL) {
  @param options A mask of options specified by combining @link RKMatchOption RKMatchOption @/link flags with the C bitwise OR operator.
  @result Returns the number of captures matched (&gt;0) on success, otherwise a @link RKMatchErrorCode RKMatchErrorCode @/link (&lt;0) on failure.  The values in <span class="argument">ranges</span> are only modified on a successful match.
 */
-- (RKMatchErrorCode)getRanges:(NSRange * const RK_C99(restrict))ranges withCharacters:(const void * const RK_C99(restrict))charactersBuffer length:(const unsigned int)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options;
+- (RKMatchErrorCode)getRanges:(NSRange * const RK_C99(restrict))ranges withCharacters:(const void * const RK_C99(restrict))charactersBuffer length:(const RKUInteger)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options;
 
 @end
 

@@ -36,7 +36,9 @@
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */ 
-
+ 
+#ifndef _REGEXKITPRIVATE_H_
+#define _REGEXKITPRIVATE_H_ 1
 
 /*
  This file is intended to store various private bits for RKRegex such as:
@@ -60,17 +62,53 @@
 #import <RegexKit/RegexKitTypes.h>
 #import <RegexKit/RKRegex.h>
 
-#ifdef USE_CORE_FOUNDATION
-typedef CFStringEncoding RKStringBufferEncoding;
+#ifdef __MACOSX_RUNTIME__
+#import <objc/objc-runtime.h>
+#endif
+
+#ifdef    ENABLE_MACOSX_GARBAGE_COLLECTION
+extern int32_t RKRegexGarbageCollect; // Set in the RKRegex +load method, used by all.
+#else  // ENABLE_MACOSX_GARBAGE_COLLECTION not defined
+#define RKRegexGarbageCollect 0
+#endif // ENABLE_MACOSX_GARBAGE_COLLECTION
+
+#ifdef    USE_CORE_FOUNDATION
+#define RKStringBufferEncoding CFStringEncoding
+#else  // USE_CORE_FOUNDATION not defined
+#define RKStringBufferEncoding NSStringEncoding
+#endif // USE_CORE_FOUNDATION
+
+// These macros provide transparent support for Mac OS X Leopard Garbage Collection and non-Leopard systems.
+
+#ifdef ENABLE_MACOSX_GARBAGE_COLLECTION
+#define RKEnableCollectorForPointer(x)    if(RK_EXPECTED(RKRegexGarbageCollect == 1, 0)) { if(RK_EXPECTED(x != NULL, 1)) { [[objc_getClass("NSGarbageCollector") defaultCollector] enableCollectorForPointer:x];  } }
+#define RKDisableCollectorForPointer(x)   if(RK_EXPECTED(RKRegexGarbageCollect == 1, 0)) { if(RK_EXPECTED(x != NULL, 1)) { [[objc_getClass("NSGarbageCollector") defaultCollector] disableCollectorForPointer:x]; } }
+#define RKMakeCollectable(x)                 RK_EXPECTED(RKRegexGarbageCollect == 1, 0)  ? NSMakeCollectable((id)x) : (id)x
+#define RKMakeCollectableOrAutorelease(x)    RK_EXPECTED(RKRegexGarbageCollect == 1, 0)  ? NSMakeCollectable((id)x) : [(id)x autorelease]
+#define RKAutorelease(x)                     RK_EXPECTED(RKRegexGarbageCollect == 1, 0)  ? x : [x autorelease]
+#define RKCFRetain(x)                        RK_EXPECTED(RKRegexGarbageCollect == 1, 0)  ? x : CFRetain(x)
+#define RKCFRelease(x)                       RK_EXPECTED(RKRegexGarbageCollect == 1, 0)  ? x : CFRelease(x)
+#define RKRetain(x)                          RK_EXPECTED(RKRegexGarbageCollect == 1, 0)  ? x : [x retain]
+#define RKRelease(x)                         RK_EXPECTED(RKRegexGarbageCollect == 1, 0)  ? x : [x release]
+#define RKDealloc(x)                         RK_EXPECTED(RKRegexGarbageCollect == 1, 0)  ? x : [x dealloc]
 #else
-typedef NSStringEncoding RKStringBufferEncoding;
+#define RKEnableCollectorForPointer(x)    
+#define RKDisableCollectorForPointer(x)   
+#define RKMakeCollectable(x)              (id)x
+#define RKMakeCollectableOrAutorelease(x) [(id)x autorelease]
+#define RKAutorelease(x)                  [(id)x autorelease]
+#define RKCFRetain(x)                     CFRetain(x)
+#define RKCFRelease(x)                    CFRelease(x)
+#define RKRetain(x)                       [(id)x retain]
+#define RKRelease(x)                      [(id)x release]
+#define RKDealloc(x)                      [(id)x dealloc]
 #endif
 
 typedef struct _RKStringBuffer {
-  NSString *string;
-  const char *characters;
-  unsigned long length;
-  RKStringBufferEncoding encoding;
+  RK_STRONG_REF NSString               *string;
+  RK_STRONG_REF const char             *characters;
+                unsigned long           length;
+                RKStringBufferEncoding  encoding;
 } RKStringBuffer;
 
 
@@ -88,6 +126,7 @@ typedef struct _RKStringBuffer {
 
 #import <objc/objc-class.h>
 #import <objc/objc-runtime.h>
+#import <objc/objc-auto.h>
 #include <mach/mach_types.h>
 #include <mach/mach_host.h>
 #include <mach/thread_switch.h>
@@ -156,7 +195,7 @@ RKREGEX_STATIC_INLINE BOOL RKAtomicCompareAndSwapPtr(void *oldp, void *newp, vol
 // Try for GCC 4.1+ built in atomic ops and pthreads?
 #if !defined(HAVE_RKREGEX_ATOMIC_OPS) && ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 1))
 
-#warning "Unable to determine platform specific atomic operations. Trying gcc 4.1+ built in atomic ops, sched_yield(), and pthread_main_np()"
+#warning Unable to determine platform specific atomic operations. Trying gcc 4.1+ built in atomic ops, sched_yield(), and pthread_main_np().
 
 #define HAVE_RKREGEX_ATOMIC_OPS
 
@@ -172,7 +211,7 @@ RKREGEX_STATIC_INLINE BOOL RKIsMainThread(void) { return((BOOL)pthread_main_np()
 
 
 #ifndef HAVE_RKREGEX_ATOMIC_OPS
-#error "Unable to determine atomic operations for this platform"
+#error Unable to determine atomic operations for this platform.
 #endif
 
 // End platform configuration
@@ -180,13 +219,13 @@ RKREGEX_STATIC_INLINE BOOL RKIsMainThread(void) { return((BOOL)pthread_main_np()
 // Useful min/max macros that only evaluate the parameters once, and are type sensitive.
 
 #ifdef max
-#warning "max is already defined, max(a, b) may not not behave as expected."
+#warning max is already defined, max(a, b) may not not behave as expected.
 #else
 #define max(a,b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); (_a > _b) ? _a : _b; })
 #endif
 
 #ifdef min
-#warning "min is already defined, min(a, b) may not behave as expected."
+#warning min is already defined, min(a, b) may not behave as expected.
 #else
 #define min(a,b) ({__typeof__(a) _a = (a); __typeof__(b) _b = (b); (_a < _b) ? _a : _b; })
 #endif
@@ -209,7 +248,7 @@ RKREGEX_STATIC_INLINE BOOL RKIsMainThread(void) { return((BOOL)pthread_main_np()
 // In RKRegex.c
 RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCompileOption compileOptions, const BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3), pure, used, visibility("hidden"));
 // In RKCache.c
-id RKFastCacheLookup(RKCache * const aCache, const SEL _cmd RK_ATTRIBUTES(unused), const unsigned int objectHash, const BOOL shouldAutorelease) RK_ATTRIBUTES(used, visibility("hidden"));
+id RKFastCacheLookup(RKCache * const aCache, const SEL _cmd RK_ATTRIBUTES(unused), const RKUInteger objectHash, const BOOL shouldAutorelease) RK_ATTRIBUTES(used, visibility("hidden"));
 // In RKPrivate.c
 void nsprintf(NSString * const formatString, ...) RK_ATTRIBUTES(visibility("hidden"));
 void vnsprintf(NSString * const formatString, va_list ap) RK_ATTRIBUTES(visibility("hidden"));
@@ -219,9 +258,9 @@ NSArray *RKArrayOfPrettyNewlineTypes(NSString * const prefixString) RK_ATTRIBUTE
 
 #ifdef _USE_DEFINES
 
-#define NSMakeRange(x, y) ((NSRange){(x), (y)})
+#define NSMakeRange(x, y) ((NSRange){(RKUInteger)(x), (RKUInteger)(y)})
 #define NSEqualRanges(range1, range2) ({NSRange _r1 = (range1), _r2 = (range2); (_r1.location == _r2.location) && (_r1.length == _r2.length); })
-#define NSLocationInRange(l, r) ({ unsigned int _l = (l); NSRange _r = (r); (_l - _r.location) < _r.length; })
+#define NSLocationInRange(l, r) ({ (__typeof__(NSRange.location)) _l = (l); NSRange _r = (r); (_l - _r.location) < _r.length; })
 #define NSMaxRange(r) ({ NSRange _r = (r); _r.location + _r.length; })
 
 #define RKYesOrNo(yesOrNo) ((yesOrNo == YES) ? @"Yes":@"No")
@@ -229,28 +268,28 @@ NSArray *RKArrayOfPrettyNewlineTypes(NSString * const prefixString) RK_ATTRIBUTE
 #define RKRangeInsideRange(insideRange, outsideRange) ((insideRange.location - outsideRange.location < outsideRange.length) && (((insideRange.location + insideRange.length) - outsideRange.location) <= outsideRange.length))
 
 #ifdef USE_CORE_FOUNDATION
-#define RKHashForStringAndCompileOption(string, option) (RK_EXPECTED(string == NULL, 0) ? option : (CFHash((CFTypeRef)string) ^ option))
+#define RKHashForStringAndCompileOption(string, option) (RK_EXPECTED(string == NULL, 0) ? (RKUInteger)option : ((RKUInteger)CFHash((CFTypeRef)string) ^ (RKUInteger)option))
 #else // NextStep Foundation
-#define RKHashForStringAndCompileOption(string, option) (RK_EXPECTED(string == NULL, 0) ? option : ([string hash] ^ option))
+#define RKHashForStringAndCompileOption(string, option) (RK_EXPECTED(string == NULL, 0) ? (RKUInteger)option : ([string hash] ^ (RKUInteger)option))
 #endif //USE_CORE_FOUNDATION
 
 #else
 
 RKREGEX_STATIC_INLINE RKStringBuffer RKStringBufferWithString(NSString * const string) RK_ATTRIBUTES(nonnull(1), const);
 RKREGEX_STATIC_INLINE NSString      *RKYesOrNo(const BOOL yesOrNo) RK_ATTRIBUTES(const);
-RKREGEX_STATIC_INLINE unsigned int   RKHashForStringAndCompileOption(NSString * const string, const RKCompileOption option) RK_ATTRIBUTES(nonnull(1), pure);
-RKREGEX_STATIC_INLINE RKStringBuffer RKMakeStringBuffer(NSString * const bufferString, const char * const stringBufferCharacters, const unsigned int stringBufferLength, const RKStringBufferEncoding stringBufferEncoding) RK_ATTRIBUTES(const);
+RKREGEX_STATIC_INLINE RKUInteger     RKHashForStringAndCompileOption(NSString * const string, const RKCompileOption option) RK_ATTRIBUTES(nonnull(1), pure);
+RKREGEX_STATIC_INLINE RKStringBuffer RKMakeStringBuffer(NSString * const bufferString, const char * const stringBufferCharacters, const RKUInteger stringBufferLength, const RKStringBufferEncoding stringBufferEncoding) RK_ATTRIBUTES(const);
 RKREGEX_STATIC_INLINE BOOL           RKRangeInsideRange(const NSRange insideRange, const NSRange outsideRange) RK_ATTRIBUTES(const);
 
 // Pretty NSString of BOOL, returns Yes or No NSString
-RKREGEX_STATIC_INLINE NSString *RKYesOrNo(const BOOL yesOrNo) { return((yesOrNo == YES) ? @"Yes":@"No"); }
+RKREGEX_STATIC_INLINE NSString      *RKYesOrNo(const BOOL yesOrNo) { return((yesOrNo == YES) ? @"Yes":@"No"); }
 
-RKREGEX_STATIC_INLINE RKStringBuffer RKMakeStringBuffer(NSString * const bufferString, const char * const stringBufferCharacters, const unsigned int stringBufferLength, const RKStringBufferEncoding stringBufferEncoding) {
+RKREGEX_STATIC_INLINE RKStringBuffer RKMakeStringBuffer(NSString * const bufferString, const char * const stringBufferCharacters, const RKUInteger stringBufferLength, const RKStringBufferEncoding stringBufferEncoding) {
   RKStringBuffer stringBuffer;
-  stringBuffer.string = bufferString;
+  stringBuffer.string     = bufferString;
   stringBuffer.characters = stringBufferCharacters;
-  stringBuffer.length = stringBufferLength;
-  stringBuffer.encoding = stringBufferEncoding;
+  stringBuffer.length     = stringBufferLength;
+  stringBuffer.encoding   = stringBufferEncoding;
   return(stringBuffer);
 }
 
@@ -259,16 +298,16 @@ RKREGEX_STATIC_INLINE BOOL RKRangeInsideRange(const NSRange insideRange, const N
   return((NSLocationInRange(insideRange.location, outsideRange) == YES) && (((NSMaxRange(insideRange) - outsideRange.location) <= outsideRange.length) == YES));
 }
 
-RKREGEX_STATIC_INLINE unsigned int RKHashForStringAndCompileOption(NSString * const string, const RKCompileOption option) {
+RKREGEX_STATIC_INLINE RKUInteger RKHashForStringAndCompileOption(NSString * const string, const RKCompileOption option) {
   if(RK_EXPECTED(string == NULL, 0)) { return(option); }
 #ifdef USE_CORE_FOUNDATION
-  return(CFHash((CFTypeRef)string) ^ option);
+  return((RKUInteger)CFHash((CFTypeRef)string) ^ option);
 #else // NextStep Foundation
   return([string hash] ^ option);
 #endif //USE_CORE_FOUNDATION
 }
 
-#endif
+#endif //_USE_DEFINES
 
 RKREGEX_STATIC_INLINE RKStringBuffer RKStringBufferWithString(NSString * const RK_C99(restrict) string) {
   RKStringBuffer stringBuffer = RKMakeStringBuffer(string, NULL, 0, 0);
@@ -279,12 +318,12 @@ RKREGEX_STATIC_INLINE RKStringBuffer RKStringBufferWithString(NSString * const R
     
     if((stringBuffer.encoding == kCFStringEncodingMacRoman) || (stringBuffer.encoding == kCFStringEncodingASCII) || (stringBuffer.encoding == kCFStringEncodingUTF8)) {
       stringBuffer.characters = CFStringGetCStringPtr((CFStringRef)string, stringBuffer.encoding);
-      stringBuffer.length = CFStringGetLength((CFStringRef)string);
+      stringBuffer.length = (RKUInteger)CFStringGetLength((CFStringRef)string);
     }
     if(RK_EXPECTED(stringBuffer.characters == NULL, 0)) {
       stringBuffer.characters = [string UTF8String];
       stringBuffer.encoding = kCFStringEncodingUTF8;
-      if(RK_EXPECTED(stringBuffer.characters != NULL, 1)) { stringBuffer.length = [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding]; }
+      if(RK_EXPECTED(stringBuffer.characters != NULL, 1)) { stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters); }
       //NSLog(@"CF UTF8String conversion path. string = %p '%.40s' UTF8length = %u, original encoding: %d %@ length: %u", stringBuffer.characters, stringBuffer.characters, stringBuffer.length, cfStringEncoding, CFStringGetNameOfEncoding(cfStringEncoding), CFStringGetLength((CFStringRef)string));
     }
   }
@@ -299,7 +338,7 @@ RKREGEX_STATIC_INLINE RKStringBuffer RKStringBufferWithString(NSString * const R
     if(RK_EXPECTED(stringBuffer.characters == NULL, 0)) {
       stringBuffer.characters = [string UTF8String];
       stringBuffer.encoding = NSUTF8StringEncoding;
-      if(RK_EXPECTED(stringBuffer.characters != NULL, 1)) { stringBuffer.length = [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding]; }
+      if(RK_EXPECTED(stringBuffer.characters != NULL, 1)) { stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters); }
       //NSLog(@"NS UTF8String conversion path. string = %p, '%.40s' UTF8length = %u, original encoding: %@ length: %u", stringBuffer.characters, stringBuffer.characters, stringBuffer.length, [NSString localizedNameOfStringEncoding:[string fastestEncoding]], [string length]);
     }
   }
@@ -313,15 +352,15 @@ typedef enum {
   RKCaptureExtractIgnoreConversions     = (1<<2)
 } RKCaptureExtractOptions;
 
-NSString *RKStringFromReferenceString(id self, const SEL _cmd, RKRegex * const regex, const NSRange * const matchRanges, const RKStringBuffer * const matchStringBuffer, const RKStringBuffer * const referenceStringBuffer) RK_ATTRIBUTES(malloc, used, visibility("hidden"));
-BOOL RKExtractCapturesFromMatchesWithKeyArguments(id self, const SEL _cmd, const RKStringBuffer * const stringBuffer, RKRegex * const regex, const NSRange * const matchRanges, const RKCaptureExtractOptions captureExtractOptions, NSString * const firstKey, va_list useVarArgsList) RK_ATTRIBUTES(used, visibility("hidden"));
+NSString *RKStringFromReferenceString(id self, const SEL _cmd, RKRegex * const RK_C99(restrict) regex, RK_STRONG_REF const NSRange * const RK_C99(restrict) matchRanges, RK_STRONG_REF const RKStringBuffer * const RK_C99(restrict) matchStringBuffer, RK_STRONG_REF const RKStringBuffer * const RK_C99(restrict) referenceStringBuffer) RK_ATTRIBUTES(malloc, used, visibility("hidden"));
+BOOL RKExtractCapturesFromMatchesWithKeyArguments(id self, const SEL _cmd, RK_STRONG_REF const RKStringBuffer * const RK_C99(restrict) stringBuffer, RKRegex * const RK_C99(restrict) regex, RK_STRONG_REF const NSRange * const RK_C99(restrict) matchRanges, const RKCaptureExtractOptions captureExtractOptions, NSString * const firstKey, va_list useVarArgsList) RK_ATTRIBUTES(used, visibility("hidden"));
 
-unsigned int RKCaptureIndexForCaptureNameCharacters(RKRegex * const aRegex, const SEL _cmd, const char * const RK_C99(restrict) captureNameCharacters, const size_t length, const NSRange * const RK_C99(restrict) matchedRanges, const BOOL raiseExceptionOnDoesNotExist) RK_ATTRIBUTES(pure, used, visibility("hidden"));
+RKUInteger RKCaptureIndexForCaptureNameCharacters(RKRegex * const aRegex, const SEL _cmd, const char * const RK_C99(restrict) captureNameCharacters, const RKUInteger length, const NSRange * const RK_C99(restrict) matchedRanges, const BOOL raiseExceptionOnDoesNotExist) RK_ATTRIBUTES(pure, used, visibility("hidden"));
 
 
 @interface RKRegex (Private)
 
-- (RKMatchErrorCode)getRanges:(NSRange * const RK_C99(restrict))ranges count:(const unsigned int)rangeCount withCharacters:(const void * const RK_C99(restrict))charactersBuffer length:(const unsigned int)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options;
+- (RKMatchErrorCode)getRanges:(NSRange * const RK_C99(restrict))ranges count:(const RKUInteger)rangeCount withCharacters:(const void * const RK_C99(restrict))charactersBuffer length:(const RKUInteger)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options;
 
 @end
 
@@ -348,33 +387,33 @@ extern pthread_key_t __RKRegexThreadLocalDataKey;
 
 
 struct __RKThreadLocalData {
-  NSNumberFormatter *_numberFormatter;
+  RK_STRONG_REF NSNumberFormatter      *_numberFormatter;
 #ifdef HAVE_NSNUMBERFORMATTER_CONVERSIONS
-  NSNumberFormatterStyle _currentFormatterStyle;
+                NSNumberFormatterStyle  _currentFormatterStyle;
 #endif
 };
 
 struct __RKThreadLocalData *__RKGetThreadLocalData(void) RK_ATTRIBUTES(pure);
 
 #ifdef _USE_DEFINES
-#define RKGetThreadLocalData() ({ struct __RKThreadLocalData * RK_C99(restrict) _tld = pthread_getspecific(__RKRegexThreadLocalDataKey); RK_EXPECTED((_tld != NULL), 1) ? _tld : __RKGetThreadLocalData(); })
+#define RKGetThreadLocalData() ({ RK_STRONG_REF struct __RKThreadLocalData * RK_C99(restrict) _tld = pthread_getspecific(__RKRegexThreadLocalDataKey); RK_EXPECTED((_tld != NULL), 1) ? _tld : __RKGetThreadLocalData(); })
 #else
 RKREGEX_STATIC_INLINE struct __RKThreadLocalData *RKGetThreadLocalData(void) RK_ATTRIBUTES(pure);
 RKREGEX_STATIC_INLINE struct __RKThreadLocalData *RKGetThreadLocalData(void) {
-  struct __RKThreadLocalData * RK_C99(restrict) tld = pthread_getspecific(__RKRegexThreadLocalDataKey);
+  RK_STRONG_REF struct __RKThreadLocalData * RK_C99(restrict) tld = pthread_getspecific(__RKRegexThreadLocalDataKey);
   return(RK_EXPECTED((tld != NULL), 1) ? tld : __RKGetThreadLocalData());
 }
-#endif _USE_DEFINES
+#endif //_USE_DEFINES
 
 #ifdef HAVE_NSNUMBERFORMATTER_CONVERSIONS
 
 NSNumberFormatter *__RKGetThreadLocalNumberFormatter(void) RK_ATTRIBUTES(pure, used);
 #ifdef _USE_DEFINES
-#define RKGetThreadLocalNumberFormatter() ({ struct __RKThreadLocalData * RK_C99(restrict) __tld = pthread_getspecific(__RKRegexThreadLocalDataKey); if(RK_EXPECTED(__tld == NULL, 0)) { __tld = __RKGetThreadLocalData(); } RK_EXPECTED((__tld == NULL), 0) ? NULL : RK_EXPECTED((__tld->_numberFormatter != NULL), 1) ? __tld->_numberFormatter : __RKGetThreadLocalNumberFormatter(); })
+#define RKGetThreadLocalNumberFormatter() ({ RK_STRONG_REF struct __RKThreadLocalData * RK_C99(restrict) __tld = pthread_getspecific(__RKRegexThreadLocalDataKey); if(RK_EXPECTED(__tld == NULL, 0)) { __tld = __RKGetThreadLocalData(); } RK_EXPECTED((__tld == NULL), 0) ? NULL : RK_EXPECTED((__tld->_numberFormatter != NULL), 1) ? __tld->_numberFormatter : __RKGetThreadLocalNumberFormatter(); })
 #else
 RKREGEX_STATIC_INLINE NSNumberFormatter *RKGetThreadLocalNumberFormatter(void) RK_ATTRIBUTES(pure);
 RKREGEX_STATIC_INLINE NSNumberFormatter *RKGetThreadLocalNumberFormatter(void) {
-  struct __RKThreadLocalData * RK_C99(restrict) tld = NULL;
+  RK_STRONG_REF struct __RKThreadLocalData * RK_C99(restrict) tld = NULL;
   if(RK_EXPECTED((tld = RKGetThreadLocalData()) == NULL, 0)) { return(NULL); }
   return(RK_EXPECTED((tld->_numberFormatter != NULL), 1) ? tld->_numberFormatter : __RKGetThreadLocalNumberFormatter());
 }
@@ -399,36 +438,35 @@ RKREGEX_STATIC_INLINE NSNumberFormatter *RKGetThreadLocalNumberFormatter(void) {
 
 
 struct referenceInstruction {
-  int op;
-  const void * RK_C99(restrict) ptr;
-  NSRange range;
+                int op;
+  RK_STRONG_REF const void * RK_C99(restrict) ptr;
+                NSRange range;
 };
 
 struct copyInstruction {
-  const void * RK_C99(restrict) ptr;
-  size_t length;
+  RK_STRONG_REF const void * RK_C99(restrict) ptr;
+  RKUInteger length;
 };
 
 typedef struct referenceInstruction RKReferenceInstruction;
 typedef struct copyInstruction RKCopyInstruction;
 
 struct referenceInstructionsBuffer {
-  unsigned int length, capacity;
-  RKReferenceInstruction * RK_C99(restrict) instructions;
-  NSMutableData * RK_C99(restrict) mutableData;
-  BOOL isValid;
+                RKUInteger              length, capacity;
+  RK_STRONG_REF RKReferenceInstruction * RK_C99(restrict) instructions;
+  RK_STRONG_REF NSMutableData          * RK_C99(restrict) mutableData;
+                BOOL                     isValid;
 };
 
 struct copyInstructionsBuffer {
-  unsigned int length, capacity;
-  size_t copiedLength;
-  RKCopyInstruction * RK_C99(restrict) instructions;
-  NSMutableData * RK_C99(restrict) mutableData;
-  BOOL isValid;
+                RKUInteger          length, capacity, copiedLength;
+  RK_STRONG_REF RKCopyInstruction * RK_C99(restrict) instructions;
+  RK_STRONG_REF NSMutableData     * RK_C99(restrict) mutableData;
+                BOOL                isValid;
 };
 
 typedef struct referenceInstructionsBuffer RKReferenceInstructionsBuffer;
-typedef struct copyInstructionsBuffer RKCopyInstructionsBuffer;
+typedef struct copyInstructionsBuffer      RKCopyInstructionsBuffer;
 
 #ifdef _USE_DEFINES
 
@@ -436,7 +474,7 @@ typedef struct copyInstructionsBuffer RKCopyInstructionsBuffer;
 #define RKMakeCopyInstructionsBuffer(length, capacity, copiedLength, instructions, mutableData) ((RKCopyInstructionsBuffer){length, capacity, copiedLength, instructions, mutableData, YES})
 
 #else
-RKREGEX_STATIC_INLINE RKReferenceInstructionsBuffer RKMakeReferenceInstructionsBuffer(const unsigned int length, const unsigned int capacity, RKReferenceInstruction * const instructions, NSMutableData * const mutableData) {
+RKREGEX_STATIC_INLINE RKReferenceInstructionsBuffer RKMakeReferenceInstructionsBuffer(const RKUInteger length, const RKUInteger capacity, RKReferenceInstruction * const instructions, NSMutableData * const mutableData) {
   RKReferenceInstructionsBuffer instructionsBuffer;
   instructionsBuffer.length       = length;
   instructionsBuffer.capacity     = capacity;
@@ -446,7 +484,7 @@ RKREGEX_STATIC_INLINE RKReferenceInstructionsBuffer RKMakeReferenceInstructionsB
   return(instructionsBuffer);
 }
 
-RKREGEX_STATIC_INLINE RKCopyInstructionsBuffer RKMakeCopyInstructionsBuffer(const unsigned int length, const unsigned int capacity, const size_t copiedLength, RKCopyInstruction * const instructions, NSMutableData *mutableData) {
+RKREGEX_STATIC_INLINE RKCopyInstructionsBuffer RKMakeCopyInstructionsBuffer(const RKUInteger length, const RKUInteger capacity, const RKUInteger copiedLength, RKCopyInstruction * const instructions, NSMutableData *mutableData) {
   RKCopyInstructionsBuffer instructionsBuffer;
   instructionsBuffer.length       = length;
   instructionsBuffer.capacity     = capacity;
@@ -456,7 +494,7 @@ RKREGEX_STATIC_INLINE RKCopyInstructionsBuffer RKMakeCopyInstructionsBuffer(cons
   instructionsBuffer.isValid      = YES;
   return(instructionsBuffer);
 }
-#endif
+#endif //_USE_DEFINES
 
 /*************** End match and replace operations ***************/
 
@@ -467,3 +505,4 @@ RKREGEX_STATIC_INLINE RKCopyInstructionsBuffer RKMakeCopyInstructionsBuffer(cons
 #import <RegexKit/RKPlaceholder.h>
 #import <RegexKit/RKCoder.h>
 
+#endif // _REGEXKITPRIVATE_H_

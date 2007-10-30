@@ -1,3 +1,77 @@
+Release Notes for 0.3.0 BETA
+----------------------------
+
+o Xcode 3.0 DocSet Documentation
+  ------------------------------
+
+The documentation is now made available in the new Xcode 3.0 DocSet format.
+This allows you to access the RegexKit documentation from within Xcode.
+If you open the Research Assistant ( Help > Show Research Assistant ), and
+then place the insert point over a RegexKit method, the Research Assistant
+will display the relevent section of documentation.  Also available is
+full text searching of the documentation from the documentation viewer.
+Although the Subscribe button is present, there is no subscription available
+at this time (this seems to be a bug with Xcode, no URL is present to even
+subscribe to.)  Automatic documentation updating will be added in a later
+release.
+
+o Garbage Collection support
+  --------------------------
+
+RegexKit now includes support for Mac OS X 10.5's Garbage Collection feature.
+Cocoa's Garbage Collection system requires that all linked files have
+Garbage Collection enabled for Garbage Collection to be active.  RegexKit
+supports both the new Garbage Collection system and the older retain / release
+system.  At load time, if Cocoa has enabled the GC system, RegexKit switches
+to using that.  Otherwise, it falls back to the older retain / release way
+of managing memory automatically.
+
+o 64-bit support
+  --------------
+
+RegexKit now supports 64-bits cleanly.  For Mac OS X users, the framework
+binary now includes the following architectures:
+
+  Architecture  Minimum Mac OS X
+  ppc           10.4
+  i386          10.4
+  ppc64         10.5 (Leopard)
+  x86_64        10.5 (Leopard)
+
+o Mac OS X Installer .dmg distribution
+  ------------------------------------
+
+RegexKit 0.3.0 marks the introduction of a Mac OS X Installer based
+distribution.  It bundles together the Mac OS X Binary executable
+RegexKit.framework, the Documentation, and the source code in to one
+convenient package.
+
+o Build system improvements
+  -------------------------
+
+Began to enable parallel building where possible.  For now, the PCRE target
+and part of the Distribution target are converted.  The global build
+configuration flag PARALLEL_BUILD controls this feature.  The PCRE target
+can be selectively disabled with PCRE_PARALLEL_BUILD = NO, and the Distribution
+target can be selectively disabled with DISTRIBUTION_PARALLEL_BUILD = NO.
+
+By default it will spawn as many jobs as there are CPU's.
+
+o RegexKit.framework Info.plist version bug fix
+  ---------------------------------------------
+
+The Info.plist in RegexKit 0.2.0 had a bug in the Info.plist file.
+The settings for the keys CFBundleShortVersionString and CFBundleVersion
+where set to the variable ${REGEXKIT_CURRENT_VERSION} when they should
+have been set to ${PROJECT_CURRENT_VERSION}.
+
+o Multi-threading memory leak
+  ---------------------------
+
+Fixed a very minor memory leak.  Forgot to free() the per-thread local storage
+struct when a thread exited.
+
+----------------------------
 Release Notes for 0.2.0 BETA
 ----------------------------
 

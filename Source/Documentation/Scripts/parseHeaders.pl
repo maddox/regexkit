@@ -441,6 +441,7 @@ sub processFile {
       
 	my($pretty, $signature, $selector, $mid, $type) = ($mstr);
 	#		print("debug: Got method '$pretty'\n");
+  $pretty =~ s/RK_REQUIRES_NIL_TERMINATION//;
 	$pretty =~ s/RK_C99($balancedParenRE)/my $x=$1; $x=~ s#\A\((.*)\)\z#$1#; $x/sge;
 	$pretty =~ s/\n/ /sg;
 	$pretty =~ s/$attr_re//sg;
@@ -476,6 +477,7 @@ sub processFile {
 	  my($signature, $pretty, $mid, $symbol) = ($mstr);
   
 	  #    print("debug: Got function '$signature'\n");
+    $signature =~ s/RK_REQUIRES_NIL_TERMINATION//;
 	  $signature =~ s/RK_C99($balancedParenRE)/my $x=$1; $x=~ s#\A\((.*)\)\z#$1#; $x/sge;
 	  $signature =~ s/\{.*\}\z//s;
 	  $signature =~ s/\;//s;

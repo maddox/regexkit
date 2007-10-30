@@ -41,20 +41,76 @@
 
 #define __REGEXKIT__
 
+
 // Determine runtime environment
 #if !defined(__MACOSX_RUNTIME__) && !defined(__GNUSTEP_RUNTIME__)
 
 #if defined(__APPLE__) && defined(__MACH__) && !defined(GNUSTEP)
 #define __MACOSX_RUNTIME__
-#else // If not Mac OS X, GNUstep?
-#if defined(GNUSTEP) 
+#endif // If not Mac OS X, GNUstep?
+
+#if defined(GNUSTEP) && !defined(__MACOSX_RUNTIME__)
 #define __GNUSTEP_RUNTIME__
-#else // Not Mac OS X or GNUstep, that's a problem.
-#error "Unable to determine run time environment, automatic Mac OS X and GNUstep detection failed"
-#endif // GNUSTEP
-#endif //__APPLE__ && __MACH__
+#endif // Not Mac OS X or GNUstep, that's a problem.
 
 #endif // !defined(__MACOSX_RUNTIME__) && !defined(__GNUSTEP_RUNTIME__)
+
+
+// If the above did not set the run time environment, error out.
+#if !defined(__MACOSX_RUNTIME__) && !defined(__GNUSTEP_RUNTIME__)
+#error Unable to determine run time environment, automatic Mac OS X and GNUstep detection failed
+#endif
+
+/*!
+ @defined RKInteger
+ @tocgroup Constants Preprocessor Macros
+ @abstract Preprocessor definition for cross-platform @link NSInteger NSInteger @/link functionality.
+ @discussion <p>On <span class="nobr">Mac OS X 10.5</span> this is defined to be @link NSInteger NSInteger@/link, otherwise it is defined as <span class="code">int</span>.</p>
+ <p>This is done as a preprocessor macro so that it is rewritten in to the proper type for the environment for type checking.</p>
+ */
+
+/*!
+ @defined RKUInteger
+ @tocgroup Constants Preprocessor Macros
+ @abstract Preprocessor definition for cross-platform @link NSUInteger NSUInteger @/link functionality.
+ @discussion <p>On <span class="nobr">Mac OS X 10.5</span> this is defined to be @link NSUInteger NSUInteger@/link, otherwise it is defined as <span class="code">unsigned int</span>.</p>
+ <p>This is done as a preprocessor macro so that it is rewritten in to the proper type for the environment for type checking.</p>
+ */
+
+/*!
+ @defined RKIntegerMax
+ @tocgroup Constants Preprocessor Macros
+ @abstract Preprocessor definition for cross-platform @link NSIntegerMax NSIntegerMax @/link functionality.
+ @discussion <p>On <span class="nobr">Mac OS X 10.5</span> this is defined to be @link NSIntegerMax NSIntegerMax@/link, otherwise it is defined as @link INT_MAX INT_MAX@/link.</p>
+ */
+
+/*!
+ @defined RKIntegerMin
+ @tocgroup Constants Preprocessor Macros
+ @abstract Preprocessor definition for cross-platform @link NSIntegerMin NSIntegerMin @/link functionality.
+ @discussion <p>On <span class="nobr">Mac OS X 10.5</span> this is defined to be @link NSIntegerMin NSIntegerMin@/link, otherwise it is defined as @link INT_MIN INT_MIN@/link.</p>
+ */
+
+/*!
+ @defined RKUIntegerMax
+ @tocgroup Constants Preprocessor Macros
+ @abstract Preprocessor definition for cross-platform @link NSUIntegerMax NSUIntegerMax @/link functionality.
+ @discussion <p>On <span class="nobr">Mac OS X 10.5</span> this is defined to be @link NSUIntegerMax NSUIntegerMax@/link, otherwise it is defined as @link UINT_MAX UINT_MAX@/link.</p>
+ */
+
+#if defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5)
+#define RKInteger     NSInteger
+#define RKUInteger    NSUInteger
+#define RKIntegerMax  NSIntegerMax
+#define RKIntegerMin  NSIntegerMin
+#define RKUIntegerMax NSUIntegerMax
+#else
+#define RKInteger     int
+#define RKUInteger    unsigned int
+#define RKIntegerMax  INT_MAX
+#define RKIntegerMin  INT_MIN
+#define RKUIntegerMax UINT_MAX
+#endif
 
 /*!
 @defined RKREGEX_STATIC_INLINE
@@ -95,6 +151,23 @@
 #endif
 
 /*!
+ @defined RK_REQUIRES_NIL_TERMINATION
+ @tocgroup Constants Preprocessor Macros
+ @abstract Compile time check for functions and methods that support a varying number of arguments that must be terminated with a <span class="code">NULL</span> or <span class="code">nil</span> as the last argument.
+ @discussion <p>Supported on <span class="nobr">Mac OS X 10.5</span> and later.</p>
+ */
+
+#if defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5)
+#define RK_REQUIRES_NIL_TERMINATION NS_REQUIRES_NIL_TERMINATION
+#else
+#define RK_REQUIRES_NIL_TERMINATION
+#endif
+
+// Other compilers and platforms may be able to use the following:
+//
+// #define RK_REQUIRES_NIL_TERMINATION RK_ATTRIBUTES(sentinel)
+
+/*!
 @defined RK_C99
  @tocgroup Constants Preprocessor Macros
  @abstract Macro wrapper around <span class="code">C99</span> keywords.
@@ -121,7 +194,7 @@
  @tocgroup Constants Constants
  @abstract Predefined <span class="argument">count</span> for use with <a href="NSString.html#ExpansionofCaptureSubpatternMatchReferencesinStrings" class="section-link">Search and Replace</a> methods to specify all matches are to be replaced.
  */
-#define RKReplaceAll UINT_MAX
+#define RKReplaceAll RKIntegerMax
 
 // Used to size/check buffers when calling private RKRegex getRanges:count:withCharacters:length:inRange:options:
 #define RK_PRESIZE_CAPTURE_COUNT(x) (256 + x + (x >> 1))
@@ -130,9 +203,11 @@
 /*************** Feature and config knobs ***************/
 
 // Default enabled
-#define USE_AUTORELEASED_MALLOC
 #define USE_PLACEHOLDER
 
+#if OBJC_API_VERSION < 2 && !defined (MAC_OS_X_VERSION_10_5)
+#define USE_AUTORELEASED_MALLOC
+#endif // Not enabled on Objective-C 2.0 (Mac OS X 10.5)
 
 #ifdef __COREFOUNDATION__
 #define USE_CORE_FOUNDATION
@@ -146,10 +221,32 @@
 #define RK_ENABLE_THREAD_LOCAL_STORAGE
 #endif
 
+
+/*!
+ @defined ENABLE_MACOSX_GARBAGE_COLLECTION
+ @tocgroup Constants Preprocessor Macros
+ @abstract Preprocessor definition to enable <span class="nobr">Mac OS X 10.5 (Leopard)</span> <span class="nobr">Garbage Collection</span>.
+ @discussion <p>This preprocessor define enables support for <span class="nobr">Garbage Collection</span> on <span class="nobr">Mac OS X 10.5 (Leopard)</span>.  Traditional <span class="nobr">@link retain retain @/link / @link release release @/link</span> functionality remains allowing the framework to be used in either <span class="nobr">Garbage Collected</span> enabled applications or reference counting applications.  The framework dynamically picks which mode to use at run-time base on whether or not the <span class="nobr">Garbage Collection</span> system is active.</p>
+ @seealso <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/GarbageCollection/index.html" class="section-link">Garbage Collection Programming Guide</a>
+ @seealso <a href="http://developer.apple.com/documentation/Cocoa/Reference/NSGarbageCollector_class/index.html" class="section-link">NSGarbageCollector Class Reference</a>
+ */
+
+#if defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5)
+#define ENABLE_MACOSX_GARBAGE_COLLECTION
+#define RK_STRONG_REF                     __strong
+#define RK_WEAK_REF                       __weak
+#else
+#define RK_STRONG_REF
+#define RK_WEAK_REF
+#endif
+
+#if defined(ENABLE_MACOSX_GARBAGE_COLLECTION) && !defined(MAC_OS_X_VERSION_10_5)
+#error The Mac OS X Garbage Collection feature requires at least Mac OS X 10.5
+#endif
+
 // AFAIK, only the GCC 3.3+ Mac OSX objc runtime has -fobjc-exception support
 #if (!defined(__MACOSX_RUNTIME__)) || (!defined(__GNUC__)) || ((__GNUC__ == 3) && (__GNUC_MINOR__ < 3)) || (!defined(MAC_OS_X_VERSION_10_3))
 // Otherwise, use NS_DURING / NS_HANDLER and friends
-#warning "NOTICE: Support for -fobjc-exception not present, using NS_DURING / NS_HANDLER macros for exceptions"
 #define USE_MACRO_EXCEPTIONS
 #endif
 

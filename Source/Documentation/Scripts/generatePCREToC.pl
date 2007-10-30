@@ -199,7 +199,7 @@ for(my $x = 0; $x < $#scanfiles; $x++) {
       <div class="section closed sub" id="$sectionId">
         <div class="header">
           <span class="indicator small">&nbsp;</span>
-          <span class="title">$tc_desc</span>
+          <span class="title"><a href="pcre/$atfile" target="doc">$tc_desc</a></span>
         </div>
         <div class="contents">
           <div class="entries">

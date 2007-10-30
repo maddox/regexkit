@@ -69,12 +69,16 @@ foreach my $row (@{$dbh->selectall_arrayref("SELECT \"'\" || name || \"'\" AS na
 
 if($#master_names != -1) {
   printf("warning: There are %d files missing from the '$clusterName' distribution directory.\n", $#master_names +1);
-  print("Files: " . join(", ", @master_names) . "\n");
+  my ($cutoff, @names) = ("");
+  if($#master_names > 4) { for(my $x=0; $x<5; $x++) { $names[$x] = $master_names[$x]; } $cutoff = " ... (Remaining " . ($#master_names - 4) . " cut off)"; } else { @names = @master_names; }
+  print("Files: " . join(", ", @names) . "$cutoff\n");
 }
 
 if($#verify_names != -1) {
   printf("warning: There are %d unknown, extra files in the '$clusterName' distribution directory.\n", $#verify_names +1);
-  print("Files: " . join(", ", @verify_names) . "\n");
+  my ($cutoff, @names) = ("");
+  if($#verify_names > 4) { for(my $x=0; $x<5; $x++) { $names[$x] = $verify_names[$x]; } $cutoff = " ... (Remaining " . ($#verify_names - 4) . " cut off)"; } else { @names = @verify_names; }
+  print("Files: " . join(", ", @names) . "$cutoff\n");
 }
 
 if(($dbh->selectall_arrayref("SELECT count(*) FROM cluster WHERE created < datetime('now', '-15 minutes') AND type != 'Master'"))->[0]->[0]) {

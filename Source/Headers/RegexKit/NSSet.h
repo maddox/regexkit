@@ -81,7 +81,7 @@
  @tocgroup   NSSet Querying a Set
  @abstract   Returns the number of objects matching <span class="argument">aRegex</span> in the receiver.
 */
--(unsigned int)countOfObjectsMatchingRegex:(id)aRegex;
+-(RKUInteger)countOfObjectsMatchingRegex:(id)aRegex;
 /*!
  @method     setByMatchingObjectsWithRegex:
  @tocgroup   NSSet Deriving New Sets

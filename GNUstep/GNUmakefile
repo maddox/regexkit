@@ -3,14 +3,22 @@
 include $(GNUSTEP_MAKEFILES)/common.make
 
 # Assumes that the CWD is GNUstep
-REGEXKIT_ROOT_DIR = $(abspath ..)
+REGEXKIT_ROOT_DIR       = $(abspath ..)
 
-GNUSTEP_BUILD_DIR   = ${REGEXKIT_ROOT_DIR}/GNUstep
-REGEXKIT_SOURCE_DIR  = ${REGEXKIT_ROOT_DIR}/Source
-REGEXKIT_HEADERS_DIR = ${REGEXKIT_SOURCE_DIR}/Headers
+GNUSTEP_BUILD_DIR       = ${REGEXKIT_ROOT_DIR}/GNUstep
+REGEXKIT_SOURCE_DIR     = ${REGEXKIT_ROOT_DIR}/Source
+REGEXKIT_HEADERS_DIR    = ${REGEXKIT_SOURCE_DIR}/Headers
 
-PCRE_LIBS=$(shell pcre-config --libs)
-PCRE_CFLAGS=$(shell pcre-config --cflags)
+PCRE_LIBS               = $(shell pcre-config --libs)
+PCRE_CFLAGS             = $(shell pcre-config --cflags)
+PCRE_HEADER             = $(shell perl -e '$$x = "${PCRE_CFLAGS}"; $$x =~ /\-I(.*?\/include\b)/; print("$$1/pcre.h");')
+
+ORIGINAL_RK_PCRE_HEADER = $(shell diff -q '${REGEXKIT_HEADERS_DIR}/RegexKit/pcre.h' '${REGEXKIT_SOURCE_DIR}/Build/Distribution/distribution_pcre.h')
+
+ifeq (${ORIGINAL_RK_PCRE_HEADER},)
+$(info Copying the installed PCRE's '${PCRE_HEADER}' to RegexKit's Headers directory at '${REGEXKIT_HEADERS_DIR}/RegexKit/pcre.h')
+$(shell cp '${PCRE_HEADER}' '${REGEXKIT_HEADERS_DIR}/RegexKit/pcre.h')
+endif
 
 vpath %.m ${REGEXKIT_SOURCE_DIR}
 vpath %.h ${REGEXKIT_HEADERS_DIR}/RegexKit
@@ -28,10 +36,6 @@ libRegexKit_HEADER_FILES_INSTALL_DIR = /RegexKit
 
 # Include the PCRE library
 libRegexKit_LIBRARIES_DEPEND_UPON   += $(FND_LIBS) ${PCRE_LIBS}
-
-#${REGEXKIT_HEADERS_DIR}/pcre.h:
-#	cp -p /usr/local/include/pcre.h '${REGEXKIT_HEADERS_DIR}/${PACKAGE_NAME}/pcre.h'
-
 
 include $(GNUSTEP_MAKEFILES)/library.make
 include $(GNUSTEP_MAKEFILES)/aggregate.make

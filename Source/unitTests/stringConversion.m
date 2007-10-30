@@ -7,7 +7,14 @@
 
 #define RKPrettyObjectMethodString(stringArg, ...) ([NSString stringWithFormat:[NSString stringWithFormat:@"%p [%@ %@]: %@", self, NSStringFromClass([(id)self class]), NSStringFromSelector(_cmd), stringArg], ##__VA_ARGS__])
 
+void startGC(void);
+
 @implementation stringConversion
+
++ (void)setUp
+{
+  startGC();
+}
 
 + (void)tearDown
 {
@@ -18,7 +25,7 @@
 
 - (void)testStringParseCommonConversions
 {
-  float floatValue = 0.0;  
+  float floatValue = 0.0f;
   STAssertTrueNoThrow(([@"234335.125" getCapturesWithRegexAndReferences:@"(\\d+\\.\\d+)", @"${1:%f}", &floatValue, nil] == YES), nil);
   STAssertTrue(floatValue == 234335.125, @"float: %f", floatValue);
 
@@ -54,21 +61,21 @@
   
   
   unsigned int uintValue;
-  uintValue = 3356399801; STAssertTrueNoThrow(([@"1298345149" getCapturesWithRegexAndReferences:@"([0-9]+)", @"${1:%u}", &uintValue, nil] == YES), nil); STAssertTrue(uintValue == 1298345149, @"uint: %u", uintValue);
-  uintValue = 3356399801; STAssertTrueNoThrow(([@"4294967295" getCapturesWithRegexAndReferences:@"([0-9]+)", @"${1:%u}", &uintValue, nil] == YES), nil); STAssertTrue(uintValue == 4294967295, @"uint: %u", uintValue);
-  uintValue = 3356399801; STAssertTrueNoThrow(([@"4294967296" getCapturesWithRegexAndReferences:@"([0-9]+)", @"${1:%u}", &uintValue, nil] == YES), nil); STAssertTrue(uintValue == 4294967295, @"uint: %u", uintValue);
+  uintValue = (unsigned int)3356399801; STAssertTrueNoThrow(([@"1298345149" getCapturesWithRegexAndReferences:@"([0-9]+)", @"${1:%u}", &uintValue, nil] == YES), nil); STAssertTrue(uintValue == (unsigned int)1298345149, @"uint: %u", uintValue);
+  uintValue = (unsigned int)3356399801; STAssertTrueNoThrow(([@"4294967295" getCapturesWithRegexAndReferences:@"([0-9]+)", @"${1:%u}", &uintValue, nil] == YES), nil); STAssertTrue(uintValue == (unsigned int)4294967295, @"uint: %u", uintValue);
+  uintValue = (unsigned int)3356399801; STAssertTrueNoThrow(([@"4294967296" getCapturesWithRegexAndReferences:@"([0-9]+)", @"${1:%u}", &uintValue, nil] == YES), nil); STAssertTrue(uintValue == (unsigned int)4294967295, @"uint: %u", uintValue);
 
   int intValue;
-  intValue = 2768037889; STAssertTrueNoThrow(([@"-1705920017" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%d}", &intValue, nil] == YES), nil); STAssertTrue(intValue == -1705920017, @"int: %d", intValue);
-  intValue = 2768037889; STAssertTrueNoThrow(([@"-2147483648" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%d}", &intValue, nil] == YES), nil); STAssertTrue(intValue == -2147483648, @"int: %d", intValue);
-  intValue = 2768037889; STAssertTrueNoThrow(([@"-2147483649" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%d}", &intValue, nil] == YES), nil); STAssertTrue(intValue == -2147483648, @"int: %d", intValue);
-  intValue = 2768037889; STAssertTrueNoThrow(([@"2147483647" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%d}", &intValue, nil] == YES), nil); STAssertTrue(intValue == 2147483647, @"int: %d", intValue);
-  intValue = 2768037889; STAssertTrueNoThrow(([@"2147483648" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%d}", &intValue, nil] == YES), nil); STAssertTrue(intValue == 2147483647, @"int: %d", intValue);
+  intValue = (int)2768037889; STAssertTrueNoThrow(([@"-1705920017" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%d}", &intValue, nil] == YES), nil); STAssertTrue(intValue == (int)-1705920017, @"int: %d", intValue);
+  intValue = (int)2768037889; STAssertTrueNoThrow(([@"-2147483648" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%d}", &intValue, nil] == YES), nil); STAssertTrue(intValue == (int)-2147483648, @"int: %d", intValue);
+  intValue = (int)2768037889; STAssertTrueNoThrow(([@"-2147483649" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%d}", &intValue, nil] == YES), nil); STAssertTrue(intValue == (int)-2147483648, @"int: %d", intValue);
+  intValue = (int)2768037889; STAssertTrueNoThrow(([@"2147483647" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%d}", &intValue, nil] == YES), nil); STAssertTrue(intValue == (int)2147483647, @"int: %d", intValue);
+  intValue = (int)2768037889; STAssertTrueNoThrow(([@"2147483648" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%d}", &intValue, nil] == YES), nil); STAssertTrue(intValue == (int)2147483647, @"int: %d", intValue);
 
-  intValue = 2768037889; STAssertTrueNoThrow(([@"017777777777" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%o}", &intValue, nil] == YES), nil); STAssertTrue(intValue == 2147483647, @"oct: %o", intValue);
-  intValue = 2768037889; STAssertTrueNoThrow(([@"020000000000" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%o}", &intValue, nil] == YES), nil); STAssertTrue(intValue == 2147483647, @"oct: %o", intValue);
-  intValue = 2768037889; STAssertTrueNoThrow(([@"-020000000000" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%o}", &intValue, nil] == YES), nil); STAssertTrue(intValue == -2147483648, @"oct: %o", intValue);
-  intValue = 2768037889; STAssertTrueNoThrow(([@"-020000000001" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%o}", &intValue, nil] == YES), nil); STAssertTrue(intValue == -2147483648, @"oct: %o", intValue);
+  intValue = (int)2768037889; STAssertTrueNoThrow(([@"017777777777" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%o}", &intValue, nil] == YES), nil); STAssertTrue(intValue == (int)2147483647, @"oct: %o", intValue);
+  intValue = (int)2768037889; STAssertTrueNoThrow(([@"020000000000" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%o}", &intValue, nil] == YES), nil); STAssertTrue(intValue == (int)2147483647, @"oct: %o", intValue);
+  intValue = (int)2768037889; STAssertTrueNoThrow(([@"-020000000000" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%o}", &intValue, nil] == YES), nil); STAssertTrue(intValue == (int)-2147483648, @"oct: %o", intValue);
+  intValue = (int)2768037889; STAssertTrueNoThrow(([@"-020000000001" getCapturesWithRegexAndReferences:@"(\\-?[0-9]+)", @"${1:%o}", &intValue, nil] == YES), nil); STAssertTrue(intValue == (int)-2147483648, @"oct: %o", intValue);
 
   
   doubleValue = 24693708654421.0;

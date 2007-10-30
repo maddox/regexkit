@@ -55,9 +55,10 @@ typedef enum {
 static id RKDoDictionaryAction(id self, SEL _cmd, id matchAgainstDictionary, id aKeyRegex, id aObjectRegex, const RKDictionaryAction performAction, BOOL matchKeyAndObjectRegex);
 
 static id RKDoDictionaryAction(id self, SEL _cmd, id matchAgainstDictionary, id aKeyRegex, id aObjectRegex, const RKDictionaryAction performAction, BOOL matchKeyAndObjectRegex) {
-  id returnObject = NULL, *keys = NULL, *objects = NULL, *matchedKeys = NULL, *matchedObjects = NULL;
-  int dictionaryCount = 0, atMatchIndex = 0, matchedCount = 0;
-  RKRegex *keyRegex = NULL, *objectRegex = NULL;
+  id returnObject = NULL;
+  RK_STRONG_REF id *keys = NULL, *objects = NULL, *matchedKeys = NULL, *matchedObjects = NULL;
+  RKUInteger dictionaryCount = 0, atMatchIndex = 0, matchedCount = 0;
+  RK_STRONG_REF RKRegex *keyRegex = NULL, *objectRegex = NULL;
   BOOL exitOnAnyMatch = NO;
   
   NSCParameterAssert(!((aKeyRegex == NULL) && (aObjectRegex == NULL)));
@@ -65,7 +66,7 @@ static id RKDoDictionaryAction(id self, SEL _cmd, id matchAgainstDictionary, id 
   if(RK_EXPECTED(self == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"self == NULL.") userInfo:NULL] raise]; }
   if(RK_EXPECTED(_cmd == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"_cmd == NULL.") userInfo:NULL] raise]; }
   if(RK_EXPECTED(matchAgainstDictionary == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"matchAgainstDictionary == NULL.") userInfo:NULL] raise]; }
-  if(RK_EXPECTED(performAction > RKDictionaryActionDictionaryMaxAction, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"Unknown performAction = %u.", performAction) userInfo:NULL] raise]; }
+  if(RK_EXPECTED(performAction > RKDictionaryActionDictionaryMaxAction, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"Unknown performAction = %lu.", (unsigned long)performAction) userInfo:NULL] raise]; }
   
   if((RK_EXPECTED(self == matchAgainstDictionary, 0)) && (performAction == RKDictionaryActionAddMatches)) { goto exitNow; } // Fast path bypass on unusual case.
 
@@ -73,7 +74,7 @@ static id RKDoDictionaryAction(id self, SEL _cmd, id matchAgainstDictionary, id 
   if(aObjectRegex != NULL) { objectRegex = RKRegexFromStringOrRegex(self, _cmd, aObjectRegex, RKCompileNoOptions, YES); }
   
 #ifdef USE_CORE_FOUNDATION
-  if((dictionaryCount = CFDictionaryGetCount((CFDictionaryRef)matchAgainstDictionary)) == 0) { goto doAction; }
+  if((dictionaryCount = (RKUInteger)CFDictionaryGetCount((CFDictionaryRef)matchAgainstDictionary)) == 0) { goto doAction; }
 #else
   if((dictionaryCount = [matchAgainstDictionary count]) == 0) { goto doAction; }
 #endif
@@ -86,7 +87,7 @@ static id RKDoDictionaryAction(id self, SEL _cmd, id matchAgainstDictionary, id 
 #ifdef USE_CORE_FOUNDATION
   CFDictionaryGetKeysAndValues((CFDictionaryRef)matchAgainstDictionary, (const void **)(&keys[0]), (const void **)(&objects[0]));
 #else
-  [[matchAgainstDictionary allKeys] getObjects:&keys[0]];
+  [[matchAgainstDictionary allKeys]   getObjects:&keys[0]];
   [[matchAgainstDictionary allValues] getObjects:&objects[0]];
 #endif
   
@@ -102,7 +103,7 @@ static id RKDoDictionaryAction(id self, SEL _cmd, id matchAgainstDictionary, id 
 
     if(didMatch == YES) {
       if(exitOnAnyMatch == YES) { returnObject = self; goto exitNow; }
-      matchedKeys[matchedCount] = keys[atMatchIndex];
+      matchedKeys[matchedCount]      = keys[atMatchIndex];
       matchedObjects[matchedCount++] = objects[atMatchIndex];
     }
   }
@@ -115,28 +116,40 @@ doAction:
     case RKDictionaryActionBooleanYesOnAnyKeyMatch:      NSCAssert(RK_EXPECTED(matchedCount == 0, 0), @"dictionary RKDictionaryActionBooleanYesOnAny(Key|Object)Match, matched count > 0 in performAction switch statement."); returnObject = NULL; goto exitNow; break;
 #ifdef USE_CORE_FOUNDATION
     case RKDictionaryActionArrayOfKeysForMatchedObjects: // Fall-thru
-    case RKDictionaryActionArrayOfMatchedKeys:           returnObject = (id)CFArrayCreate(kCFAllocatorDefault,      (const void **)(&matchedKeys[0]),    matchedCount, &kCFTypeArrayCallBacks); break;
+    case RKDictionaryActionArrayOfMatchedKeys:           returnObject = (id)RKMakeCollectable(CFArrayCreate(kCFAllocatorDefault,
+                                                                                                            (const void **)(&matchedKeys[0]),
+                                                                                                            (CFIndex)matchedCount,
+                                                                                                            &kCFTypeArrayCallBacks));
+      break;
     case RKDictionaryActionArrayOfMatchedObjects:        // Fall-thru
-    case RKDictionaryActionArrayOfObjectsForMatchedKeys: returnObject = (id)CFArrayCreate(kCFAllocatorDefault,      (const void **)(&matchedObjects[0]), matchedCount, &kCFTypeArrayCallBacks); break;
+    case RKDictionaryActionArrayOfObjectsForMatchedKeys: returnObject = (id)RKMakeCollectable(CFArrayCreate(kCFAllocatorDefault,
+                                                                                                            (const void **)(&matchedObjects[0]),
+                                                                                                            (CFIndex)matchedCount,
+                                                                                                            &kCFTypeArrayCallBacks));
+      break;
     case RKDictionaryActionDictionaryWithMatchedObjects: // Fall-thru
-    case RKDictionaryActionDictionaryWithMatchedKeys:    returnObject = (id)CFDictionaryCreate(kCFAllocatorDefault, (const void **)(&matchedKeys[0]), (const void **)(&matchedObjects[0]), 
-                                                                                               matchedCount, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    case RKDictionaryActionDictionaryWithMatchedKeys:    returnObject = (id)RKMakeCollectable(CFDictionaryCreate(kCFAllocatorDefault,
+                                                                                                                 (const void **)(&matchedKeys[0]),
+                                                                                                                 (const void **)(&matchedObjects[0]), 
+                                                                                                                 (CFIndex)matchedCount,
+                                                                                                                 &kCFTypeDictionaryKeyCallBacks,
+                                                                                                                 &kCFTypeDictionaryValueCallBacks));
       break;
 #else
     case RKDictionaryActionArrayOfKeysForMatchedObjects: // Fall-thru
-    case RKDictionaryActionArrayOfMatchedKeys:           returnObject = [[NSArray alloc] initWithObjects:&matchedKeys[0] count:matchedCount];                                 break;
+    case RKDictionaryActionArrayOfMatchedKeys:           returnObject = [[NSArray alloc] initWithObjects:&matchedKeys[0] count:matchedCount];      break;
     case RKDictionaryActionArrayOfMatchedObjects:        // Fall-thru
-    case RKDictionaryActionArrayOfObjectsForMatchedKeys: returnObject = [[NSArray alloc] initWithObjects:&matchedObjects[0] count:matchedCount];                              break;
+    case RKDictionaryActionArrayOfObjectsForMatchedKeys: returnObject = [[NSArray alloc] initWithObjects:&matchedObjects[0] count:matchedCount];   break;
     case RKDictionaryActionDictionaryWithMatchedObjects: // Fall-thru
     case RKDictionaryActionDictionaryWithMatchedKeys:    returnObject = [[NSDictionary alloc] initWithObjects:&matchedObjects[0] forKeys:&matchedKeys[0] count:matchedCount]; break;
-#endif
-    case RKDictionaryActionAddMatches:    for(int x = 0; x < matchedCount; x++) { [self setObject:matchedObjects[x] forKey:matchedKeys[x]]; } goto exitNow;                break;
-    case RKDictionaryActionRemoveMatches: for(int x = 0; x < matchedCount; x++) { [self removeObjectForKey:matchedKeys[x]];                 } goto exitNow;                break;
+#endif // USE_CORE_FOUNDATION
+    case RKDictionaryActionAddMatches:    for(RKUInteger x = 0; x < matchedCount; x++) { [self setObject:matchedObjects[x] forKey:matchedKeys[x]]; } goto exitNow; break;
+    case RKDictionaryActionRemoveMatches: for(RKUInteger x = 0; x < matchedCount; x++) { [self removeObjectForKey:matchedKeys[x]];                 } goto exitNow; break;
 
-    default: returnObject = NULL; NSCAssert1(1 == 0, @"Unknown RKDictionaryAction in switch block, performAction = %d", performAction); break;
+    default: returnObject = NULL; NSCAssert1(1 == 0, @"Unknown RKDictionaryAction in switch block, performAction = %lu", (unsigned long)performAction);            break;
   }
-  [returnObject autorelease];
-  
+  RKAutorelease(returnObject);
+
 exitNow:
   return(returnObject);
 }

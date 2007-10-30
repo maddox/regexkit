@@ -4,6 +4,7 @@ use strict;
 use DBI;
 require DBD::SQLite;
 use Data::Dumper;
+use HTML::Entities;
 #use POSIX;
 #use IO::Handle;
 #STDERR->autoflush(1);
@@ -460,12 +461,25 @@ sub populate_tasks_html {
   }
 }
 
+#sub stripExcess {
+#  my($strip) = @_;
+#  $strip =~ s/<div\s+[^>]*\bclass="[^\"]*\bbox\b[^\"]*"[^>]*>.*(?:<\/div>\s*){4}//sg;
+#  $strip =~ s/\@link .*? (.*?)\s?\@\/link/$1/sg;
+#  $strip =~ s/<[^>]+>(.*?)<\/[^>]+>/$1/sg;
+#  $strip =~ s/\"/\\"/sg;
+#  return($strip);
+#}
+
 sub stripExcess {
   my($strip) = @_;
+
   $strip =~ s/<div\s+[^>]*\bclass="[^\"]*\bbox\b[^\"]*"[^>]*>.*(?:<\/div>\s*){4}//sg;
   $strip =~ s/\@link .*? (.*?)\s?\@\/link/$1/sg;
-  $strip =~ s/<[^>]+>(.*?)<\/[^>]+>/$1/sg;
-  $strip =~ s/\"/\\"/sg;
+  $strip =~ s/<[^>]*>//gs;
+  $strip =~ s/\n//gs;
+  
+  $strip = encode_entities($strip);
+  
   return($strip);
 }
 
@@ -495,7 +509,7 @@ sub gen_xtoc_cache {
     push(@{$cache{'toc'}{'contentsForToc'}{$row->{'tocName'}}}, {'table' => $row->{'tbl'}, 'idColumn' => $row->{'idCol'}, 'id' => $row->{'id'}, 'type' => $row->{'hdtype'}, 'href' => $row->{'href'}, 'linkId' => $row->{'linkId'},'linkText' => $row->{'linkText'}});
   }
 
-  for my $row (selectall_hash($dbh, "SELECT * FROM v_hd_tags")) {
+  for my $row (selectall_hash($dbh, "SELECT * FROM v_hd_tags ORDER BY hdcid, tpos")) {
     my $p = defined($row->{'arg1'}) ? [$row->{'arg0'}, $row->{'arg1'}] : $row->{'arg0'};
     if($row->{'multiple'} == 0) { $cache{'tags'}[$row->{'hdcid'}]{$row->{'keyword'}} = $p; }
     else { push(@{$cache{'tags'}[$row->{'hdcid'}]{$row->{'keyword'}}}, $p); }

@@ -14,7 +14,7 @@
 
 static NSAutoreleasePool *startTopPool = nil;
 static NSAutoreleasePool *startLeakPool = nil;
-static unsigned int startAutoreleasedObjects = 0;
+static RKUInteger startAutoreleasedObjects = 0;
 
 static RKCPUTime testStartCPUTime;
 static RKCPUTime testEndCPUTime;

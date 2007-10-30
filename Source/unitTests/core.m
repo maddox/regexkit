@@ -4,10 +4,38 @@
 //
 
 #import "core.h"
+#import <objc/objc-runtime.h>
 
 #define REPrettyObjectMethodString(stringArg, ...) ([NSString stringWithFormat:[NSString stringWithFormat:@"%p [%@ %@]: %@", self, NSStringFromClass([(id)self class]), NSStringFromSelector(_cmd), stringArg], ##__VA_ARGS__])
 
+#define RKYesOrNo(yesOrNo) ((yesOrNo == YES) ? @"Yes":@"No")
+
+void startGC(void);
+
+static int32_t gcThreadStarted = 0;
+
+void startGC(void) {
+  if(gcThreadStarted == 0) {
+    gcThreadStarted = 1;
+    if([objc_getClass("NSGarbageCollector") defaultCollector] != NULL) {
+      NSLog(@"Garbage Collection is ENABLED.  Starting background collector thread.\n");
+      void (*objc_sct)(void);
+      if((objc_sct = dlsym(RTLD_DEFAULT, "objc_startCollectorThread")) != NULL) {
+        objc_sct();
+        NSLog(@"Thread started...");
+      }
+    } else { NSLog(@"Garbage Collection is DISABLED."); }
+  //} else { NSLog(@"NSGarbageCollector class does not exist, GC is disable."); }
+  }
+}
+
+
 @implementation core
+
++ (void)setUp
+{
+  startGC();
+}
 
 + (void)tearDown
 {
@@ -160,7 +188,7 @@
 {
   NSString *regexString = @"^(Match)\\s+the\\s+(MAGIC)";
   NSString *subjectString = @"Match the MAGIC in this string";
-  unsigned int subjectLength = [subjectString length], captureCount = 0, x = 0;
+  RKUInteger subjectLength = [subjectString length], captureCount = 0, x = 0;
   NSRange *matchRanges = NULL;
   
   RKRegex *regex = NULL;
@@ -235,7 +263,7 @@
 {
   NSString *regexString = @"^(Match)\\s+the\\s+(MAGIC)$";
   NSString *subjectString = @"Match the MAGIC in this string";
-  unsigned int subjectLength = [subjectString length], captureCount = 0, x = 0;
+  RKUInteger subjectLength = [subjectString length], captureCount = 0, x = 0;
   NSRange *matchRanges = NULL;
   
   RKRegex *regex = [RKRegex regexWithRegexString:regexString options:0];
@@ -259,7 +287,7 @@
 {
   NSString *regexString = @"^(Match)\\s+(?<huh>the|or|is)\\s+(MAGIC)";
   NSString *subjectString = @"Match the MAGIC in this string";
-  unsigned int subjectLength = [subjectString length], captureCount = 0, x = 0;
+  RKUInteger subjectLength = [subjectString length], captureCount = 0, x = 0;
   NSRange *matchRanges = NULL, resultRange;
   
   RKRegex *regex = [RKRegex regexWithRegexString:regexString options:0];
@@ -324,7 +352,7 @@
 {
   NSString *regexString = @"^(Match)\\s+(?<huh>the|or|is)\\s+(MAGIC)";
   NSString *subjectString = @"Match the MAGIC in this string";
-  unsigned int subjectLength = [subjectString length], captureCount = 0, x = 0;
+  RKUInteger subjectLength = [subjectString length], captureCount = 0, x = 0;
   NSRange *matchRanges = NULL, *resultRanges = NULL;
   
   RKRegex *regex = [RKRegex regexWithRegexString:regexString options:0];
@@ -366,7 +394,7 @@
 
 - (void)testCaptureNameCornerCases
 {
-  unsigned int captureCount = 0, x = 0;
+  RKUInteger captureCount = 0, x = 0;
   NSRange *matchRanges = NULL;
   NSString *regexString = NULL;
   RKRegex *regex = NULL;
@@ -480,7 +508,7 @@
 - (void)testDuplicateCaptureNameCornerCases
 {
   NSString *regexString = @"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))";
-  unsigned int captureCount = 0, x = 0;
+  RKUInteger captureCount = 0, x = 0;
   NSRange *matchRanges = NULL;
   
   STAssertThrowsSpecificNamed([RKRegex regexWithRegexString:regexString options:0], NSException, RKRegexSyntaxErrorException, nil); // needs to have dup names option

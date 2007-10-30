@@ -26,23 +26,23 @@ fi
 BAD_SPELLING="";
 BAD_COUNT=0;
 
-echo "debug: Spell checking documentation."
+echo "$0:$LINENO: note: Spell checking documentation."
 
-BAD_SPELLING=`${FIND} "${DOCUMENTATION_TARGET_DIR}" -maxdepth 1 -name "*.html" -exec cat {} \; | $ASPELL --conf=/dev/null --per-conf=/dev/null --extra-dicts="${PROJECT_DIR}/${DOCUMENTATION_MISC_DIR}/spelling_words" --personal=nonDefaultFileName -C -H --add-html-check=title --ignore=2 list | sort | uniq`
+BAD_SPELLING=`"${FIND}" "${DOCUMENTATION_TARGET_DIR}" -maxdepth 1 -name "*.html" -exec cat {} \; | "${ASPELL}" --conf=/dev/null --per-conf=/dev/null --extra-dicts="${PROJECT_DIR}/${DOCUMENTATION_MISC_DIR}/spelling_words" --personal=nonDefaultFileName -C -H --add-html-check=title --ignore=2 list | sort | uniq`
 
-if [ "$BAD_SPELLING" != "" ]; then
+if [ "${BAD_SPELLING}" != "" ]; then
   for WORD in ${BAD_SPELLING}; do let BAD_COUNT++; done;
-  echo "${MISSPELL_LEVEL}: There are $BAD_COUNT unique words misspelled.";
+  echo "${MISSPELL_LEVEL}: There are ${BAD_COUNT} unique words misspelled.";
   echo "-----"
   for WORD in ${BAD_SPELLING}; do
-    echo "Files containing misspelled word: '$WORD'";
-    grep -c $WORD "${DOCUMENTATION_TARGET_DIR}"/*.html | grep -v ':0$'
+    echo "Files containing misspelled word: '${WORD}'";
+    grep -c "${WORD}" "${DOCUMENTATION_TARGET_DIR}"/*.html | grep -v ':0$'
     echo "-----"
   done;
 fi;
 
-if (( $BAD_COUNT == 0 )); then
-  echo "debug: Spell checking complete, no errors.";
+if (( "${BAD_COUNT}" == 0 )); then
+  echo "$0:$LINENO: note: Spell checking complete, no errors.";
 else
   EXIT_CODE=1;
 fi;

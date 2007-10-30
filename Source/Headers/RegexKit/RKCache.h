@@ -40,6 +40,9 @@
 */
 
 #import <Foundation/Foundation.h>
+#import <RegexKit/RegexKitDefines.h>
+#import <RegexKit/RegexKitTypes.h>
+#import <dlfcn.h>
 
 @class RKReadWriteLock;
 
@@ -62,16 +65,17 @@
 */
 
 @interface RKCache : NSObject {
-  RKReadWriteLock *cacheRWLock;
-  NSMapTable      *cacheMapTable;
+  RKReadWriteLock  *cacheRWLock;
+  RK_STRONG_REF NSMapTable *cacheMapTable;
+  NSString         *cacheDescriptionString;
+  const NSMapTableKeyCallBacks *cacheMapKeyCallBacks;
   int              cacheInitialized;
   int              cacheIsEnabled;
-  unsigned int     cacheHits;
-  unsigned int     cacheMisses;
-  unsigned int     cacheClearedCount;
+  RKUInteger       cacheHits;
+  RKUInteger       cacheMisses;
+  RKUInteger       cacheClearedCount;
   int              cacheAddingIsEnabled;   // Used during debugging
   int              cacheLookupIsEnabled;   // Used during debugging  
-  NSString        *cacheDescriptionString;
 }
 
 
@@ -143,7 +147,7 @@
  @seealso    @link RKCache/objectForHash:autorelease: - objectForHash:autorelease: @/link
  @seealso    @link RKCache/removeObjectFromCache: - removeObjectFromCache: @/link
 */
-- (id)objectForHash:(const unsigned int)objectHash;
+- (id)objectForHash:(const RKUInteger)objectHash;
 
 /*!
  @method     objectForHash:autorelease:
@@ -158,7 +162,7 @@
  @seealso    @link RKCache/objectForHash: - objectForHash: @/link
  @seealso    @link RKCache/removeObjectWithHash: - removeObjectWithHash: @/link
 */
-- (id)objectForHash:(const unsigned int)objectHash autorelease:(const BOOL)shouldAutorelease;
+- (id)objectForHash:(const RKUInteger)objectHash autorelease:(const BOOL)shouldAutorelease;
 
 /*!
  @method     addObjectToCache:
@@ -189,7 +193,7 @@
  @seealso    @link RKCache/objectForHash: - objectForHash: @/link
  @seealso    @link RKCache/removeObjectWithHash: - removeObjectWithHash: @/link
 */
-- (BOOL)addObjectToCache:(id)object withHash:(const unsigned int)objectHash;
+- (BOOL)addObjectToCache:(id)object withHash:(const RKUInteger)objectHash;
 
 /*!
  @method     removeObjectFromCache:
@@ -214,7 +218,7 @@
  @seealso    @link RKCache/objectForHash: - objectForHash: @/link
  @seealso    @link RKCache/removeObjectFromCache: - removeObjectFromCache: @/link
 */
-- (id)removeObjectWithHash:(const unsigned int)objectHash;
+- (id)removeObjectWithHash:(const RKUInteger)objectHash;
 
 /*!
  @method     clearCache
@@ -254,7 +258,7 @@
  @tocgroup   RKCache Cache Information
  @abstract   The number of objects currently in the cache.
 */
-- (unsigned int)cacheCount;
+- (RKUInteger)cacheCount;
 
 @end
 
@@ -272,11 +276,11 @@
 
 - (void)setDebug:(const BOOL)enableDebugging;
 - (void)clearCounters;
-- (unsigned int)cacheClearedCount;
-- (unsigned int)readBusyCount;
-- (unsigned int)readSpinCount;
-- (unsigned int)writeBusyCount;
-- (unsigned int)writeSpinCount;
+- (RKUInteger)cacheClearedCount;
+- (RKUInteger)readBusyCount;
+- (RKUInteger)readSpinCount;
+- (RKUInteger)writeBusyCount;
+- (RKUInteger)writeSpinCount;
 
 @end
 

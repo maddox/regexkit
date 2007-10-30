@@ -39,7 +39,7 @@
 #import <RegexKit/RegexKitPrivate.h>
 
 NSString *RKStringFromNewlineOption(const int decodeNewlineOption, NSString *prefixString) {
-  int newlineOption = decodeNewlineOption & RKMatchNewlineMask;
+  RKInteger newlineOption = decodeNewlineOption & RKMatchNewlineMask;
   NSString *newlineOptionString = NULL;
   BOOL unknownNewline = NO;
   
@@ -59,13 +59,13 @@ NSString *RKStringFromNewlineOption(const int decodeNewlineOption, NSString *pre
   
   if(newlineOptionString != NULL) { newlineOptionString = [NSString stringWithFormat:@"%@%@", prefixString, newlineOptionString]; }
   
-  if((newlineOptionString == NULL) && (unknownNewline == YES)) { newlineOptionString = [NSString stringWithFormat:@"/*Unknown Newline Option: 0x%8.8x*/", newlineOption]; }
+  if((newlineOptionString == NULL) && (unknownNewline == YES)) { newlineOptionString = [NSString stringWithFormat:@"/*Unknown Newline Option: 0x%8.8x*/", (unsigned int)newlineOption]; }
   
   return(newlineOptionString);
 }
 
 NSArray *RKArrayFromMatchOption(const RKMatchOption decodeMatchOption) {
-  unsigned int atString = 0;
+  RKUInteger atString = 0;
   NSString *strings[256];
   memset(strings, 0, sizeof(NSString *) * 256);
   RKMatchOption decodedOptions = RKMatchNewlineMask;
@@ -87,7 +87,7 @@ NSArray *RKArrayFromMatchOption(const RKMatchOption decodeMatchOption) {
   
   decodedOptions ^= UINT_MAX;
   if((decodedOptions & decodeMatchOption) != 0) {
-    strings[atString] = [NSString stringWithFormat:@"/* Unknown match options remain: 0x%8.8x */", (decodedOptions & decodeMatchOption)];
+    strings[atString] = [NSString stringWithFormat:@"/* Unknown match options remain: 0x%8.8x */", (unsigned int)(decodedOptions & decodeMatchOption)];
     atString++;
   }
   
@@ -99,7 +99,7 @@ NSArray *RKArrayFromMatchOption(const RKMatchOption decodeMatchOption) {
 }
 
 NSArray *RKArrayFromCompileOption(const RKCompileOption decodeCompileOption) {
-  unsigned int atString = 0;
+  RKUInteger atString = 0;
   NSString *strings[256];
   memset(strings, 0, sizeof(NSString *) * 256);
   RKCompileOption decodedOptions = RKCompileNewlineMask;
@@ -130,7 +130,7 @@ NSArray *RKArrayFromCompileOption(const RKCompileOption decodeCompileOption) {
   
   decodedOptions ^= UINT_MAX;
   if((decodedOptions & decodeCompileOption) != 0) {
-    strings[atString] = [NSString stringWithFormat:@"/* Unknown compile options remain: 0x%8.8x */", (decodedOptions & decodeCompileOption)];
+    strings[atString] = [NSString stringWithFormat:@"/* Unknown compile options remain: 0x%8.8x */", (unsigned int)(decodedOptions & decodeCompileOption)];
     atString++;
   }
   
@@ -142,7 +142,7 @@ NSArray *RKArrayFromCompileOption(const RKCompileOption decodeCompileOption) {
 }
 
 NSArray *RKArrayFromBuildConfig(const RKBuildConfig decodeBuildConfig) {
-  unsigned int atString = 0;
+  RKUInteger atString = 0;
   NSString *strings[256];
   memset(strings, 0, sizeof(NSString *) * 256);
   RKBuildConfig decodedBuildConfig = RKBuildConfigNoOptions;
@@ -160,7 +160,7 @@ NSArray *RKArrayFromBuildConfig(const RKBuildConfig decodeBuildConfig) {
   
   decodedBuildConfig ^= UINT_MAX;
   if((decodedBuildConfig & decodeBuildConfig) != 0) {
-    strings[atString] = [NSString stringWithFormat:@"/* Unknown build config options remain: 0x%8.8x */", (decodedBuildConfig & decodeBuildConfig)];
+    strings[atString] = [NSString stringWithFormat:@"/* Unknown build config options remain: 0x%8.8x */", (unsigned int)(decodedBuildConfig & decodeBuildConfig)];
     atString++;
   }
   
@@ -231,7 +231,7 @@ NSString *RKStringFromCompileErrorCode(const RKCompileErrorCode decodeErrorCode)
     case RKCompileErrorInconsistentNewlineOptions:                  errorCodeString = @"RKCompileErrorInconsistentNewlineOptions";                  break;
     case RKCompileErrorReferenceMustBeNonZeroNumberOrBraced:        errorCodeString = @"RKCompileErrorReferenceMustBeNonZeroNumberOrBraced";        break;
     case RKCompileErrorRelativeSubpatternNumberMustNotBeZero:       errorCodeString = @"RKCompileErrorRelativeSubpatternNumberMustNotBeZero";       break;
-    default:                                                        errorCodeString = [NSString stringWithFormat:@"Unknown error code (#%d)", decodeErrorCode]; break;
+    default:                                                        errorCodeString = [NSString stringWithFormat:@"Unknown error code (#%d)", (int)decodeErrorCode]; break;
   }
   
   return(errorCodeString);
@@ -262,7 +262,7 @@ NSString *RKStringFromMatchErrorCode(const RKMatchErrorCode decodeErrorCode) {
     case RKMatchErrorRecursionLimit:     errorCodeString = @"RKMatchErrorRecursionLimit";     break;
     case RKMatchErrorNullWorkSpaceLimit: errorCodeString = @"RKMatchErrorNullWorkSpaceLimit"; break;
     case RKMatchErrorBadNewline:         errorCodeString = @"RKMatchErrorBadNewline";         break;
-    default:                             errorCodeString = [NSString stringWithFormat:@"Unknown error code (#%d)", decodeErrorCode]; break;
+    default:                             errorCodeString = [NSString stringWithFormat:@"Unknown error code (#%d)", (int)decodeErrorCode]; break;
   }
   
   return(errorCodeString);

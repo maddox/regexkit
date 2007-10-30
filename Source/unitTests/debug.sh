@@ -2,10 +2,10 @@
 
 #DEBUG=1;
 
-DEFAULT_DEBUG=1;
+DEFAULT_DEBUG=0;
 DEFAULT_LEAK_CHECK=0;
-DEFAULT_TIMING=1;
-DEFAULT_MULTITHREADING=1;
+DEFAULT_TIMING=0;
+DEFAULT_MULTITHREADING=0;
 
 export DEBUG=${DEBUG:-$DEFAULT_DEBUG};
 export LEAK_CHECK=${LEAK_CHECK:-$DEFAULT_LEAK_CHECK};
@@ -18,6 +18,11 @@ echo "TIMING is set to $TIMING";
 echo "MULTITHREADING is set to $MULTITHREADING";
 
 #export DYLD_INSERT_LIBRARIES=/usr/lib/libMallocDebug.A.dylib
+
+if (($DEBUG > 0)); then
+export OBJC_PRINT_GC=YES;
+echo "OBJC_PRINT_GC=${OBJC_PRINT_GC}";
+fi;
 
 ########################
 #
@@ -73,17 +78,17 @@ echo "MallocStackLoggingNoCompact=$MallocStackLoggingNoCompact";
 fi;
 
 if (($LEAK_CHECK > 0)); then
-export MallocStackLoggingNoCompact=1;
-echo "MallocStackLoggingNoCompact=$MallocStackLoggingNoCompact";
-fi;
-
-
-# If set, record all stacks, so that tools like `leaks` can be used.
-#
-if (($DEBUG == 1 && $LEAK_CHECK < 1)); then
 export MallocStackLogging=1;
 echo "MallocStackLogging=$MallocStackLogging";
 fi;
+
+# If set, record all stacks, so that tools like `leaks` can be used.
+#
+#if (($DEBUG == 1 && $LEAK_CHECK < 1)); then
+#export MallocStackLogging=1;
+#echo "MallocStackLogging=$MallocStackLogging";
+#fi;
+
 
 # If set to a non-zero value, causes abort(3)
 # to be called if the pointer passed to
@@ -277,7 +282,7 @@ fi;
 # debug messages and a number of internal consistency checks. This
 # facility requires the Core Services debug library.
 #
-if (($DEBUG > 0)); then
+if (($DEBUG > 1)); then
 export ThreadDebug=1;
 echo "ThreadDebug=$ThreadDebug";
 fi;
@@ -336,6 +341,20 @@ fi;
 #OBJC_FORCE_GC
 #OBJC_FORCE_NO_GC
 #OBJC_CHECK_FINALIZERS
+if (($DEBUG > 0)) ; then
+export OBJC_FORCE_GC=YES
+echo "OBJC_FORCE_GC=${OBJC_FORCE_GC}"
+
+export OBJC_REPORT_GARBAGE=YES
+echo "OBJC_REPORT_GARBAGE=${OBJC_REPORT_GARBAGE}"
+
+export AUTO_LOG_COLLECT_DECISION=YES
+echo "OBJC_FORCE_GC=${AUTO_LOG_COLLECT_DECISION}"
+
+export OBJC_CHECK_FINALIZERS=YES
+echo "OBJC_FORCE_GC=${OBJC_CHECK_FINALIZERS}"
+
+fi
 
 #OBJC_REPORT_GARBAGE
 #OBJC_DISABLE_COLLECTION_INTERRUPT
@@ -396,16 +415,16 @@ fi;
 # Enable the _debug version of libraries which include additional assertions
 # and debugging info.
 #
-if (($DEBUG > 0)); then
-export DYLD_IMAGE_SUFFIX=_debug;
-echo "DYLD_IMAGE_SUFFIX=$DYLD_IMAGE_SUFFIX";
-fi;
+#if (($DEBUG > 0)); then
+#export DYLD_IMAGE_SUFFIX=_debug;
+#echo "DYLD_IMAGE_SUFFIX=$DYLD_IMAGE_SUFFIX";
+#fi;
 
-if (($LEAK_CHECK > 0)); then
-export DYLD_IMAGE_SUFFIX=_debug;
-echo "DYLD_IMAGE_SUFFIX=$DYLD_IMAGE_SUFFIX";
-echo "WARNING: _debug libraries may interfere with leaks checking"
-fi;
+#if (($LEAK_CHECK > 0)); then
+#export DYLD_IMAGE_SUFFIX=_debug;
+#echo "DYLD_IMAGE_SUFFIX=$DYLD_IMAGE_SUFFIX";
+#echo "WARNING: _debug libraries may interfere with leaks checking"
+#fi;
 
 
 

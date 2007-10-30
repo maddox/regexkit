@@ -46,10 +46,10 @@
 
 @interface RKLock : NSObject <NSLocking> {
   pthread_mutex_t lock;
-  unsigned int busyCount;
-  unsigned int spinCount;
-  unsigned int spuriousErrorsCount;
-  BOOL debuggingEnabled;
+  unsigned int    busyCount;
+  unsigned int    spinCount;
+  unsigned int    spuriousErrorsCount;
+  BOOL            debuggingEnabled;
 }
 
 - (BOOL)lock;
@@ -62,17 +62,17 @@
 
 @end
 
-BOOL RKFastLock(RKLock * const aLock) RK_ATTRIBUTES(used, visibility("hidden"));
-void RKFastUnlock(RKLock * const aLock) RK_ATTRIBUTES(used, visibility("hidden"));
+BOOL RKFastLock(RKLock * const aLock)   RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
+void RKFastUnlock(RKLock * const aLock) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
 
 @interface RKReadWriteLock : NSObject <NSLocking> {
   pthread_rwlock_t readWriteLock;
-  unsigned int readBusyCount;
-  unsigned int readSpinCount;
-  unsigned int writeBusyCount;
-  unsigned int writeSpinCount;
-  unsigned int spuriousErrorsCount;
-  BOOL debuggingEnabled;
+  unsigned int     readBusyCount;
+  unsigned int     readSpinCount;
+  unsigned int     writeBusyCount;
+  unsigned int     writeSpinCount;
+  unsigned int     spuriousErrorsCount;
+  BOOL             debuggingEnabled;
 }
 
 - (BOOL)lock;
@@ -89,5 +89,5 @@ void RKFastUnlock(RKLock * const aLock) RK_ATTRIBUTES(used, visibility("hidden")
 
 @end
 
-BOOL RKFastReadWriteLock(RKReadWriteLock * const aLock, const BOOL forWriting) RK_ATTRIBUTES(used, visibility("hidden"));
-void RKFastReadWriteUnlock(RKReadWriteLock * const aLock) RK_ATTRIBUTES(used, visibility("hidden"));
+BOOL RKFastReadWriteLock(  RKReadWriteLock * const aLock, const BOOL forWriting) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
+void RKFastReadWriteUnlock(RKReadWriteLock * const aLock) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));

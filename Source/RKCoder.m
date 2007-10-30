@@ -45,15 +45,15 @@ NSDictionary *RKRegexCoderDifferencesDictionary(id self RK_ATTRIBUTES(unused), c
   
   NSMutableArray  *extraInfoArray = [NSMutableArray array];  // addObject: strings of extra info
   NSString *codedVersionString = [coder decodeObjectForKey:@"PCREVersionString"];
-  RKBuildConfig codedBuildConfig = [coder decodeIntForKey:@"PCREBuildConfig"];
+  RKBuildConfig codedBuildConfig = [coder decodeInt32ForKey:@"PCREBuildConfig"];
   
   if([[RKRegex PCREVersionString] isEqualToString:codedVersionString] == NO) { [extraInfoArray addObject:[NSString stringWithFormat:@"Encoded PCRE version   : %@, current version %@", codedVersionString, [RKRegex PCREVersionString]]]; }
   
   // Mask off known valid bits and check if any remain
   RKCompileOption unknownCompileOption = (codedCompileOption & (~(RKCompileAllOptions | RKCompileNewlineMask)));
   if(unknownCompileOption != 0) {
-    [extraInfoArray addObject:[NSString stringWithFormat:@"Decoded compile options: 0x%8.8x (%@)", codedCompileOption, [RKArrayFromCompileOption(codedCompileOption) componentsJoinedByString:@" | "]]];
-    [extraInfoArray addObject:[NSString stringWithFormat:@"Unknown option bits    : 0x%8.8x", unknownCompileOption]];
+    [extraInfoArray addObject:[NSString stringWithFormat:@"Decoded compile options: 0x%8.8x (%@)", (unsigned int)codedCompileOption, [RKArrayFromCompileOption(codedCompileOption) componentsJoinedByString:@" | "]]];
+    [extraInfoArray addObject:[NSString stringWithFormat:@"Unknown option bits    : 0x%8.8x", (unsigned int)unknownCompileOption]];
   }
   
   // Check for valid newline type
@@ -64,7 +64,7 @@ NSDictionary *RKRegexCoderDifferencesDictionary(id self RK_ATTRIBUTES(unused), c
      (codedCompileNewlineOption != RKCompileNewlineAnyCRLF) &&
 #endif
      (codedCompileNewlineOption != RKCompileNewlineAny)  && (codedCompileNewlineOption != RKCompileNewlineDefault)) {
-    [extraInfoArray addObject:[NSString stringWithFormat:@"Unknown Newline type   : 0x%8.8x. Valid types: %@", codedCompileNewlineOption, [RKArrayOfPrettyNewlineTypes(@"RKCompile") componentsJoinedByString:@", "]]];
+    [extraInfoArray addObject:[NSString stringWithFormat:@"Unknown Newline type   : 0x%8.8x. Valid types: %@", (unsigned int)codedCompileNewlineOption, [RKArrayOfPrettyNewlineTypes(@"RKCompile") componentsJoinedByString:@", "]]];
   }
   
   // Calculate a bit difference of RKBuildConfig options
@@ -72,9 +72,9 @@ NSDictionary *RKRegexCoderDifferencesDictionary(id self RK_ATTRIBUTES(unused), c
   differenceBuildConfig |= ((codedBuildConfig & RKBuildConfigNewlineMask) != ([RKRegex PCREBuildConfig] & RKBuildConfigNewlineMask)) ? (codedBuildConfig & RKBuildConfigNewlineMask) : 0;
   
   if(differenceBuildConfig != 0) {
-    [extraInfoArray addObject:[NSString stringWithFormat:@"Encoded build config   : 0x%8.8x (%@)", codedBuildConfig, [RKArrayFromBuildConfig(codedBuildConfig) componentsJoinedByString:@" | "]]];
-    [extraInfoArray addObject:[NSString stringWithFormat:@"Current build config   : 0x%8.8x (%@)", [RKRegex PCREBuildConfig], [RKArrayFromBuildConfig([RKRegex PCREBuildConfig]) componentsJoinedByString:@" | "]]];
-    [extraInfoArray addObject:[NSString stringWithFormat:@"Difference in builds   : 0x%8.8x (%@)", differenceBuildConfig, [RKArrayFromBuildConfig(differenceBuildConfig) componentsJoinedByString:@" | "]]];
+    [extraInfoArray addObject:[NSString stringWithFormat:@"Encoded build config   : 0x%8.8x (%@)", (unsigned int)codedBuildConfig, [RKArrayFromBuildConfig(codedBuildConfig) componentsJoinedByString:@" | "]]];
+    [extraInfoArray addObject:[NSString stringWithFormat:@"Current build config   : 0x%8.8x (%@)", (unsigned int)[RKRegex PCREBuildConfig], [RKArrayFromBuildConfig([RKRegex PCREBuildConfig]) componentsJoinedByString:@" | "]]];
+    [extraInfoArray addObject:[NSString stringWithFormat:@"Difference in builds   : 0x%8.8x (%@)", (unsigned int)differenceBuildConfig, [RKArrayFromBuildConfig(differenceBuildConfig) componentsJoinedByString:@" | "]]];
   }
   
   NSMutableString *extraInfoString = [NSMutableString string]; // In case there is no extra info created, this can be safely printed with no visible effect
@@ -85,7 +85,7 @@ NSDictionary *RKRegexCoderDifferencesDictionary(id self RK_ATTRIBUTES(unused), c
 
 id RKRegexInitWithCoder(id self, const SEL _cmd RK_ATTRIBUTES(unused), NSCoder * const coder) {
   id codedRegexString = [coder decodeObjectForKey:@"RKRegexString"];
-  RKCompileOption codedCompileOption = [coder decodeIntForKey:@"RKCompileOption"];
+  RKCompileOption codedCompileOption = [coder decodeInt32ForKey:@"RKCompileOption"];
   id decodedRegex = NULL;
   
   // Here we catch any regex instantiation exceptions and add extra info from RKRegexCoderDifferencesDictionary(), if any.
@@ -116,9 +116,9 @@ id RKRegexInitWithCoder(id self, const SEL _cmd RK_ATTRIBUTES(unused), NSCoder *
 
 void RKRegexEncodeWithCoder(id self, const SEL _cmd RK_ATTRIBUTES(unused), NSCoder * const coder) {
   [coder encodeObject:[self regexString] forKey:@"RKRegexString"];
-  [coder encodeInt:[self compileOption] forKey:@"RKCompileOption"];
+  [coder encodeInt32:[self compileOption] forKey:@"RKCompileOption"];
   [coder encodeObject:[[self class] PCREVersionString] forKey:@"PCREVersionString"];
-  [coder encodeInt:[[self class] PCREMajorVersion] forKey:@"PCREMajorVersion"];
-  [coder encodeInt:[[self class] PCREMinorVersion] forKey:@"PCREMinorVersion"];
-  [coder encodeInt:[[self class] PCREBuildConfig] forKey:@"PCREBuildConfig"];
+  [coder encodeInt32:[[self class] PCREMajorVersion] forKey:@"PCREMajorVersion"];
+  [coder encodeInt32:[[self class] PCREMinorVersion] forKey:@"PCREMinorVersion"];
+  [coder encodeInt32:[[self class] PCREBuildConfig] forKey:@"PCREBuildConfig"];
 }

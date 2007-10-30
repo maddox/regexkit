@@ -5,7 +5,7 @@
 <style type="text/css">
 @import "CSS/guide.css";
 </style>
-<link rel="stylesheet" type="text/css" href="css/print.css" media="print">
+<link rel="stylesheet" type="text/css" href="CSS/print.css" media="print">
 <title>RegexKit Programming Guide</title>
 </head>
 
@@ -642,7 +642,7 @@ NSString *regexString   = @"(\\d+\\.\\d+)";
 RKEnumerator *matchEnumerator = [subjectString matchEnumeratorWithRegex:regexString];
 
 while([matchEnumerator nextRanges] != NULL) {
-  NSLog(@"Range of match: %@", NSStringFromRange([matchEnumerator currentRange]);
+  NSLog(@"Range of match: %@", NSStringFromRange([matchEnumerator currentRange]));
 }
 
 // Outputs:
@@ -715,6 +715,33 @@ while([matchEnumerator nextRanges] != NULL) {
 
 <div class="chrono">
   <div class="entry">
+    <div class="banner"><span class="date">2007/10/29</span><span class="bannerItemSpacer">-</span><span class="release">0.3.0 Beta</span></div>
+    <div class="bannerSpacer"></div>
+    <div class="content">
+      
+      <p>Release highlights:</p>
+      <ul>
+        <li>Mac OS X Installer.</li>
+        <li>Mac OS X 10.5 support.</li>
+        <li><span class="file">RegexKit.framework</span> <span class="file">Info.plist</span> version corrected.</li>
+        <li>Minor documentation updates.</li>
+        <li>Parallel target builds.</li>
+      </ul>
+      <p>The new Mac OS X <span class="file">.dmg</span> distribution combines the previously separate binary and source code bundles into a single, convenient installer based package.</p>
+      
+      <p>Mac OS X 10.5 Features:</p>
+      <ul>
+        <li>64 bit support.</li>
+        <li>Garbage Collection enabled.</li>
+        <li>Documentation available in native Xcode 3.0 DocSet format.</li>
+      </ul>
+      <p>The RegexKit.framework binary now includes support for four architectures: <span class="code">ppc</span>, <span class="code">ppc64</span>, <span class="code">i386</span>, and <span class="code">x86_64</span>.  The 32 bit architecture images require a minimum Mac OS X of 10.4, while the 64 bit architecture versions require a minimum of 10.5.</p>
+      <p>The choice between using Garbage Collection or the traditional @link retain retain @/link / @link release release @/link style of memory management is made at load time.  If the dynamic linker determines that the necessary Garbage Collection prerequisites have been met, RegexKit switches to using Garbage Collection.  Otherwise if Garbage Collection is not active at load time, RegexKit uses the traditional @link retain retain @/link / @link release release @/link style of memory management.</p>
+      <p>The documentation for RegexKit is now available in the new <span class="nobr">Xcode 3.0 DocSet</span> format.  This allows you to access the frameworks documentation from within Xcode, including real time access via the <span class="nobr">Research Assistant</span>.  The DocSet documentation is installed in <span class="file">/Library/Developer/Shared/Documentation/DocSets/</span>, which Xcode 3.0 is set to scan automatically.  You may have to quit and restart Xcode in order for the documentation to appear.  Subscriptions are not yet enabled despite the subscription button being present.</p>
+    </div>
+  </div>
+
+  <div class="entry">
     <div class="banner"><span class="date">2007/10/09</span><span class="bannerItemSpacer">-</span><span class="release">0.2.0 Beta</span></div>
     <div class="bannerSpacer"></div>
     <div class="content">
@@ -722,7 +749,7 @@ while([matchEnumerator nextRanges] != NULL) {
       <p>Release highlights:</p>
       <ul>
         <li>PCRE upgraded to 7.4.</li>
-        <li>Version numbering system implemented.  The framework version is also used for the frameworks shared library version.  The previous release did not set a version and used the default of <span class="code">1</span>.  This release has the version <span class="code">0.2.0"</span>.  Due to the fact that the framework is used as an embedded private framework, this should be a non-issue.</li>
+        <li>Version numbering system implemented.  The framework version is also used for the frameworks shared library version.  The previous release did not set a version and used the default of <span class="code">1</span>.  This release has the version <span class="code">0.2.0</span>.  Due to the fact that the framework is used as an embedded private framework, this should be a non-issue.</li>
         <li>~<span class="code">15K</span> smaller executable due to build setting optimizations.  Now optimized with <span class="code">-Oz</span> and dead code stripped.</li>
         <li>The source code distribution no longer contains the <span class="nobr">Mac OS X</span> framework binary.</li>
         <li>PCRE build system received a major overhaul.</li>
@@ -742,6 +769,19 @@ while([matchEnumerator nextRanges] != NULL) {
   </div>
 </div>
 
+<p>The <span class="file">.dmg</span> Installer distributions include the following:</p>
+<ul>
+<li>RegexKit framework binary for <span class="code">ppc</span>, <span class="code">ppc64</span>, <span class="code">i386</span>, and <span class="code">x86_64</span> architectures.</li>
+<li>Documentation in HTML.</li>
+<li>Documentation in Xcode 3.0 DocSet form.</li>
+<li>Complete source code.</li>
+</ul>
+<table class="standard marginSpacer" summary="Mac OS X .dmg Installer Distributions">
+  <caption>Mac OS X <span class="file">.dmg</span> Installer Distributions</caption>
+  <tr><th>Date</th><th>Version</th><th>PCRE</th><th>Operating System</th><th>Architecture</th><th>Size</th><th>File</th><th>Format</th></tr>
+  <tr><td>2007/10/29</td><td>0.3.0 Beta</td><td>7.4</td><td>Mac OS X 10.4 and later</td><td>ppc, ppc64, i386, x86_64</td><td>1,333K</td><td><a href="http://downloads.sourceforge.net/regexkit/RegexKit_0.3.0.dmg" class="file">RegexKit_0.3.0.dmg</a></td><td>Apple Disk Image</td></tr>
+</table>
+
 <table class="standard marginSpacer" summary="Mac OS X Binary Distributions">
   <caption>Mac OS X Binary Distributions</caption>
   <tr><th>Date</th><th>Version</th><th>PCRE</th><th>Operating System</th><th>Architecture</th><th>Size</th><th>File</th><th>Format</th></tr>
@@ -752,6 +792,7 @@ while([matchEnumerator nextRanges] != NULL) {
 <table class="standard marginSpacer" summary="Source Code Distributions">
   <caption>Source Code Distributions</caption>
   <tr><th>Date</th><th>Version</th><th>PCRE</th><th>Development Environment</th><th>Size</th><th>File</th><th>Format</th></tr>
+  <tr><td>2007/10/29</td><td>0.3.0 Beta</td><td>7.4</td><td>Xcode 2.4.1</td><td>515K</td><td><a href="http://downloads.sourceforge.net/regexkit/RegexKit_0.3.0_source.tar.bz2" class="file">RegexKit_0.3.0_source.tar.bz2</a></td><td>bzip2 compressed tar archive</td></tr>
   <tr><td>2007/10/09</td><td>0.2.0 Beta</td><td>7.4</td><td>Xcode 2.4.1</td><td>484K</td><td><a href="http://downloads.sourceforge.net/regexkit/RegexKit_0.2.0_source.tar.bz2" class="file">RegexKit_0.2.0_source.tar.bz2</a></td><td>bzip2 compressed tar archive</td></tr>
   <tr><td>2007/08/31</td><td>Alpha</td><td>7.3</td><td>Xcode 2.4.1</td><td>655K</td><td><a href="http://downloads.sourceforge.net/regexkit/RegexKit_source_ALPHA.tar.bz2" class="file">RegexKit_source_ALPHA.tar.bz2</a></td><td>bzip2 compressed tar archive</td></tr>
 </table>
@@ -824,7 +865,7 @@ while([matchEnumerator nextRanges] != NULL) {
 
 <h2><a name="AddingtheRegexKitframeworktoyourProject">Adding the <span class="nobr">RegexKit.framework</span> to your Project</a></h2>
 
-<div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">The prebuilt framework included with the distribution, <span class="file">Framework/RegexKit.framework</span>, may only be used as an <span class="new-term">embedded private framework</span>.  It can only be installed inside your applications bundle, ie <span class="file">My App.App/Contents/Frameworks/RegexKit.framework</span>.  It should not be installed in <span class="file">/Library/Frameworks</span> or <span class="file">~/Library/Frameworks</span>.</div></div></div></div>
+<div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">The prebuilt framework included with the distribution, <span class="file">/Developer/Local/Frameworks/RegexKit.framework</span>, may only be used as an <span class="new-term">embedded private framework</span>.  It can only be installed inside your applications bundle, ie <span class="file">My App.App/Contents/Frameworks/RegexKit.framework</span>.  It should not be installed in <span class="file">/Library/Frameworks</span> or <span class="file">~/Library/Frameworks</span>.</div></div></div></div>
 
 <p>Adding the framework to your project is fairly straight forward.  These directions cover adding the framework to your project as an <span class="new-term">embedded private framework</span>.  An embedded private framework is just like a standard framework, such as <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/CocoaFundamentals/index.html"><i>Cocoa</i></a>, except that unlike <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/CocoaFundamentals/index.html"><i>Cocoa</i></a>, a copy of the embedded private framework is included inside your <span class="nobr">applications .App bundle</span> in the <span class="file">My App.App/Contents/Frameworks</span> directory.</p>
 
@@ -845,10 +886,12 @@ while([matchEnumerator nextRanges] != NULL) {
 <ul>
 <li>Linking the framework to your executable.</li>
 <li>Adding a <span class="build-phase">Copy Files</span> build phase to your executable target.</li>
-<li>Import the <span class="code nobr">RegexKit/RegexKit.h</span> header.</li>
+<li>Import the <span class="file nobr">RegexKit/RegexKit.h</span> header.</li>
 </ul>
 
-<div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">These instructions apply to Xcode version <span class="nobr">2.4.1.</span>  Other versions should be similar, but may vary for specific details.</div></div></div></div>
+<div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">These instructions apply to Xcode versions <span class="nobr">2.4.1</span> and <span class="nobr">3.0.</span>  Other versions should be similar, but may vary for specific details.</div></div></div></div>
+
+<div class="box important marginTopSpacer"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">These instructions assume you have installed the framework in the default location <span class="file">/Developer/Local/Frameworks/RegexKit.framework</span>.</div></div></div></div>
 
 <h4><a name="AddingtheRegexKitframeworktoyourProject_LinkingtotheFramework">Linking to the Framework</a></h4>
 
@@ -873,7 +916,7 @@ while([matchEnumerator nextRanges] != NULL) {
 </li>
 
 <li>
-<p>Chose the <span class="file">Framework/RegexKit.framework</span> file from the framework distribution.  Xcode will then ask which targets to add the framework to. Select your application if it is not already selected. When you have selected all the targets you would like to add the framework to, click the Add button.  The <span class="file">RegexKit.framework</span> should now appear within the <span class="xcode-group">Linked Frameworks</span> group.  Additionally, the framework should automatically appear under the <span class="build-phase">Link Binary With Libraries</span> build phase for your application as shown in <span class="nobr">Figure 3.</span></p>
+<p>Choose <span class="file">/Developer/Local/Frameworks/RegexKit.framework</span>. Xcode will then ask which targets to add the framework to. Select your application if it is not already selected. When you have selected all the targets you would like to add the framework to, click the Add button.  The <span class="file">RegexKit.framework</span> should now appear within the <span class="xcode-group">Linked Frameworks</span> group.  Additionally, the framework should automatically appear under the <span class="build-phase">Link Binary With Libraries</span> build phase for your application as shown in <span class="nobr">Figure 3.</span></p>
 <div class="figure">
 <div class="caption"><span class="number">Figure 3</span><span class="text">The application linked to the framework</span></div>
 <img alt="The application linked to the framework" src="Images/3_added_framework.png">

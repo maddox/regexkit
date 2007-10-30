@@ -20,6 +20,8 @@ INSERT INTO xrefs  (xref, class)       VALUES ("CFDictionaryKeyCallBacks", "code
 INSERT INTO xrefs  (xref, class)       VALUES ("CFMutableDictionary", "code");
 INSERT INTO xrefs  (xref, class)       VALUES ("FOUNDATION_STATIC_INLINE", "code");
 INSERT INTO xrefs  (xref, class, href) VALUES ("GNUstep", "section-link", "http://www.gnustep.org/");
+INSERT INTO xrefs  (xref, class)       VALUES ("INT_MIN", "code");
+INSERT INTO xrefs  (xref, class)       VALUES ("INT_MAX", "code");
 
 INSERT INTO xrefs  (xref, class)       VALUES ("NSArray", "code");
 INSERT INTO xrefs  (xref, class)       VALUES ("NSAttributedString", "code");
@@ -36,6 +38,9 @@ INSERT INTO xrefs  (xref, class, href) VALUES ("NSDictionary/dictionaryWithObjec
 INSERT INTO xrefs  (xref, class)       VALUES ("NSEnumerator", "code");
 INSERT INTO xrefs  (xref, class, href) VALUES ("NSEnumerator/nextObject", "code", "http://developer.apple.com/documentation/Cocoa/Reference/Foundation/Classes/NSEnumerator_Class/Reference/Reference.html#//apple_ref/occ/instm/NSEnumerator/nextObject");
 INSERT INTO xrefs  (xref, class, href) VALUES ("NSException", "code", "http://developer.apple.com/documentation/Cocoa/Reference/Foundation/Classes/NSException_Class/Reference/Reference.html");
+INSERT INTO xrefs  (xref, class)       VALUES ("NSInteger", "code");
+INSERT INTO xrefs  (xref, class)       VALUES ("NSIntegerMin", "code");
+INSERT INTO xrefs  (xref, class)       VALUES ("NSIntegerMax", "code");
 INSERT INTO xrefs  (xref, class, href) VALUES ("NSInvalidArgumentException", "code", "http://developer.apple.com/documentation/Cocoa/Reference/Foundation/Miscellaneous/Foundation_Constants/Reference/reference.html#//apple_ref/doc/c_ref/NSInvalidArgumentException");
 INSERT INTO xrefs  (xref, class, href) VALUES ("NSInvalidArchiveOperationException", "code", "http://developer.apple.com/documentation/Cocoa/Reference/Foundation/Classes/NSKeyedArchiver_Class/Reference/Reference.html#//apple_ref/doc/c_ref/NSInvalidArchiveOperationException");
 INSERT INTO xrefs  (xref, class, href) VALUES ("NSInvalidUnarchiveOperationException", "code", "http://developer.apple.com/documentation/Cocoa/Reference/Foundation/Classes/NSKeyedUnarchiver_Class/Reference/Reference.html#//apple_ref/doc/c_ref/NSInvalidUnarchiveOperationException");
@@ -71,6 +76,8 @@ INSERT INTO xrefs  (xref, class, href) VALUES ("NSSet/anyObject", "code", "http:
 INSERT INTO xrefs  (xref, class)       VALUES ("NSString", "code");
 INSERT INTO xrefs  (xref, class)       VALUES ("NSThread", "code");
 INSERT INTO xrefs  (xref, class, href) VALUES ("NSToolTipAttributeName", "code", "http://developer.apple.com/documentation/Cocoa/Reference/ApplicationKit/Classes/NSAttributedString_AppKitAdditions/Reference/Reference.html#//apple_ref/doc/c_ref/NSToolTipAttributeName");
+INSERT INTO xrefs  (xref, class)       VALUES ("NSUInteger", "code");
+INSERT INTO xrefs  (xref, class)       VALUES ("NSUIntegerMax", "code");
 INSERT INTO xrefs  (xref, class)       VALUES ("NSValue", "code");
 INSERT INTO xrefs  (xref, class, href) VALUES ("NS_DURING", "code", "http://developer.apple.com/documentation/Cocoa/Reference/Foundation/Miscellaneous/Foundation_Functions/Reference/reference.html#//apple_ref/c/func/NS_DURING");
 INSERT INTO xrefs  (xref, class, href) VALUES ("NS_ENDHANDLER", "code", "http://developer.apple.com/documentation/Cocoa/Reference/Foundation/Miscellaneous/Foundation_Functions/Reference/reference.html#//apple_ref/c/func/NS_ENDHANDLER");
@@ -87,6 +94,7 @@ INSERT INTO xrefs  (xref, class)       VALUES ("RKLock", "code");
 INSERT INTO xrefs  (xref, class)       VALUES ("RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS", "code");
 INSERT INTO xrefs  (xref, class)       VALUES ("RKReadWriteLock", "code");
 INSERT INTO xrefs  (xref, class)       VALUES ("RKThreadYield", "code");
+INSERT INTO xrefs  (xref, class)       VALUES ("UINT_MAX", "code");
 INSERT INTO xrefs  (xref, class)       VALUES ("alloca", "code");
 INSERT INTO xrefs  (xref, class)       VALUES ("allocWithZone:", "code");
 INSERT INTO xrefs  (xref, class)       VALUES ("autorelease", "code");

@@ -106,11 +106,11 @@ h5   { margin-top: 1.5em; margin-bottom: 0.5000em; font-size: 1.0834em; padding:
 .chrono ul                                      { margin-left: 4.0ex; padding-left: 1ex; list-style-type: square; }
 .chrono ul li                                   { margin-top: 0.5em; }
 
-.chrono > .entry                                { margin-left: 2ex; margin-bottom: 1em; padding-right: 2ex; }
+.chrono > .entry                                { margin-left: 2ex; margin-bottom: 1.75em; padding-right: 2ex; }
 .chrono > .entry > .banner                      { margin-left: -1.25ex; font-size: 1.0834em; }
 .chrono > .entry > .banner > .bannerItemSpacer  { margin-right: 1.25ex; margin-left: 1.25ex; }
 /*.chrono > .entry > .bannerSpacer                { border-bottom: 1px solid #e8e8e8; height: 0px; width: 95%; margin-left: -1.5ex; margin-top: 0.25em; margin-bottom: 0.25em; }*/
-.chrono > .entry > .bannerSpacer                { margin-left: -2.0ex; /*padding-left: 1.5ex;*/ border-bottom: 1px solid #e8e8e8; margin-top: 0.25em; margin-bottom: 0.25em; width: 95% }
+.chrono > .entry > .bannerSpacer                { margin-left: -2.0ex; /*padding-left: 1.5ex;*/ border-bottom: 1px solid #d8d8d8; margin-top: 0.25em; margin-bottom: 0.25em; width: 95% }
 .chrono > .entry > .content                     { margin-top: 0.5em; }
 .chrono > .entry > .content > p:first-child     { margin-top: 0px; margin-bottom: 0px; }
 

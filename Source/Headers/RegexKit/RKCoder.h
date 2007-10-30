@@ -47,8 +47,8 @@
 #ifndef _RECODER_H_
 #define _RECODER_H_ 1
 
-NSDictionary *RKRegexCoderDifferencesDictionary(id self, const SEL _cmd, NSCoder * const coder, id codedRegexString, const RKCompileOption codedCompileOption) RK_ATTRIBUTES(nonnull(1,2,3,4)) RK_ATTRIBUTES(used, visibility("hidden"));
-id RKRegexInitWithCoder(id self, const SEL _cmd, NSCoder * const coder) RK_ATTRIBUTES(nonnull, used, visibility("hidden"));
-void RKRegexEncodeWithCoder(id self, const SEL _cmd, NSCoder * const coder) RK_ATTRIBUTES(nonnull, used, visibility("hidden"));
+NSDictionary *RKRegexCoderDifferencesDictionary(id self, const SEL _cmd, NSCoder * const coder, id codedRegexString, const RKCompileOption codedCompileOption) RK_ATTRIBUTES(nonnull(1, 2, 3, 4), used, visibility("hidden"));
+id RKRegexInitWithCoder(id self, const SEL _cmd, NSCoder * const coder)     RK_ATTRIBUTES(nonnull(1, 2, 3), used, visibility("hidden"));
+void RKRegexEncodeWithCoder(id self, const SEL _cmd, NSCoder * const coder) RK_ATTRIBUTES(nonnull(1, 2, 3), used, visibility("hidden"));
 
 #endif // _RECODER_H_

@@ -47,6 +47,7 @@ static Class   autoreleasePoolClass                   = NULL;
 static SEL     autoreleasePoolAddObjectMethodSelector = NULL;
 static IMP     autoreleasePoolAddObjectIMP            = NULL;
 static size_t  classSizeDifference                    = 0;
+static size_t  classAlignedSize                       = 0;
 
 //
 // +load is called when the runtime first loads a class or category.
@@ -56,20 +57,22 @@ static size_t  classSizeDifference                    = 0;
 
 + (void)load
 {
-  
   RKAtomicMemoryBarrier(); // Extra cautious
   if(RKAutoreleasedMemoryLoadInitialized == 1) { return; }
   
   if(RKAtomicCompareAndSwapInt(0, 1, &RKAutoreleasedMemoryLoadInitialized)) {
     NSAutoreleasePool *initPool = [[NSAutoreleasePool alloc] init];
+    size_t  autoreleasePoolInstanceSize = 0;
     
     autoreleaseMallocZone                  = NSDefaultMallocZone();
     autoreleaseClass                       = [RKAutoreleasedMemory class];
     autoreleasePoolClass                   = [NSAutoreleasePool class];
     autoreleasePoolAddObjectMethodSelector = @selector(addObject:);
     autoreleasePoolAddObjectIMP            = (IMP)(class_getClassMethod(autoreleasePoolClass, autoreleasePoolAddObjectMethodSelector)->method_imp);
-    classSizeDifference                    = (16 - (autoreleaseClass->instance_size % 16));  // Ensure our returned pointer is always % 16 aligned.
-    
+    autoreleasePoolInstanceSize            = autoreleaseClass->instance_size;
+    classSizeDifference                    = (16 - (autoreleasePoolInstanceSize % 16));  // Ensure our returned pointer is always % 16 aligned.
+    classAlignedSize                       = (autoreleasePoolInstanceSize + classSizeDifference);
+
     [initPool release];
     initPool = NULL;
   }
@@ -80,7 +83,7 @@ static size_t  classSizeDifference                    = 0;
 void *autoreleasedMalloc(const size_t length) {
   RKAutoreleasedMemory * RK_C99(restrict) memoryObject = (RKAutoreleasedMemory *)NSAllocateObject(autoreleaseClass, (length + classSizeDifference), autoreleaseMallocZone);
   (*autoreleasePoolAddObjectIMP)(autoreleasePoolClass, autoreleasePoolAddObjectMethodSelector, memoryObject); // == [memoryObject autorelease];
-  return((void *)(((char *)memoryObject) + (autoreleaseClass->instance_size + classSizeDifference)));
+  return((void *)(((char *)memoryObject) + classAlignedSize));
 }
 
 #endif //USE_AUTORELEASED_MALLOC

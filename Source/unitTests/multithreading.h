@@ -29,7 +29,7 @@
   pthread_mutex_t threadExitLock;
   unsigned int threadExitCount;
   
-  unsigned int startAutoreleasedObjects;
+  RKUInteger startAutoreleasedObjects;
   unsigned int iterations;
   
   RKCPUTime testStartCPUTime;

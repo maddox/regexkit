@@ -46,11 +46,14 @@
 
 static int globalIsMultiThreaded = 0;
 
+static void releaseRKLockResources(RKLock *self, SEL _cmd);
+static void releaseRKReadWriteResources(RKReadWriteLock *self, SEL _cmd);
+
 @implementation RKLock
 
 - (id)init
 {
-  [self autorelease];
+  RKAutorelease(self);
 
   if((self = [super init]) == NULL) { goto errorExit; }
 
@@ -78,7 +81,7 @@ static int globalIsMultiThreaded = 0;
     }
   }
 
-  return([self retain]);
+  return(RKRetain(self));
 
 errorExit:
   return(NULL);
@@ -86,9 +89,22 @@ errorExit:
 
 - (void)dealloc
 {
+  releaseRKLockResources(self, _cmd);
+  [super dealloc];
+}
+
+#ifdef    ENABLE_MACOSX_GARBAGE_COLLECTION
+- (void)finalize
+{
+  releaseRKLockResources(self, _cmd);
+  [super finalize];
+}
+#endif // ENABLE_MACOSX_GARBAGE_COLLECTION
+
+static void releaseRKLockResources(RKLock *self, SEL _cmd RK_ATTRIBUTES(unused)) {
   int pthreadError = 0, destroyTryCount = 0;
 
-  while((pthreadError = pthread_mutex_destroy(&lock)) != 0) {
+  while((pthreadError = pthread_mutex_destroy(&self->lock)) != 0) {
     if(pthreadError == EBUSY) {
       usleep(50);
       destroyTryCount++;
@@ -100,12 +116,12 @@ errorExit:
   }
 
 errorExit:
-  [super dealloc];
+  return;
 }
 
-- (unsigned int)hash
+- (RKUInteger)hash
 {
-  return((unsigned int)self);
+  return((RKUInteger)self);
 }
 
 - (BOOL)isEqual:(id)anObject
@@ -144,11 +160,7 @@ errorExit:
   spinCount = 0;
 }
 
-@end
-
-BOOL RKFastLock(RKLock * const aLock) {
-  if(RK_EXPECTED(aLock == NULL, 0)) { return(NO); }
-  struct RKLockDef { @defs(RKLock) } * RK_C99(restrict) self = (struct RKLockDef *)aLock;
+BOOL RKFastLock(RKLock * const self) {
   int pthreadError = 0, spuriousErrors = 0;
   NSString * RK_C99(restrict) functionString = @"pthread_mutex_trylock";
   BOOL didLock = NO;
@@ -158,7 +170,7 @@ BOOL RKFastLock(RKLock * const aLock) {
     RKAtomicCompareAndSwapInt(0, 1, &globalIsMultiThreaded);
   }
 
-  pthreadError = pthread_mutex_trylock(&self->lock);
+  if(RK_EXPECTED((pthreadError = pthread_mutex_trylock(&self->lock)) == 0, 1)) { return(YES); } // Fast exit on the common acquired lock case.
   
   switch(pthreadError) {
     case 0:                                     didLock = YES; goto exitNow;  break; // Lock was acquired
@@ -199,7 +211,7 @@ exitNow:
 
 void RKFastUnlock(RKLock * const aLock) {
   if(RK_EXPECTED(aLock == NULL, 0)) { return; }
-  struct RKLockDef { @defs(RKLock) } * RK_C99(restrict) self = (struct RKLockDef *)aLock;
+  RKLock *self = aLock;
   int pthreadError = 0;
   
   if(globalIsMultiThreaded == 0) { return; }
@@ -209,11 +221,13 @@ void RKFastUnlock(RKLock * const aLock) {
   }
 }
 
+@end
+
 @implementation RKReadWriteLock
 
 - (id)init
 {
-  [self autorelease];
+  RKAutorelease(self);
   
   if((self = [super init]) == NULL) { goto errorExit; }
   
@@ -241,7 +255,7 @@ void RKFastUnlock(RKLock * const aLock) {
     }
   }
   
-  return([self retain]);
+  return(RKRetain(self));
   
 errorExit:
     return(NULL);
@@ -249,9 +263,22 @@ errorExit:
 
 - (void)dealloc
 {
+  releaseRKReadWriteResources(self, _cmd);
+  [super dealloc];
+}
+
+#ifdef    ENABLE_MACOSX_GARBAGE_COLLECTION
+- (void)finalize
+{
+  releaseRKReadWriteResources(self, _cmd);
+  [super finalize];
+}
+#endif // ENABLE_MACOSX_GARBAGE_COLLECTION
+
+static void releaseRKReadWriteResources(RKReadWriteLock *self, SEL _cmd RK_ATTRIBUTES(unused)) {
   int pthreadError = 0, destroyTryCount = 0;
   
-  while((pthreadError = pthread_rwlock_destroy(&readWriteLock)) != 0) {
+  while((pthreadError = pthread_rwlock_destroy(&self->readWriteLock)) != 0) {
     if(pthreadError == EBUSY) {
       usleep(50);
       destroyTryCount++;
@@ -264,12 +291,12 @@ errorExit:
   }
   
 errorExit:
-  [super dealloc];
+  return;
 }
 
-- (unsigned int)hash
+- (RKUInteger)hash
 {
-  return((unsigned int)self);
+  return((RKUInteger)self);
 }
 
 - (BOOL)isEqual:(id)anObject
@@ -330,11 +357,7 @@ errorExit:
   writeSpinCount = 0;
 }
 
-@end
-
-BOOL RKFastReadWriteLock(RKReadWriteLock * const aLock, const BOOL forWriting) {
-  if(RK_EXPECTED(aLock == NULL, 0)) { return(NO); }
-  struct RKReadWriteLockDef { @defs(RKReadWriteLock) } * RK_C99(restrict) self = (struct RKReadWriteLockDef *)aLock;
+BOOL RKFastReadWriteLock(RKReadWriteLock * const self, const BOOL forWriting) {
   int pthreadError = 0, spuriousErrors = 0;
   NSString * RK_C99(restrict) functionString = NULL;
   BOOL didLock = NO;
@@ -388,8 +411,8 @@ BOOL RKFastReadWriteLock(RKReadWriteLock * const aLock, const BOOL forWriting) {
     } while(pthreadError != 0);
     
   } else { // forWriting == NO
+    if(RK_EXPECTED((pthreadError = pthread_rwlock_tryrdlock(&self->readWriteLock)) == 0, 1)) { return(YES); } // Fast exit on the common acquired lock case.
     functionString = @"pthread_rwlock_tryrdlock";
-    pthreadError = pthread_rwlock_tryrdlock(&self->readWriteLock);
     
     switch(pthreadError) {
       case 0:                                       didLock = YES; goto exitNow; break;  // Lock was acquired
@@ -434,9 +457,7 @@ exitNow:
     return(didLock);
 }
 
-void RKFastReadWriteUnlock(RKReadWriteLock * const aLock) {
-  if(RK_EXPECTED(aLock == NULL, 0)) { return; }
-  struct RKReadWriteLockDef { @defs(RKReadWriteLock) } * RK_C99(restrict) self = (struct RKReadWriteLockDef *)aLock;
+void RKFastReadWriteUnlock(RKReadWriteLock * const self) {
   int pthreadError = 0;
   
   if(globalIsMultiThreaded == 0) { return; }
@@ -446,3 +467,4 @@ void RKFastReadWriteUnlock(RKReadWriteLock * const aLock) {
   }
 }
 
+@end

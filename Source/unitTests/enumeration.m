@@ -7,7 +7,14 @@
 
 #define REPrettyObjectMethodString(stringArg, ...) ([NSString stringWithFormat:[NSString stringWithFormat:@"%p [%@ %@]: %@", self, NSStringFromClass([(id)self class]), NSStringFromSelector(_cmd), stringArg], ##__VA_ARGS__])
 
+void startGC(void);
+
 @implementation enumeration
+
++ (void)setUp
+{
+  startGC();
+}
 
 + (void)tearDown
 {

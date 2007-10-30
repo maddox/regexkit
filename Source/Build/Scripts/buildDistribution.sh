@@ -6,27 +6,34 @@ export BZIP2_CMD=${BZIP2_CMD:?"error: Environment variable BZIP2_CMD must exist,
 export CONFIGURATION=${CONFIGURATION:?"error: Environment variable CONFIGURATION must exist, aborting."}
 export DISTRIBUTION_BASE_FILE_NAME=${DISTRIBUTION_BASE_FILE_NAME:?"error: Environment variable DISTRIBUTION_BASE_FILE_NAME must exist, aborting."}
 export DISTRIBUTION_BASE_SOURCE_FILE_NAME=${DISTRIBUTION_BASE_SOURCE_FILE_NAME:?"error: Environment variable DISTRIBUTION_BASE_SOURCE_FILE_NAME must exist, aborting."}
+export DISTRIBUTION_DEFAULT_INSTALL_DIR=${DISTRIBUTION_DEFAULT_INSTALL_DIR:?"error: Environment variable DISTRIBUTION_DEFAULT_INSTALL_DIR must exist, aborting."}
 export DISTRIBUTION_TARGET_DIR=${DISTRIBUTION_TARGET_DIR:?"error: Environment variable DISTRIBUTION_TARGET_DIR must exist, aborting."}
 export DISTRIBUTION_ROOT=${DISTRIBUTION_ROOT:?"error: Environment variable DISTRIBUTION_ROOT must exist, aborting."}
 export DISTRIBUTION_DMG_CONVERT_OPTS=${DISTRIBUTION_DMG_CONVERT_OPTS:?"error: Environment variable DISTRIBUTION_DMG_CONVERT_OPTS must exist, aborting."}
 export DISTRIBUTION_DMG_VOL_NAME=${DISTRIBUTION_DMG_VOL_NAME:?"error: Environment variable DISTRIBUTION_DMG_VOL_NAME must exist, aborting."}
 export DISTRIBUTION_ROOT_NAME=${DISTRIBUTION_ROOT_NAME:?"error: Environment variable DISTRIBUTION_ROOT_NAME must exist, aborting."}
 export DOCUMENTATION_TARGET_DIR=${DOCUMENTATION_TARGET_DIR:?"error: Environment variable DOCUMENTATION_TARGET_DIR must exist, aborting."}
-export DOCUMENTATION_README_DIR=${DOCUMENTATION_README_DIR:?"error: Environment variable DOCUMENTATION_README_DIR must exist, aborting."}
 export FIND=${FIND:?"error: Environment variable FIND must exist, aborting."}
 export GZIP_CMD=${GZIP_CMD:?"error: Environment variable GZIP_CMD must exist, aborting."}
+export PCRE_VERSION=${PCRE_VERSION:?"Environment variable PCRE_VERSION must exist, aborting."}
 export PERL=${PERL:?"Environment variable PERL must exist, aborting."}
 export PROJECT_DIR=${PROJECT_DIR:?"Environment variable PROJECT_DIR must exist, aborting."}
 export PROJECT_NAME=${PROJECT_NAME:?"Environment variable PROJECT_NAME must exist, aborting."}
 export RSYNC=${RSYNC:?"Environment variable RSYNC must exist, aborting."}
 export SQLITE=${SQLITE:?"Environment variable SQLITE must exist, aborting."}
+export TAR=${TAR:?"Environment variable TAR must exist, aborting."}
 export TEMP_FILES_DIR=${TEMP_FILES_DIR:?"error: Environment variable TEMP_FILES_DIR must exist, aborting."}
 
 
 if [ "${CONFIGURATION}" != "Release" ]; then echo "$0:$LINENO: error: Distribution can only be built under the 'Release' configuration."; exit 1; fi;
 
-${PERL} -e 'require DBD::SQLite;' >/dev/null 2>&1
+"${PERL}" -e 'require DBD::SQLite;' >/dev/null 2>&1
 if [ $? != 0 ]; then echo "$0:$LINENO: error: The perl module 'DBD::SQLite' must be installed in order to build the the target '${TARGETNAME}'."; exit 1; fi;  
+
+/usr/bin/renice 20 -p $$
+
+# Get the pcre major and minor version numbers from PCRE_VERSION
+eval `"${PERL}" -e '$ARGV[0] =~ /(\d+)\.(\d+)/; print("export PCRE_VERSION_MAJOR=$1; export PCRE_VERSION_MINOR=$2;\n");' ${PCRE_VERSION}`
 
 if [ "${P7ZIP}" == "" ]; then
   if [ -x 7za ]; then P7ZIP="7za";
@@ -36,51 +43,15 @@ if [ "${P7ZIP}" == "" ]; then
   fi
 fi
 
-compress_tarball()
-{
-  local TARBALL_DIR="$1";
-  local TARBALL_FILE="$2";
-  local TARBALL_FILEPATH="${TARBALL_DIR}/${TARBALL_FILE}";
-
-  if [ ! -f "${TARBALL_FILEPATH}" ] || [ -z "${TARBALL_FILEPATH}" ]; then return 1; fi;
-
-  echo "debug: Compressing tarball '${TARBALL_FILE}' with bzip2."
-  "${BZIP2_CMD}" -k9 "${TARBALL_FILEPATH}"
-  if [ $? != 0 ]; then echo "$0:$LINENO: error: Error creating '${TARBALL_FILE}.bz2' with bzip2 command '${BZIP2_CMD}'."; return 1; fi;
-
-  echo "debug: Compressing tarball '${TARBALL_FILE}' with gzip."
-  "${GZIP_CMD}" -c9 "${TARBALL_FILEPATH}" > "${TARBALL_FILEPATH}.gz"
-  if [ $? != 0 ]; then echo "$0:$LINENO: error: Error creating '${TARBALL_FILE}.gz' with gzip command '${GZIP_CMD}'."; return 1; fi;
-
-  if [ -x "${P7ZIP}" ]; then
-    echo "debug: Compressing tarball '${TARBALL_FILE}' with p7zip."
-    "${P7ZIP}" a "${TARBALL_FILEPATH}.7z" -mx=9 "${TARBALL_FILEPATH}"
-    if [ $? != 0 ]; then echo "$0:$LINENO: error: Error creating '${TARBALL_FILE}.7z' with p7zip command '${P7ZIP}'."; return 1; fi;
-    chmod ugo+r "${TARBALL_FILEPATH}.7z"
+if [ "${PACKAGEMAKER}" == "" ]; then
+  if [ -x packagemaker ]; then PACKAGEMAKER="packagemaker";
+  elif [ -x /Developer/Tools/packagemaker ]; then PACKAGEMAKER="/Developer/Tools/packagemaker";
+  elif [ -x /Developer/usr/bin/packagemaker ]; then PACKAGEMAKER="/Developer/usr/bin/packagemaker";
+  else echo "$0:$LINENO: error: Unable to locate the executable 'packagemaker'."; exit 1;
   fi
-}
+fi
 
-create_tarball()
-{
-  local TARBALL_DIR="$1";
-  local TARBALL_FILE="$2";
-  local TARBALL_ARCHIVE_ROOT="$3";
-  local TARBALL_ARCHIVE="$4";
-
-  local CURRENT_DIR=`pwd`;
-  
-  cd "${TARBALL_ARCHIVE_ROOT}" && \
-    echo "cwd: " `pwd` && \
-    tar cf "${TARBALL_DIR}/${TARBALL_FILE}" "${TARBALL_ARCHIVE}" && \
-    compress_tarball "${TARBALL_DIR}" "${TARBALL_FILE}" && \
-    rm "${TARBALL_DIR}/${TARBALL_FILE}"
-
-  local RETURN_RESULT="$?";
-  
-  cd "${CURRENT_DIR}"
-  
-  return $RETURN_RESULT;
-}
+if [ ! -x "${PACKAGEMAKER}" ] ; then echo "$0:$LINENO: error: The PackageMaker tool '${PACKAGEMAKER}' does not exist."; exit 1; fi;
 
 create_dmg()
 {
@@ -96,18 +67,64 @@ create_dmg()
   local DMG_TMP_FILE="tmp_${DMG_FILE}";
   local DMG_TMP_FILEPATH="${DMG_DIR}/${DMG_TMP_FILE}";
   
-  echo "debug: Creating '${DMG_FILE}' .dmg image."
+  echo "$0:$LINENO: note: Creating '${DMG_FILE}' disk image."
   hdiutil makehybrid -o "${DMG_TMP_FILEPATH}" -hfs -hfs-volume-name "${DMG_VOL_NAME}" "${DMG_DIR}/${DMG_ARCHIVE}"
   if [ $? != 0 ]; then echo "$0:$LINENO: error: Error creating temporary '${DMG_FILE}' with the 'hdiutil' command."; return 1; fi;
-  echo "debug: Compressing .dmg image."
+  echo "$0:$LINENO: note: Compressing .dmg image."
   hdiutil convert ${DMG_CONVERT_OPS} -o "${DMG_FILEPATH}" "${DMG_TMP_FILEPATH}"
   if [ $? != 0 ]; then echo "$0:$LINENO: error: Error compressing '${DMG_FILE}' with the 'hdiutil' command."; return 1; fi;
   rm -f "${DMG_TMP_FILEPATH}"
-  if [ ! -f "${DMG_FILEPATH}" ]; then echo "$0:$LINENO: error: Did not create the .dmg image '${DMG_FILE}'."; return 1; fi;
+  if [ ! -f "${DMG_FILEPATH}" ]; then echo "$0:$LINENO: error: Did not create the .dmg disk image '${DMG_FILE}'."; return 1; fi;
   if [ "${DMG_INTERNET_ENABLE}" == "YES" ]; then
     hdiutil internet-enable -yes "${DMG_FILEPATH}"
     if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to Internet Enable '${DMG_FILE}' with the 'hdiutil' command."; return 1; fi;
   fi;
+}
+
+updateVersion()
+{
+  local FILE_NAME="$1";
+  local MAJOR_VERSION="$2";
+  local MINOR_VERSION="$3";
+  local POINT_VERSION="$4";
+  local INSTALL_DIR="$5";
+
+  "${PLISTUTIL_SCRIPT}"   "${FILE_NAME}" CFBundleGetInfoString      "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}, Copyright 2007 John Engelhart" && \
+    "${PLISTUTIL_SCRIPT}" "${FILE_NAME}" CFBundleShortVersionString "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}" && \
+    "${PLISTUTIL_SCRIPT}" "${FILE_NAME}" CFBundleVersion            "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}" && \
+    "${PLISTUTIL_SCRIPT}" "${FILE_NAME}" IFMajorVersion             "${MAJOR_VERSION}" && \
+    "${PLISTUTIL_SCRIPT}" "${FILE_NAME}" IFMinorVersion             "${MINOR_VERSION}" && \
+    "${PLISTUTIL_SCRIPT}" "${FILE_NAME}" IFPkgFlagDefaultLocation   "${INSTALL_DIR}"
+
+  return $?
+}
+
+updateRegexKitMpkgVersion()
+{
+  local FILE_NAME="$1";
+  local MAJOR_VERSION="$2";
+  local MINOR_VERSION="$3";
+  local POINT_VERSION="$4";
+
+  "${PLISTUTIL_SCRIPT}"   "${FILE_NAME}" CFBundleGetInfoString      "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}, Copyright 2007 John Engelhart" && \
+    "${PLISTUTIL_SCRIPT}" "${FILE_NAME}" CFBundleShortVersionString "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}" && \
+    "${PLISTUTIL_SCRIPT}" "${FILE_NAME}" CFBundleVersion            "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}"
+
+  return $?
+}
+
+updatePackageInfoPlists()
+{
+  if [ ! -d "$1" ] ; then return 1; fi;
+  updateVersion   "$1/Framework_info.plist"     ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/Frameworks" && \
+    updateVersion "$1/DocSet_info.plist"        ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "/Library/Developer/Shared/Documentation/DocSets/" && \
+    updateVersion "$1/Documentation_info.plist" ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/RegexKit/" && \
+    updateVersion "$1/Sourcecode_info.plist"    ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/RegexKit/" && \
+    updateVersion "$1/pcre_info.plist"          ${PCRE_VERSION_MAJOR}    ${PCRE_VERSION_MINOR}    0                        "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/RegexKit/" && \
+    "${PLISTUTIL_SCRIPT}" "$1/pcre_info.plist" CFBundleGetInfoString "${PCRE_VERSION_MAJOR}.${PCRE_VERSION_MINOR}.0, Copyright (c) 1997-2007 University of Cambridge" && \
+    updateRegexKitMpkgVersion "$1/RegexKit_mpkg_info.plist" ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT}
+
+  return $?
 }
 
 if [ ! -r "${DISTRIBUTION_SQL_FILES_FILE}" ]; then echo "$0:$LINENO: error: The sql database creation file 'files.sql' does not exist in '${BUILD_SQL_DIR}'."; exit 1; fi;
@@ -125,106 +142,228 @@ if [ ! -x "${FILE_CHECK_SCRIPT}" ] ; then echo "$0:$LINENO: error: The file chec
 
 rm -rf "${DISTRIBUTION_TARGET_DIR}"
 
-# Create the binary distribution
-
-echo "debug: Creating Mac OS X framework binary distribution '${DISTRIBUTION_ROOT_NAME}'."
-
 export DISTRIBUTION_TEMP_BINARY_ROOT="${DISTRIBUTION_TEMP_BINARY_DIR}/${DISTRIBUTION_ROOT_NAME}";
+export DISTRIBUTION_TEMP_SOURCE_ROOT="${DISTRIBUTION_TEMP_SOURCE_DIR}/${DISTRIBUTION_ROOT_SOURCE_NAME}";
+export CPUS=`sysctl -n hw.activecpu`;
+export MAXLOAD=`expr "${CPUS}" + 2`;
+if [ "${DISTRIBUTION_PARALLEL_BUILD}" == "YES" ] && (( ${CPUS} > 1 )); then
+  echo "$0:$LINENO: note: DISTRIBUTION_PARALLEL_BUILD == 'YES', number of active CPU's: ${CPUS} max load average: ${MAXLOAD}";
+  "${MAKE}" -f "${MAKEFILE_DIST}" -j "${CPUS}" -l "${MAXLOAD}" build_tarballs
+else
+  "${MAKE}" -f "${MAKEFILE_DIST}" build_tarballs
+fi;
 
-rm -rf "${DISTRIBUTION_TEMP_BINARY_DIR}"
-mkdir -p "${DISTRIBUTION_TEMP_BINARY_ROOT}"
 
-echo "debug: Copying release products to '${DISTRIBUTION_ROOT_NAME}'."
+# Not yet moved to Makefile.dist
 
-"${RSYNC}" -a --cvs-exclude "${BUILD_DIR}/${CONFIGURATION}/RegexKit.framework" "${DISTRIBUTION_TEMP_BINARY_ROOT}" && \
-  "${RSYNC}" -a --cvs-exclude "${BUILD_DIR}/${CONFIGURATION}/Documentation" "${DISTRIBUTION_TEMP_BINARY_ROOT}" && \
-  "${RSYNC}" -a --cvs-exclude ChangeLog LICENSE README ReleaseNotes "${BUILD_DISTRIBUTION_DIR}/Documentation.html" "${DISTRIBUTION_TEMP_BINARY_ROOT}"
-if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to copy release products."; exit 1; fi;
+###############################################################################
+echo "---------------"
+echo ""
+echo "$0:$LINENO: note: Creating Mac OS X Installer Package and .dmg."
+echo ""
+###############################################################################
 
-if [ ${STRIP_INSTALLED_PRODUCT} == "YES" ]; then
-  echo "Stripping release products of debugging information."
-  strip -S "${DISTRIBUTION_TEMP_BINARY_ROOT}/RegexKit.framework/Versions/A/RegexKit"
-  if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to strip release products."; exit 1; fi;
+export DISTRIBUTION_TEMP_PACKAGEMAKER_DIR="${DISTRIBUTION_TEMP_PACKAGES_DIR}/Packagemaker"
+export DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR="${DISTRIBUTION_TEMP_PACKAGEMAKER_DIR}/plists"
+export DISTRIBUTION_TEMP_INSTALLER_PACKAGE="${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_ROOT_NAME}.mpkg"
+
+# Clean any previous attempts and prep staging area.
+rm -rf "${DISTRIBUTION_TEMP_PACKAGES_DIR}" && \
+  mkdir -p \
+    "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/${DOCUMENTAION_DOCSET_ID}" \
+    "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation" \
+    "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework" \
+    "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Sourcecode" && \
+  if [ "${DISTRIBUTION_INCLUDE_PCRE_PACKAGE}" == "YES" ]; then mkdir -p "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/pcre/Sourcecode/Source/pcre"; fi
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to delete the staging area from a previous build attempt."; exit 1; fi;
+
+# Make a copy of the various files we need for packaging (Source/Build/PackageMaker/*).
+"${RSYNC}" -aCE --delete "${BUILD_PACKAGEMAKER_DIR}/" "${DISTRIBUTION_TEMP_PACKAGEMAKER_DIR}/"
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Could not copy package resources to temporary staging area."; exit 1; fi;
+
+# And update our copy of the plists files with the current version information.
+updatePackageInfoPlists "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}"
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Could not update packages Info.plist files with the current version."; exit 1; fi;
+
+#
+# Create the staging area.
+#   Copy the two helper .html files (Documentation.html + Adding RegexKit to your Project.html) + build/Release/Documentation.
+#     and SetFile -a E on Adding RegexKit to your Project.html to get rid of the extension when viewed from the Finder.
+#   Copy build/Release/RegexKit.framework.
+#     and strip any debugging symbols from it.
+#   Copy the previously assembled Sourcecode directory from the source tarball build.
+#   Set the files to group + write.
+#     When `installed`, the user:group will be root:admin, thus allowing admin users to write to the directories/files.
+#
+# The reason why package grouping directories appear to be "doubled up" (ie, staging/RegexKit.framework/RegexKit.framework)
+# is sort of goofy, but it's basically so that we can control what permissions the packages unarchive with.
+#
+
+echo "$0:$LINENO: note: Copying files to the packaging staging area."
+"${RSYNC}" -aCE "${TARGET_BUILD_DIR}/DocSet/${DOCUMENTAION_DOCSET_ID}/" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/${DOCUMENTAION_DOCSET_ID}/${DOCUMENTAION_DOCSET_ID}" && \
+  "${RSYNC}" -aCE "${BUILD_DISTRIBUTION_DIR}/Documentation.html" "${BUILD_DISTRIBUTION_DIR}/Adding RegexKit to your Project.html" "${DOCUMENTATION_TARGET_DIR}" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation" && \
+  "${SYSTEM_DEVELOPER_TOOLS}/SetFile" -a E "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation/Adding RegexKit to your Project.html" && \
+  "${RSYNC}" -aCE "${TARGET_BUILD_DIR}/RegexKit.framework/" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework/RegexKit.framework" && \
+  strip -S "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework//RegexKit.framework/Versions/A/RegexKit" && \
+  "${RSYNC}" -aCE "${DISTRIBUTION_TEMP_SOURCE_DIR}/Sourcecode/" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Sourcecode/Sourcecode" && \
+  if [ "${DISTRIBUTION_INCLUDE_PCRE_PACKAGE}" == "YES" ]; then "${RSYNC}" -a "${PCRE_TARBALL_FILE_PATH}" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/pcre/Sourcecode/Source/pcre/${PCRE_TARBALL_FILE_NAME}"; fi && \
+  "${CHMOD}" -R g+w "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation" && \
+  "${CHMOD}" -R g+w "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Sourcecode" && \
+  "${CHMOD}" -R g+w "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/com.zang.RegexKit.Documentation.docset"
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to copy distribution files to staging area."; exit 1; fi;
+
+#
+# Notes on PackageMaker package making...
+#
+# The -u flag tells PackageMaker to not gzip the Archive.pax file.  We leave it uncompressed because we put the final .mpkg bundle on a .dmg disk image.
+# The .dmg disk image is compressed with bzip2 (UDBZ).  If PackageMaker gzip's it here, the resulting .dmg is ~60-70K larger because bzip2 is able
+# to compress an uncompressed Archive.pax file better than a gunziped Archive.pax.gz.
+#
+# For the Documentation package we rebuild the .pax file completely to pick up the extension hiding SetFile -a E "Adding RegexKit to your Project.html"
+#
+# The odd perl scripts that alter the Archive.(pax|bom) output is the result of a compromise.
+#
+# What it does is set pax and bom files so that the user id and group ID are "0:80", aka "root:admin".
+#
+# One way to do it is to have root chown -R root:admin staging/ and let packagemaker/pax/cpio pick it up automatically.
+# This, however, requires elevated privileges.  Using `sudo` has its drawbacks if your credentials aren't cached and
+# you haven't updated sudoers with a pattern to let the command execute automatically without prompting for a password.
+#
+# There's also `-e 'do shell script "chown -R root:admin staging/" with administrator privileges'`, which will prompt
+# with the standard security framework dialog panel for a password.  Certainly better when building interactively,
+# but not ideal.
+#
+# Then there's the possibility that some malicous program could alter this script (or whatever script
+# contains the elevated commands) and change it to execute some other commands at the elevated privilege.
+#
+# This way avoids all those pitfalls by simply re-writing the cpio .pax archive and bom file with the uid:gid pair
+# we'd like to have when it un-archives, achieving the same result.
+#
+
+echo "$0:$LINENO: note: Packaging RegexKit.framework."
+"${CHMOD}" -h go-w "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework/RegexKit.framework/Headers" \
+  "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework/RegexKit.framework/RegexKit" \
+  "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework/RegexKit.framework/Resources" \
+  "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework/RegexKit.framework/Versions/Current"
+
+"${PACKAGEMAKER}" -build \
+    -p "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_FRAMEWORK}" \
+    -f "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework/" \
+    -u \
+    -ds \
+    -i "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}/Framework_info.plist" \
+    -d "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}/Framework_desc.plist" && \
+  "${PERL}" -e 'while(<>) { s/(070707\d{18})(\d{12})(\d{40})/${1}000000000120${3}/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_FRAMEWORK}/Contents/Archive.pax" && \
+  if [ "${DISTRIBUTION_GZIP_PACKAGES}" == "YES" ]; then "${GZIP_CMD}" -n9 "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_FRAMEWORK}/Contents/Archive.pax" ; fi && \
+  "${PERL}" -e 'while(<>) { s/\x0\x0\x1\xf5\x0\x0\x1\xf5/\x0\x0\x0\x0\x0\x0\x0\x50/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_FRAMEWORK}/Contents/Archive.bom"
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to create RegexKit.framework package."; exit 1; fi;
+
+echo "$0:$LINENO: note: Packaging HTML Documentation."
+"${PACKAGEMAKER}" -build \
+  -p "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION}" \
+  -f "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation" \
+  -u \
+  -ds \
+  -i "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}/Documentation_info.plist" \
+  -d "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}/Documentation_desc.plist"
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to create HTML Documentation package."; exit 1; fi;
+
+# bogus package maker
+# So, the packagemaker -build puts together a .pax file that strips off the SetFile -a E (hide extension)
+# flag for whatever reason.  So we re-build it here.
+rm -f "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION}/Contents/Archive.pax" && \
+  cd "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation" && \
+  pax -w -x cpio -f "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION}/Contents/Archive.pax" . && \
+  "${PERL}" -e 'while(<>) { s/(070707\d{18})(\d{12})(\d{40})/${1}000000000120${3}/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION}/Contents/Archive.pax" && \
+  if [ "${DISTRIBUTION_GZIP_PACKAGES}" == "YES" ]; then "${GZIP_CMD}" -n9 "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION}/Contents/Archive.pax" ; fi && \
+  "${PERL}" -e 'while(<>) { s/\x0\x0\x1\xf5\x0\x0\x1\xf5/\x0\x0\x0\x0\x0\x0\x0\x50/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION}/Contents/Archive.bom" && \
+  cd "${PROJECT_DIR}" && \
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to re-pax HTML Documenation (hide extension dropped work-around)."; exit 1; fi;
+
+echo "$0:$LINENO: note: Packaging DocSet Documentation."
+"${PACKAGEMAKER}" -build \
+    -p "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION}" \
+    -f "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/${DOCUMENTAION_DOCSET_ID}/" \
+    -u \
+    -ds \
+    -i "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}/DocSet_info.plist" \
+    -d "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}/DocSet_desc.plist" && \
+  "${PERL}" -e 'while(<>) { s/(070707\d{18})(\d{12})(\d{40})/${1}000000000120${3}/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION}/Contents/Archive.pax" && \
+  if [ "${DISTRIBUTION_GZIP_PACKAGES}" == "YES" ]; then "${GZIP_CMD}" -n9 "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION}/Contents/Archive.pax" ; fi && \
+  "${PERL}" -e 'while(<>) { s/\x0\x0\x1\xf5\x0\x0\x1\xf5/\x0\x0\x0\x0\x0\x0\x0\x50/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION}/Contents/Archive.bom"
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to create DocSet Documentation package."; exit 1; fi;
+
+echo "$0:$LINENO: note: Packaging sourcecode."
+"${PACKAGEMAKER}" -build \
+    -p "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE}" \
+    -f "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Sourcecode/" \
+    -u \
+    -ds \
+    -i "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}/Sourcecode_info.plist" \
+    -d "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}/Sourcecode_desc.plist" && \
+  "${PERL}" -e 'while(<>) { s/(070707\d{18})(\d{12})(\d{40})/${1}000000000120${3}/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE}/Contents/Archive.pax" && \
+  if [ "${DISTRIBUTION_GZIP_PACKAGES}" == "YES" ]; then "${GZIP_CMD}" -n9 "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE}/Contents/Archive.pax" ; fi && \
+  "${PERL}" -e 'while(<>) { s/\x0\x0\x1\xf5\x0\x0\x1\xf5/\x0\x0\x0\x0\x0\x0\x0\x50/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE}/Contents/Archive.bom"
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to create sourcecode package."; exit 1; fi;
+
+if [ "${DISTRIBUTION_INCLUDE_PCRE_PACKAGE}" == "YES" ]; then
+  echo "$0:$LINENO: note: Packaging PCRE distribution."
+  "${PACKAGEMAKER}" -build \
+      -p "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE_PCRE}" \
+      -f "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/pcre/" \
+      -u \
+      -ds \
+      -i "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}/pcre_info.plist" \
+      -d "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}/pcre_desc.plist" && \
+    "${PERL}" -e 'while(<>) { s/(070707\d{18})(\d{12})(\d{40})/${1}000000000120${3}/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE_PCRE}/Contents/Archive.pax" && \
+    if [ "${DISTRIBUTION_GZIP_PACKAGES}" == "YES" ]; then "${GZIP_CMD}" -n9 "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE_PCRE}/Contents/Archive.pax" ; fi && \
+    "${PERL}" -e 'while(<>) { s/\x0\x0\x1\xf5\x0\x0\x1\xf5/\x0\x0\x0\x0\x0\x0\x0\x50/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE_PCRE}/Contents/Archive.bom"
+  if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to create PCRE distribution package."; exit 1; fi;
 fi
 
-# If SetFile is available, this adds some polish to the text files for Macintosh users.
-# Specifically- Sets the type of file to TEXT so that double-clicking on the file works correctly
+# This creates/replicates the layout that packagemaker would have created.
+# For whatever reason, when I would supply `packagemaker` with the .pmproj for the complete distribution, it would always segfault.
+# So, we do it this way.
+echo "$0:$LINENO: note: Creating installer package."
+mkdir -p "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/Packages" && \
+  "${RSYNC}" -aC "${DISTRIBUTION_TEMP_PACKAGEMAKER_DIR}/Resources/" "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/Resources/" && \
+  "${FIND}" "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/Resources" -type f -exec "${CHMOD}" 555 {} \; && \
+  "${RSYNC}" -aC "${DISTRIBUTION_TEMP_PACKAGEMAKER_DIR}/plists/RegexKit_mpkg_info.plist" "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/Info.plist" && \
+  "${RSYNC}" -aC \
+    "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_FRAMEWORK}" \
+    "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION}" \
+    "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION}" \
+    "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE}" \
+    "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/Packages" && \
+  if [ "${DISTRIBUTION_INCLUDE_PCRE_PACKAGE}" == "YES" ]; then \
+    "${RSYNC}" -aC "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE_PCRE}" "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/Packages"; \
+  fi
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to copy files in to final installer package."; exit 1; fi;
 
-if [ -x "${SYSTEM_DEVELOPER_TOOLS}/SetFile" ]; then
-  "${SYSTEM_DEVELOPER_TOOLS}/SetFile" -t 'TEXT' "${DISTRIBUTION_TEMP_BINARY_ROOT}/ChangeLog"
-  "${SYSTEM_DEVELOPER_TOOLS}/SetFile" -t 'TEXT' "${DISTRIBUTION_TEMP_BINARY_ROOT}/LICENSE"
-  "${SYSTEM_DEVELOPER_TOOLS}/SetFile" -t 'TEXT' "${DISTRIBUTION_TEMP_BINARY_ROOT}/README"
-  "${SYSTEM_DEVELOPER_TOOLS}/SetFile" -t 'TEXT' "${DISTRIBUTION_TEMP_BINARY_ROOT}/ReleaseNotes"
-fi;
+# PACKAGEDIST_SCRIPT creates the installer 'distribution.dist' installer script file.
+# PackageMaker was used to create the first iteration of the distribution.dist file which was then cleaned up
+# and placed in to the perl script.  The perl script extracts information from the three previously
+# created packages and substitutes their values in the right places in the generated .dist file.
+# Most importantly it extracts the .pkg versions and installation sizes.
+"${PACKAGEDIST_SCRIPT}" > "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/distribution.dist"
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to create installer distribution.dist script."; exit 1; fi;
 
-# Check against the files database to make sure everything is the way we expect it to be.
+# Copy the completed .mpkg to the final build/Release/Distribution location.
+"${RSYNC}" -aCE "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}" "${DISTRIBUTION_TARGET_DIR}"
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to copy Installer Package to distribution directory."; exit 1; fi;
 
-"${FILE_CHECK_SCRIPT}" "${DISTRIBUTION_SQL_DATABASE_FILE}" 'Binary' "${DISTRIBUTION_TEMP_BINARY_ROOT}"
-if [ $? != 0 ]; then echo "$0:$LINENO: error: Binary distribution check failed."; exit 1; fi;
+# Copy our completed .mpkg to the .dmg staging area and then create the .dmg.
+mkdir "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_ROOT_NAME}" && \
+  "${RSYNC}" -aCE "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_ROOT_NAME}"  
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to copy Installer Package to .dmg staging area."; exit 1; fi;
 
-create_tarball "${DISTRIBUTION_TEMP_BINARY_DIR}" "${DISTRIBUTION_BASE_FILE_NAME}.tar" "${DISTRIBUTION_TEMP_BINARY_DIR}" "${DISTRIBUTION_ROOT_NAME}"
-if [ $? != 0 ]; then exit 1; fi;
-create_dmg "${DISTRIBUTION_TEMP_BINARY_DIR}" "${DISTRIBUTION_BASE_FILE_NAME}.dmg" "${DISTRIBUTION_DMG_VOL_NAME}" "${DISTRIBUTION_ROOT_NAME}" "${DISTRIBUTION_DMG_CONVERT_OPTS}" "YES"
-if [ $? != 0 ]; then exit 1; fi;
+# Create the Mac OS X Installer .dmg
+create_dmg "${DISTRIBUTION_TEMP_PACKAGES_DIR}" "${DISTRIBUTION_BASE_FILE_NAME}.dmg" "${DISTRIBUTION_DMG_VOL_NAME}" "${DISTRIBUTION_ROOT_NAME}" "${DISTRIBUTION_DMG_CONVERT_OPTS}" "YES"
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Error creating '${DISTRIBUTION_BASE_FILE_NAME}.dmg' disk image."; exit 1; fi;
 
-echo "debug: Copying Mac OS X framework binary distribution bundles to '${DISTRIBUTION_TARGET_DIR}'."
+# Copy the completed .dmg to the final build/Release/Distribution location.
+"${RSYNC}" -aCE "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_BASE_FILE_NAME}.dmg" "${DISTRIBUTION_TARGET_DIR}"
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to copy Installer Package .dmg to distribution directory."; exit 1; fi;
 
-mkdir -p "${DISTRIBUTION_TARGET_DIR}" && \
-  cd "${DISTRIBUTION_TEMP_BINARY_DIR}" && \
-  "${RSYNC}" -a "${DISTRIBUTION_BASE_FILE_NAME}.dmg" *.tar.* "${DISTRIBUTION_TARGET_DIR}"
-if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to copy release bundles."; exit 1; fi;
-cd "${PROJECT_DIR}"
-
-
-# Create the source distribution
-
-echo "debug: Creating the source distribution '${DISTRIBUTION_ROOT_SOURCE_NAME}'."
-
-export DISTRIBUTION_TEMP_SOURCE_ROOT="${DISTRIBUTION_TEMP_SOURCE_DIR}/${DISTRIBUTION_ROOT_SOURCE_NAME}";
-
-rm -rf "${DISTRIBUTION_TEMP_SOURCE_DIR}"
-mkdir -p "${DISTRIBUTION_TEMP_SOURCE_ROOT}"
-
-echo "debug: Copying project source to '${DISTRIBUTION_TEMP_SOURCE_ROOT}'."
-"${RSYNC}" -a --cvs-exclude \
-    --exclude="\.*" \
-    --exclude="*~" \
-    --exclude="#*#" \
-    --exclude="Source/Headers/RegexKit/pcre.h" \
-    --exclude="Source/pcre" \
-    ChangeLog LICENSE README README.MacOSX ReleaseNotes GNUstep Source "${BUILD_DIR}/${CONFIGURATION}/Documentation" \
-    "${DISTRIBUTION_TEMP_SOURCE_ROOT}" && \
-  "${RSYNC}" -a --cvs-exclude "${BUILD_DISTRIBUTION_DIR}/distribution_pcre.h" "${DISTRIBUTION_TEMP_SOURCE_ROOT}/Source/Headers/RegexKit/pcre.h" && \
-  mkdir -p "${DISTRIBUTION_TEMP_SOURCE_ROOT}/${PROJECT_NAME}.xcodeproj/" && \
-  "${RSYNC}" -a "${PROJECT_NAME}.xcodeproj/project.pbxproj" "${DISTRIBUTION_TEMP_SOURCE_ROOT}/${PROJECT_NAME}.xcodeproj/project.pbxproj"
-
-if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to copy project source to temporary build area."; exit 1; fi;
-
-# If SetFile is available, this adds some polish to the text files for Macintosh users.
-# Specifically- Sets the type of file to TEXT so that double-clicking on the file works correctly
-
-if [ -x "${SYSTEM_DEVELOPER_TOOLS}/SetFile" ]; then
-  "${SYSTEM_DEVELOPER_TOOLS}/SetFile" -t 'TEXT' "${DISTRIBUTION_TEMP_SOURCE_ROOT}/ChangeLog"
-  "${SYSTEM_DEVELOPER_TOOLS}/SetFile" -t 'TEXT' "${DISTRIBUTION_TEMP_SOURCE_ROOT}/LICENSE"
-  "${SYSTEM_DEVELOPER_TOOLS}/SetFile" -t 'TEXT' "${DISTRIBUTION_TEMP_SOURCE_ROOT}/README"
-  "${SYSTEM_DEVELOPER_TOOLS}/SetFile" -t 'TEXT' "${DISTRIBUTION_TEMP_SOURCE_ROOT}/README.MacOSX"
-  "${SYSTEM_DEVELOPER_TOOLS}/SetFile" -t 'TEXT' "${DISTRIBUTION_TEMP_SOURCE_ROOT}/ReleaseNotes"
-fi;
-
-# Check against the files database to make sure everything is the way we expect it to be.
-
-"${FILE_CHECK_SCRIPT}" "${DISTRIBUTION_SQL_DATABASE_FILE}" 'Source' "${DISTRIBUTION_TEMP_SOURCE_ROOT}"
-if [ $? != 0 ]; then echo "$0:$LINENO: error: Source distribution check failed."; exit 1; fi;
-
-
-create_tarball "${DISTRIBUTION_TEMP_SOURCE_DIR}" "${DISTRIBUTION_BASE_SOURCE_FILE_NAME}.tar" "${DISTRIBUTION_TEMP_SOURCE_DIR}" "${DISTRIBUTION_ROOT_SOURCE_NAME}"
-if [ $? != 0 ]; then exit 1; fi;
-
-mkdir -p "${DISTRIBUTION_TARGET_DIR}" && \
-  cd "${DISTRIBUTION_TEMP_SOURCE_DIR}" && \
-  "${RSYNC}" -a *.tar.* "${DISTRIBUTION_TARGET_DIR}"
-if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to copy source tarballs to distribution directory."; exit 1; fi;
-cd "${PROJECT_DIR}"
-
-
+echo "$0:$LINENO: note: Distribution target completed successfully."
 exit 0;
