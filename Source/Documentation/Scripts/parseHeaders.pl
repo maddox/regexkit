@@ -7,6 +7,7 @@ use Cwd 'realpath';
 use File::Basename;
 use re 'eval';
 #use Time::HiRes qw( usleep ualarm gettimeofday tv_interval );
+$|=1;
 
 #use Data::Dumper;
 #use IO::Handle;

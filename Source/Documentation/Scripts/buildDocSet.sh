@@ -68,13 +68,12 @@ export SCRIPT_NAME="$0";
 # Scripts that do work for us.
 if [ ! -x "${DOCUMENTATION_CREATE_DOCSET_SCRIPT}" ]; then echo "$0:$LINENO: error: The command 'createDocSet.pl' does not exist at '${DOCUMENTATION_CREATE_DOCSET_SCRIPT}'."; exit 1; fi;
 
-
-
 # Create the documentation directory if it doesn't exist, and if it does clean it out and start fresh
 if [ ! -d "${DOCUMENTATION_DOCSET_TARGET_DIR}" ]; then
     mkdir "${DOCUMENTATION_DOCSET_TARGET_DIR}"
 else
-    rm -rf "${DOCUMENTATION_DOCSET_TARGET_DIR}"/*
+  rm -rf "${DOCUMENTATION_DOCSET_TARGET_DIR}"
+  mkdir "${DOCUMENTATION_DOCSET_TARGET_DIR}"
 fi
 
 rm -rf "${DOCUMENTATION_DOCSET_TEMP_DOCS_DIR}"
@@ -83,12 +82,34 @@ mkdir -p "${DOCUMENTATION_DOCSET_TEMP_DOCS_DIR}" && \
   "${RSYNC}" -a --delete --cvs-exclude "${DOCUMENTATION_DOCSET_SOURCE_HTML}/" "${DOCUMENTATION_DOCSET_TEMP_DOCS_DIR}"
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: Unable to create temporary DocSet build area directory."; exit 1; fi;
 
+# We always wipe our tables and start fresh so we have semi-consistant ID's
 "${SQLITE}" "${DOCUMENTATION_SQL_DATABASE_FILE}" < "${DOCUMENTATION_SQL_DIR}/docset.sql"
+if [ $? != 0 ] ; then echo "$0:$LINENO: error: SQL database prep for DocSet failed."; exit 1; fi;
 
 # Execute the DOCUMENTATION_CREATE_DOCSET_SCRIPT script.
 echo "$0:$LINENO: note: Creating DocSet '${DOCUMENTAION_DOCSET_ID}'."
-"${DOCUMENTATION_CREATE_DOCSET_SCRIPT}"
+time "${DOCUMENTATION_CREATE_DOCSET_SCRIPT}"
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: DocSet generation failed."; exit 1; fi;
+
+# We lint what we've generated through the docset relaxng schemas to catch
+# any mistakes.
+
+DOCSETACCESS_FRAMEWORK="/Developer/Library/PrivateFrameworks/DocSetAccess.framework/Resources"
+
+if [ -x xmllint ] && [ -r "${DOCSETACCESS_FRAMEWORK}/NodesSchema.rng" ]; then
+  xmllint --noout --relaxng "${DOCSETACCESS_FRAMEWORK}/NodesSchema.rng" "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}/Contents/Resources/Nodes.xml"
+  if [ $? != 0 ] ; then echo "$0:$LINENO: error: DocSet Nodes.xml failed validation test."; exit 1; fi;
+fi;
+
+if [ -x xmllint ] && [ -r "${DOCSETACCESS_FRAMEWORK}/TokensSchema.rng" ]; then
+  xmllint --noout --relaxng "${DOCSETACCESS_FRAMEWORK}/TokensSchema.rng" "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}/Contents/Resources/Tokens.xml"
+  if [ $? != 0 ] ; then echo "$0:$LINENO: error: DocSet Tokens.xml failed validation test."; exit 1; fi;
+fi
+
+# 'validate' complains about a lot of things.  I think it's from the very poor
+# 'nodes' schema.  It doesn't seem to be broken in practice.
+"${DOCSETUTIL}" validate "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}"
+if [ $? != 0 ] ; then echo "$0:$LINENO: error: The 'docsetutil' command did not successfully validate the DocSet."; exit 1; fi;
 
 echo "$0:$LINENO: note: Indexing DocSet '${DOCUMENTAION_DOCSET_ID}'."
 "${DOCSETUTIL}" index "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}" &&
@@ -97,8 +118,8 @@ echo "$0:$LINENO: note: Indexing DocSet '${DOCUMENTAION_DOCSET_ID}'."
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: DocSet indexing failed."; exit 1; fi;
 
 
-echo "$0:$LINENO: note: Packaging DocSet '${DOCUMENTAION_DOCSET_ID}'."
-"${DOCSETUTIL}" package "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}"
+echo "$0:$LINENO: note: Packaging DocSet as '${DOCUMENTAION_DOCSET_PACKAGED_FILE}'."
+"${DOCSETUTIL}" package -output "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_PACKAGED_FILE}" "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}"
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: DocSet packaging failed."; exit 1; fi;
 
 mkdir -p "${DOCUMENTATION_DOCSET_TARGET_DIR}/${DOCUMENTAION_DOCSET_ID}" &&

@@ -104,7 +104,7 @@ if [ $? != 0 ]; then echo "$0:$LINENO: error: Query for static html directories 
 if [ ! -d "${DOCUMENTATION_TARGET_DIR}" ]; then
     mkdir "${DOCUMENTATION_TARGET_DIR}"
 else
-    rm -rf "${DOCUMENTATION_TARGET_DIR}"/*
+    "${FIND}" "${DOCUMENTATION_TARGET_DIR}" -maxdepth 1 -delete
 fi
 
 #if [ ! -f "${DOCUMENTATION_TEMP_DIR}/cpp_defines.out" ]; then
@@ -152,11 +152,11 @@ if [ $? != 0 ] ; then echo "$0:$LINENO: error: Documentation HTML generation fai
 "${PERL}" -e 'while(<>){$in.=$_;} ($without_noscript = $in) =~ s#<\!--\s+NOSCRIPT_BLOCK\s+(.*?)-->##sm; open($WITHOUT, ">", "$ENV{DOCUMENTATION_TARGET_DIR}/content.html"); print($WITHOUT $without_noscript); close($WITHOUT); ($with_noscript = $in) =~ s#<\!--\s+NOSCRIPT_BLOCK\s+\n?(.*?)-->#$1#sm; open($WITH, ">", "$ENV{DOCUMENTATION_TARGET_DIR}/content_frame.html"); print($WITH $with_noscript); close($WITH);' "${GENERATED_HTML_DIR}/content.html"
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: Documentation HTML generation failed."; exit 1; fi;
 
-
 # Copy various static html files in to their final locations.
 echo "Resolving links in static html files."
 "${DOCUMENTATION_RESOLVE_LINKS_SCRIPT}" ${STATIC_HTML_FILES}
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: Documentation link resolution failed."; exit 1; fi;
+
 
 # Copy our temporary generated HTML files in to their final locations.
 for HTML_FILE in ${GENERATED_HTML_FILES}; do
@@ -180,6 +180,9 @@ for HTML_DIR in ${STATIC_HTML_DIRS}; do
       "${DOCUMENTATION_TARGET_DIR}/${HTML_DIR}/"
   fi
 done;
+
+# Do a search and replace of \${...} variables in the generated html files.
+"${PERL}" -i -e 'while(<>) { s/\\\$\{(\w+)\}/$ENV{$1}/g; print $_; }' "${DOCUMENTATION_TARGET_DIR}"/*.html
 
 "${DOCUMENTATION_CHECK_SPELLING_SCRIPT}" && CHECK_SPELLING_OK="Yes";
 "${DOCUMENTATION_CHECK_HTML_SCRIPT}"     && CHECK_HTML_OK="Yes";

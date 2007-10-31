@@ -22,6 +22,9 @@ $dbh->do("ANALYZE");
 
 $dbh->begin_work;
 
+
+#### DB prep work, create functions, etc
+
 my $sqlSelectDSID = $dbh->prepare("SELECT dsid FROM docset WHERE docset = ?");
 my $sqlInsertDocset = $dbh->prepare("INSERT INTO docset (docset) VALUES (?)");
 
@@ -86,10 +89,35 @@ my $docset = $ENV{'DOCUMENTAION_DOCSET_ID'};
 my @htmlFiles = @{$dbh->selectcol_arrayref("SELECT DISTINCT file FROM html ORDER BY file")};
 push(@htmlFiles, qw(content.html content_frame.html toc_opened.html));
 
-print("${program_name}:88: note: Rewriting anchors to //apple-ref/ format.\n");
+
+#
+#  Work starts here where we re-write all the anchors in to //apple_ref/ format.
+#
+
+print("${program_name}:97: note: Rewriting anchors to //apple-ref/ format.\n");
 for my $file (@htmlFiles) { processFile($ENV{'DOCUMENTATION_DOCSET_SOURCE_HTML'}, $file, $ENV{'DOCUMENTATION_DOCSET_TEMP_DOCS_DIR'}); }
 
+# We need to give docsetutil a list of 'nodes'.  The definition of a 'node'
+# is a bit fuzzy.  It seems to be 'and individual file', and that file can be
+# local or via http:  Then there's the nodes 'path' and 'file' attributes.
+# File is optional, path is mandatory and can be the complete path to a 
+# file.. I don't know why file exists.  And then nodes can be 'folder' types
+# which behave differently than file types.  BUT, we need a DocSet wide
+# unique reference id for all our files.  To add to the fun, nodes can
+# also have 'anchors', ie 'index.html#middle'.  So we enumerate all our
+# possible href's and assign them a reference ID.  What's unclear, however,
+# is if two nodes point to the same file, but have different anchors, are
+# they different 'nodes'.  I'd hope so as it'd be useless if you could have
+# a single link to a file.  Who knows, we assign an id for every unique
+# href.  Then, we track who links to those nodes, and the intersection of
+# those two form the contents of what we'll put in the 'Nodes' library.
+
 my @referenceNodes;
+
+for my $row (selectall_hash($dbh, "SELECT ocdef.hid AS hid, occl.class AS class, vt2.text AS filename FROM objCClassDefinition AS ocdef JOIN objcclass AS occl ON ocdef.occlid = occl.occlid JOIN v_tagid AS vt1 ON vt1.hid = ocdef.hid AND vt1.keyword = 'class' AND vt1.text = occl.class JOIN v_tagid AS vt2 ON vt2.hdcid = vt1.hdcid AND vt2.keyword = 'toc' and vt2.arg = 0")) {
+  $sqlInsertNodeName->execute($docset, '', $row->{'class'} . '.html', undef, $row->{'class'} . ' Class Reference', $row->{'class'} . '.html');
+  push(@referenceNodes, $row->{'class'} . '.html');
+}
 
 for my $row (selectall_hash($dbh, "SELECT DISTINCT ocm.hid AS hid, occl.class AS class, occat.category AS category, toc.tocName AS tocName FROM toc JOIN objCMethods AS ocm ON ocm.tocid = toc.tocid AND ocm.hdcid IS NOT NULL JOIN objCClassCategory AS occat ON occat.occlid = ocm.occlid AND ocm.startsAt >= occat.startsAt AND (occat.startsAt + occat.length) >= (ocm.startsAt) join objCClass AS occl ON ocm.occlid = occl.occlid;")) {
   $sqlInsertNodeName->execute($docset, '', $row->{'tocName'} . '.html', undef, $row->{'tocName'} . ' RegexKit Additions Reference', $row->{'tocName'} . '.html');
@@ -100,15 +128,10 @@ $sqlInsertNodeName->execute($docset, '', 'Constants.html', undef, 'RegexKit Cons
 $sqlInsertNodeName->execute($docset, '', 'DataTypes.html', undef, 'RegexKit Data Types Reference', 'DataTypes.html'); push(@referenceNodes, 'DataTypes.html');
 $sqlInsertNodeName->execute($docset, '', 'Functions.html', undef, 'RegexKit Functions Reference',  'Functions.html'); push(@referenceNodes, 'Functions.html');
 
-for my $row (selectall_hash($dbh, "SELECT ocdef.hid AS hid, occl.class AS class, vt2.text AS filename FROM objCClassDefinition AS ocdef JOIN objcclass AS occl ON ocdef.occlid = occl.occlid JOIN v_tagid AS vt1 ON vt1.hid = ocdef.hid AND vt1.keyword = 'class' AND vt1.text = occl.class JOIN v_tagid AS vt2 ON vt2.hdcid = vt1.hdcid AND vt2.keyword = 'toc' and vt2.arg = 0")) {
-  $sqlInsertNodeName->execute($docset, '', $row->{'class'} . '.html', undef, $row->{'class'} . ' Class Reference', $row->{'class'} . '.html');
-  push(@referenceNodes, $row->{'class'} . '.html');
-}
-
 
 $sqlInsertNodeName->execute($docset, 'pcre', 'index.html', undef, 'PCRE', 'pcre/index.html');
-$sqlInsertNodeName->execute($docset, 'pcre', 'pcresyntax.html', undef, 'PCRE Regex Quick Reference', 'pcre/pcresyntax.html');
-$sqlInsertNodeName->execute($docset, 'pcre', 'pcrepattern.html', undef, 'PCRE Regular Expression Syntax', 'pcre/pcrepattern.html');
+$sqlInsertNodeName->execute($docset, 'pcre', 'pcresyntax.html', 'SEC1', 'Regex Quick Reference', 'pcre/pcresyntax.html');
+$sqlInsertNodeName->execute($docset, 'pcre', 'pcrepattern.html', 'SEC1', 'Regular Expression Syntax', 'pcre/pcrepattern.html');
 
 
 my (%nodeRefHash, %libraryHash);
@@ -123,6 +146,10 @@ $libraryHash{'pcre/pcrepattern.html'} = $nodeRefHash{'pcre/pcrepattern.html'};
 
 my $FH;
 
+#
+# Here we create the DocSets Info.plist.
+#
+
 open($FH, ">", "$ENV{'DOCUMENTATION_DOCSET_TEMP_DIR'}/$ENV{'DOCUMENTAION_DOCSET_ID'}/Contents/Info.plist");
 
 print $FH <<END_PLIST;
@@ -133,7 +160,7 @@ print $FH <<END_PLIST;
     <key>CFBundleDevelopmentRegion</key>
     <string>English</string>
     <key>CFBundleGetInfoString</key>
-    <string>$ENV{'PROJECT_CURRENT_VERSION'}, Copyright 2007 John Engelhart</string>
+    <string>$ENV{'PROJECT_CURRENT_VERSION'}, Copyright © 2007 John Engelhart</string>
     <key>CFBundleIdentifier</key>
     <string>$docset</string>
     <key>CFBundleInfoDictionaryVersion</key>
@@ -146,6 +173,8 @@ print $FH <<END_PLIST;
     <string>$ENV{'PROJECT_CURRENT_VERSION'}</string>
     <key>DocSetFeedName</key>
     <string>RegexKit</string>
+    <key>DocSetFeedURL</key>
+    <string>$ENV{'DOCUMENTAION_DOCSET_FEED_SCHEME'}//$ENV{'DOCUMENTAION_DOCSET_FEED_URL'}</string>
     <key>NSHumanReadableCopyright</key>
     <string>Copyright © 2007, John Engelhart</string>
 </dict>
@@ -153,155 +182,79 @@ print $FH <<END_PLIST;
 END_PLIST
 close($FH); undef($FH);
 
-print("${program_name}:144: note: Creating Tokens.xml file.\n");
+
+#
+# Now enumerate all of our 'tokens', which is a method, function,
+# type, pre-processor macro, etc.
+#
+
+print("${program_name}:191: note: Creating Tokens.xml file.\n");
+
+
+# Load up our trusty database that was build when we create the HTML docs.
 
 my %no_link;
 for my $row (selectall_hash($dbh, "SELECT DISTINCT xref FROM xrefs WHERE href IS NULL")) { $no_link{$row->{'xref'}} = 1; }
 
+my %apple_ref;
 my %global_xtoc_cache = gen_xtoc_cache();
+
+
+# Here we go.. it's not pretty.
+# We call 'common_token' to create an individual entry.  It also does the
+# referenced marking of nodes.  'common_token' also calls 'seealso_tokens'
+# which creates a docset format 'see also' reference and marks any nodes
+# as referenced.
 
 open($FH, ">", "$ENV{'DOCUMENTATION_DOCSET_TEMP_DIR'}/$ENV{'DOCUMENTAION_DOCSET_ID'}/Contents/Resources/Tokens.xml");
 
 print($FH "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 print($FH "<Tokens version=\"1.0\">\n");
 
-for my $row (@{$global_xtoc_cache{'preprocessorDefines'}}) {
-  if(!defined($row)) { next; }
-  my ($hdcid, $tags, $tokenAbstract) = ($row->{'hdcid'}, $global_xtoc_cache{'tags'}[$row->{'hdcid'}], "");
-  if (defined($tags->{'abstract'})) { $tokenAbstract = "<Abstract type=\"html\">" . simpleHTML($tags->{'abstract'}) . "</Abstract>"; }
-  my $refid = $nodeRefHash{$global_xtoc_cache{'xref'}{$row->{'defineName'}}{'file'}};
-  $libraryHash{$global_xtoc_cache{'xref'}{$row->{'defineName'}}{'file'}} = $refid;
+# Preprocessor macros (ENABLE_MACOSX_GARBAGE_COLLECTION, RKInteger, etc)
+for my $row (@{$global_xtoc_cache{'preprocessorDefines'}}) { print $FH common_token("  ", {apple_ref => $apple_ref{$row->{'defineName'}}, hdcid => $row->{hdcid}, declaration => $row->{'cppText'}, header => $row->{'hid'}, addRefID => $row->{'defineName'}, abstract => $global_xtoc_cache{'tags'}[$row->{'hdcid'}]->{'abstract'}, path => $global_xtoc_cache{'xref'}{$row->{'defineName'}}{'file'}, anchor => $apple_ref{$row->{'defineName'}}}); }
 
-  print $FH <<END_TOKEN;
-  <Token>
-    <TokenIdentifier>$global_xtoc_cache{'xref'}{$row->{'defineName'}}{'apple_ref'}</TokenIdentifier>
-    <Declaration type="html">&lt;pre&gt;$row->{'cppText'}&lt;/pre&gt;</Declaration>
-    $tokenAbstract
-    <DeclaredIn>
-      <HeaderPath>RegexKit.framework/Headers/$global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'}</HeaderPath>
-      <FrameworkName>RegexKit</FrameworkName>
-    </DeclaredIn>
-    <NodeRef refid="$refid" />
-    <Path>$global_xtoc_cache{'xref'}{$row->{'defineName'}}{'file'}</Path>
-    <Anchor>$global_xtoc_cache{'xref'}{$row->{'defineName'}}{'apple_ref'}</Anchor>
-END_TOKEN
-  print($FH seealso_tokens("    ", $hdcid));
-  print($FH "  </Token>\n");
-}
+# Constant defines (RKReplaceAll) (only one?)
+for my $row (@{$global_xtoc_cache{'constantDefines'}}) { print $FH common_token("  ", {apple_ref => $apple_ref{$row->{'defineName'}}, hdcid => $row->{hdcid}, declaration => $row->{'cppText'}, header => $row->{'hid'}, addRefID => $row->{'defineName'}, abstract => $global_xtoc_cache{'tags'}[$row->{'hdcid'}]->{'abstract'}, path => $global_xtoc_cache{'xref'}{$row->{'defineName'}}{'file'}, anchor => $apple_ref{$row->{'defineName'}}}); }
 
-for my $row (@{$global_xtoc_cache{'constantDefines'}}) {
-  if(!defined($row)) { next; }
-  my ($hdcid, $tags, $tokenAbstract) = ($row->{'hdcid'}, $global_xtoc_cache{'tags'}[$row->{'hdcid'}], "");
-  if (defined($tags->{'abstract'})) { $tokenAbstract = "<Abstract type=\"html\">" . simpleHTML($tags->{'abstract'}) . "</Abstract>"; }
-  my $refid = $nodeRefHash{$global_xtoc_cache{'xref'}{$row->{'defineName'}}{'file'}};
-  $libraryHash{$global_xtoc_cache{'xref'}{$row->{'defineName'}}{'file'}} = $refid;
-  
-  print $FH <<END_TOKEN;
-  <Token>
-    <TokenIdentifier>$global_xtoc_cache{'xref'}{$row->{'defineName'}}{'apple_ref'}</TokenIdentifier>
-    <Declaration type="html">&lt;pre&gt;$row->{'cppText'}&lt;/pre&gt;</Declaration>
-    $tokenAbstract
-    <DeclaredIn>
-      <HeaderPath>RegexKit.framework/Headers/$global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'}</HeaderPath>
-      <FrameworkName>RegexKit</FrameworkName>
-    </DeclaredIn>
-    <NodeRef refid="$refid" />
-    <Path>$global_xtoc_cache{'xref'}{$row->{'defineName'}}{'file'}</Path>
-    <Anchor>$global_xtoc_cache{'xref'}{$row->{'defineName'}}{'apple_ref'}</Anchor>
-END_TOKEN
-  print($FH seealso_tokens("    ", $hdcid));
-  print($FH "  </Token>\n");
-}
+# Constants (RKRegexCaptureReferenceException, etc)
+for my $row (@{$global_xtoc_cache{'constants'}}) { print $FH common_token("  ", {apple_ref => $apple_ref{$row->{'name'}}, hdcid => $row->{hdcid}, declaration => $row->{'fullText'}, header => $row->{'hid'}, addRefID => $row->{'name'}, abstract => $global_xtoc_cache{'tags'}[$row->{'hdcid'}]->{'abstract'}, avail => 1, path => $global_xtoc_cache{'xref'}{$row->{'name'}}{'file'}, anchor => $apple_ref{$row->{'name'}}}); }
 
-for my $row (@{$global_xtoc_cache{'constants'}}) {
-  if(!defined($row)) { next; }
-  my ($hdcid, $tags, $tokenAbstract) = ($row->{'hdcid'}, $global_xtoc_cache{'tags'}[$row->{'hdcid'}], "");
-  if (defined($tags->{'abstract'})) { $tokenAbstract = "<Abstract type=\"html\">" . simpleHTML($tags->{'abstract'}) . "</Abstract>"; }
-  my $refid = $nodeRefHash{$global_xtoc_cache{'xref'}{$row->{'name'}}{'file'}};
-  $libraryHash{$global_xtoc_cache{'xref'}{$row->{'name'}}{'file'}} = $refid;
+# Category extensions to existing classes
+for my $row (selectall_hash($dbh, "SELECT DISTINCT ocm.hid AS hid, occl.class AS class, occat.category AS category, toc.tocName AS tocName FROM toc JOIN objCMethods AS ocm ON ocm.tocid = toc.tocid AND ocm.hdcid IS NOT NULL JOIN objCClassCategory AS occat ON occat.occlid = ocm.occlid AND ocm.startsAt >= occat.startsAt AND (occat.startsAt + occat.length) >= (ocm.startsAt) join objCClass AS occl ON ocm.occlid = occl.occlid;")) { print $FH common_token("  ", {apple_ref => "//apple_ref/occ/cat/$row->{'class'}($row->{'category'})", header => $row->{'hid'}, refid => $nodeRefHash{"$row->{'tocName'}.html"}, avail => 1, path => "$row->{'tocName'}.html"}); }
 
-  print $FH <<END_TOKEN;
-  <Token>
-    <TokenIdentifier>$global_xtoc_cache{'xref'}{$row->{'name'}}{'apple_ref'}</TokenIdentifier>
-    <Declaration type="html">&lt;pre&gt;$row->{'fullText'}&lt;/pre&gt;</Declaration>
-    $tokenAbstract
-    <DeclaredIn>
-      <HeaderPath>RegexKit.framework/Headers/$global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'}</HeaderPath>
-      <FrameworkName>RegexKit</FrameworkName>
-    </DeclaredIn>
-    <Availability distribution="RegexKit">
-      <IntroducedInVersion bitsize="32">0.2.0</IntroducedInVersion>
-      <IntroducedInVersion bitsize="64">0.3.0</IntroducedInVersion>
-    </Availability>
-    <NodeRef refid="$refid" />
-    <Path>$global_xtoc_cache{'xref'}{$row->{'name'}}{'file'}</Path>
-    <Anchor>$global_xtoc_cache{'xref'}{$row->{'name'}}{'apple_ref'}</Anchor>
-END_TOKEN
-  print($FH seealso_tokens("    ", $hdcid));
-  print($FH "  </Token>\n");
-}
+# New classes.
+for my $row (selectall_hash($dbh, "SELECT ocdef.hid AS hid, occl.class AS class, vt2.text AS filename FROM objCClassDefinition AS ocdef JOIN objcclass AS occl ON ocdef.occlid = occl.occlid JOIN v_tagid AS vt1 ON vt1.hid = ocdef.hid AND vt1.keyword = 'class' AND vt1.text = occl.class JOIN v_tagid AS vt2 ON vt2.hdcid = vt1.hdcid AND vt2.keyword = 'toc' and vt2.arg = 0")) { print $FH common_token("  ", {apple_ref => "//apple_ref/occ/cl/$row->{'class'}", header => $row->{'hid'}, refid => $nodeRefHash{"$row->{'class'}.html"}, avail => 1, path => "$row->{'filename'}.html"}); }
 
 
-for my $row (selectall_hash($dbh, "SELECT DISTINCT ocm.hid AS hid, occl.class AS class, occat.category AS category, toc.tocName AS tocName FROM toc JOIN objCMethods AS ocm ON ocm.tocid = toc.tocid AND ocm.hdcid IS NOT NULL JOIN objCClassCategory AS occat ON occat.occlid = ocm.occlid AND ocm.startsAt >= occat.startsAt AND (occat.startsAt + occat.length) >= (ocm.startsAt) join objCClass AS occl ON ocm.occlid = occl.occlid;")) {
-  my $refid = $nodeRefHash{$row->{'tocName'} . '.html'};
-  $libraryHash{$row->{'tocName'} . '.html'} = $refid;
-  print $FH <<END_TOKEN;
-  <Token>
-    <TokenIdentifier>//apple_ref/occ/cat/$row->{'class'}($row->{'category'})</TokenIdentifier>
-    <DeclaredIn>
-      <HeaderPath>RegexKit.framework/Headers/$global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'}</HeaderPath>
-      <FrameworkName>RegexKit</FrameworkName>
-    </DeclaredIn>
-  <Availability distribution="RegexKit">
-  <IntroducedInVersion bitsize="32">0.2.0</IntroducedInVersion>
-  <IntroducedInVersion bitsize="64">0.3.0</IntroducedInVersion>
-  </Availability>
-  <NodeRef refid="$refid" />
-    <Path>$row->{'tocName'}.html</Path>
-  </Token>
-END_TOKEN
-}
-
-
-for my $row (selectall_hash($dbh, "SELECT ocdef.hid AS hid, occl.class AS class, vt2.text AS filename FROM objCClassDefinition AS ocdef JOIN objcclass AS occl ON ocdef.occlid = occl.occlid JOIN v_tagid AS vt1 ON vt1.hid = ocdef.hid AND vt1.keyword = 'class' AND vt1.text = occl.class JOIN v_tagid AS vt2 ON vt2.hdcid = vt1.hdcid AND vt2.keyword = 'toc' and vt2.arg = 0")) {
-  my $refid = $nodeRefHash{$row->{'class'} . '.html'};
-  $libraryHash{$row->{'class'} . '.html'} = $refid;
-  print $FH <<END_TOKEN;
-  <Token>
-    <TokenIdentifier>//apple_ref/occ/cl/$row->{'class'}</TokenIdentifier>
-    <DeclaredIn>
-      <HeaderPath>RegexKit.framework/Headers/$global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'}</HeaderPath>
-      <FrameworkName>RegexKit</FrameworkName>
-    </DeclaredIn>
-  <Availability distribution="RegexKit">
-  <IntroducedInVersion bitsize="32">0.2.0</IntroducedInVersion>
-  <IntroducedInVersion bitsize="64">0.3.0</IntroducedInVersion>
-  </Availability>
-  <NodeRef refid="$refid" />
-    <Path>$row->{'filename'}.html</Path>
-  </Token>
-END_TOKEN
-}
-
-
+# We borrow this from the HTML build doc code.  Basically, grab the items
+# that are flagged to go in to the table of contents (and thus have headerdoc
+# comments) an enumerate them.  Only three types pop out here:
+# objc methods, functions, and typedef/enums.
 for my $tocName (keys %{$global_xtoc_cache{'toc'}{'contentsForToc'}}) {
-  #print($FH "  <File path=\"${tocName}.html\">\n");
   for my $tx (0 .. $#{$global_xtoc_cache{'toc'}{'contentsForToc'}{$tocName}}) {
     my $at = $global_xtoc_cache{'toc'}{'contentsForToc'}{$tocName}[$tx];
-    if($at->{'table'} eq "objCMethods") { print($FH meth_token("    ", $at->{'id'})); }
-    elsif($at->{'table'} eq "prototypes") { print($FH func_token("    ",$at->{'id'})); }
+    if($at->{'table'} eq "objCMethods") {
+      print $FH common_token("    ", {apple_ref => $at->{apple_ref}, hdcid => $at->{hdcid}, declaration => addLinks($global_xtoc_cache{'methods'}[$at->{id}]->{'prettyText'}), header => $global_xtoc_cache{'methods'}[$at->{id}]->{'hid'}, addRefID => $at->{apple_ref}, abstract => $at->{titleText}, avail => 1, anchor => $at->{apple_ref}});
+    }
+    elsif($at->{'table'} eq "prototypes") {
+      print $FH common_token("    ", {apple_ref => $at->{apple_ref}, hdcid => $at->{hdcid}, declaration => addLinks($global_xtoc_cache{'functions'}[$at->{id}]->{'prettyText'}), header => $global_xtoc_cache{'functions'}[$at->{id}]->{'hid'}, addRefID => $global_xtoc_cache{'tags'}[$at->{hdcid}]->{function}, abstract => $at->{titleText}, avail => 1, anchor => $at->{apple_ref}});
+
+    }
     elsif($at->{'table'} eq "typedefEnum") { print($FH typedef_token("    ",$at->{'id'})); }
   }
-  #print($FH "  </File>\n\n\n");
 }
-
 
 print($FH "</Tokens>\n");
 close($FH); undef($FH);
 
-printf("Tokens.xml file size: %.1fK.\n", ((stat("$ENV{'DOCUMENTATION_DOCSET_TEMP_DIR'}/$ENV{'DOCUMENTAION_DOCSET_ID'}/Contents/Resources/Tokens.xml"))[7]) / 1024.0);
 
-print("${program_name}:278: note: Creating Nodes.xml file.\n");
+# Now that we've enumerated everything that can possibly reference a node,
+# we can output the used nodes.  Nodes.xml also contains the 'Table of
+# Contents', which isn't terribly useful for us because we really don't
+# have enough material for it to make sense.
+
+print("${program_name}:257: note: Creating Nodes.xml file.\n");
 
 my $docSetNodes = <<END_NODES;
 <?xml version="1.0" encoding="UTF-8"?>
@@ -316,18 +269,6 @@ my $docSetNodes = <<END_NODES;
           <Path>content.html</Path>
           <Subnodes>
             <Node>
-              <Name>Reference</Name>
-              <Path>content.html</Path>
-              <Subnodes>
-END_NODES
-for my $file (sort @referenceNodes) {
-  $docSetNodes .= "                <NodeRef refid=\"$nodeRefHash{$file}\" />\n";
-  $libraryHash{$file} = $nodeRefHash{$file};
-}
-$docSetNodes .= <<END_NODES;
-              </Subnodes>
-            </Node>
-            <Node>
               <Name>Guides</Name>
               <Path>content.html</Path>
               <Subnodes>
@@ -335,13 +276,37 @@ $docSetNodes .= <<END_NODES;
                 <NodeRef refid="$nodeRefHash{'RegexKitProgrammingGuide.html'}" />
               </Subnodes>
             </Node>
+            <Node>
+              <Name>Reference</Name>
+              <Path>content.html</Path>
+              <Subnodes>
+END_NODES
+# This spits out all the class and category nodes
+for my $file (@referenceNodes) {
+  $docSetNodes .= "                <NodeRef refid=\"$nodeRefHash{$file}\" />\n";
+  $libraryHash{$file} = $nodeRefHash{$file};
+}
+$docSetNodes .= <<END_NODES;
+              </Subnodes>
+            </Node>
+            <Node>
+              <Name>PCRE</Name>
+              <Path>pcre/index.html</Path>
+              <Subnodes>
+                <NodeRef refid="$nodeRefHash{'pcre/pcresyntax.html'}" />
+                <NodeRef refid="$nodeRefHash{'pcre/pcrepattern.html'}" />
+              </Subnodes>
+            </Node>
           </Subnodes>
         </Node>
       </Subnodes>
     </Node>
   </TOC>
-  <Library>
+<Library>
 END_NODES
+
+# %libraryHash is what has kept the marked nodes.  We enumerate its keys
+# and look up the refid we assigned at the start.
 for my $href (sort keys %libraryHash) {
   my $refid = $libraryHash{$href};
   if(!defined($refid)) { $docSetNodes .= "    <!-- href '$href' is undefined. -->\n"; next; }
@@ -353,9 +318,10 @@ for my $href (sort keys %libraryHash) {
 $docSetNodes .= "  </Library>\n";
 $docSetNodes .= "</DocSetNodes>\n";
 
-
+# And, output the collected 'Nodes.xml' string we've been putting together..
 open($FH, ">", "$ENV{'DOCUMENTATION_DOCSET_TEMP_DIR'}/$ENV{'DOCUMENTAION_DOCSET_ID'}/Contents/Resources/Nodes.xml"); print($FH $docSetNodes); close($FH); undef($FH);
 
+# We're done! Release our DB resources and go home.
 
 $dbh->commit;
 
@@ -371,23 +337,41 @@ undef $sqlAnalyze;
 $dbh->disconnect();
 exit(0);
 
+# This function takes the HTML documentation that we built earlier and
+# rewrites the anchors in //apple_ref/ form.  Why not just use //apple_ref/
+# an be done with it?  Love to.  But it's not valid HTML (for whatever reason,
+# name="HERE" has really odd restrictions on legal characters.  And since
+# we `tidy` check everything to catch errors, having tidy kick out five or
+# six hundred warnings about how your name='blah' has invalid characters
+# is not helpful nor productive.
+
 sub processFile {
   my($inpath, $file, $outpath, $in, $out, $size, $lastm, $FILE_HANDLE) = ($_[0], $_[1], $_[2], "", "", (stat("$_[0]/$_[1]"))[7], 0);
   print("Rewriting: $file\n");
   if(! -r "$inpath/$file")  { print(STDERR "IN  Not readable: $file\n"); exit(1); return(undef); }
   if(! -w "$outpath/$file") { print(STDERR "OUT Not writeable: $file\n"); exit(1); return(undef); }
 
+  # The idea is to scoop up the file in one shot, then sit in a pattern
+  # matching while loop looking <a ... tags. We use a string to accumulate our
+  # results. When we find a <a ... match, we append the our accumulator
+  # the text we jumped over, and then look and see if it needs to be rewritten.
+  # If it does, we append the rewritten form to the accumulator, and if not
+  # we append the matched text unaltered and go to the next one.
+  
   open($FILE_HANDLE, "<", "$inpath/$file"); sysread($FILE_HANDLE, $in, $size); close($FILE_HANDLE); undef($FILE_HANDLE);
 
   study($in);
   while($in =~ /((<a\s+[^>]*)(name|href)="([^"]*)"([^>]*>))/sgi) {
     if(defined($xrefs{lc($3)}{$4})) { $out .= substr($in, $lastm, $-[0] - $lastm) . $2 . $3 . "=\"". $xrefs{lc($3)}{$4} . "\"" . $5; $lastm = $+[0]; }
   }
+  # Mop up the text from the last match to the end of the file.
   $out .= substr($in, $lastm, $size - $lastm);
   undef($in);
 
-  open($FILE_HANDLE, ">", "$outpath/$file"); print($FILE_HANDLE $out); close($FILE_HANDLE); undef($FILE_HANDLE);
+  open($FILE_HANDLE, ">", "$outpath/$file"); syswrite($FILE_HANDLE, $out, length($out)); close($FILE_HANDLE); undef($FILE_HANDLE);
 
+  # If this is our Table of Contents, we extract all the links it has for
+  # our 'nodes' reference id database.
   if($file eq "toc.html") { processToc($out); }
   return($out);
 }
@@ -416,10 +400,12 @@ sub extractLinks {
   return(%links);
 }
 
+# Turns headerdoc @link @/link into <a href> </a> links where possible.
 sub replaceLinks {
   my($text) = ($_[0], $_[1]);
   my(%links) = extractLinks($text);
-
+  my @link_keys = keys %links;
+  
   for my $atLink (sort keys %links) {
     if ($no_link{$links{$atLink}}) {
       $text =~ s/\@link\s+$atLink\s+(.*?)\s?\@\/link/{
@@ -444,78 +430,55 @@ sub replaceLinks {
   return($text);
 }
 
-
-sub func_token {
-  my $sp = shift(@_);
-  my $pid = shift(@_);
-  my($token, $row) = ("");
-  
-  if(defined($global_xtoc_cache{'functions'}[$pid])) {
-    my $row = $global_xtoc_cache{'functions'}[$pid]; 
-    my ($pretty, $hdcid, $tags) = ($row->{'prettyText'}, $row->{'hdcid'}, $global_xtoc_cache{'tags'}[$row->{'hdcid'}]);
-    $pretty =~ s/(\((.*?)\))/{my ($full, $mid) = ($1, $2); $mid =~ s?(\S+)?if(defined($global_xtoc_cache{'xref'}{$1}{'apple_href'})) { "&lt;a href=\"$global_xtoc_cache{'xref'}{$1}{'apple_href'}\"&gt;$1&lt;\/a&gt;" } else { $1 }?sge; "($mid)"} /sge;
-    my $refid = $nodeRefHash{$global_xtoc_cache{'xref'}{$tags->{'function'}}{'file'}};
-    $libraryHash{$global_xtoc_cache{'xref'}{$tags->{'function'}}{'file'}} = $refid;
-
-    $token .= $sp . "<Token>\n";
-    $token .= $sp . "  <TokenIdentifier>" . $global_xtoc_cache{'xref'}{$tags->{'function'}}{'apple_ref'} . "</TokenIdentifier>\n";
-    if (defined($tags->{'abstract'})) { $token .= $sp . "  <Abstract type=\"html\">" . simpleHTML($tags->{'abstract'}) . "</Abstract>\n"; }
-    $token .= $sp . "  <Declaration type=\"html\">&lt;pre&gt;$pretty&lt;/pre&gt;</Declaration>\n";
-    $token .= $sp . "  <DeclaredIn>\n";
-    $token .= $sp . "    <HeaderPath>/Developer/Leopard/RegexKit/RegexKit.framework/Headers/$global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'}</HeaderPath>\n";
-    $token .= $sp . "    <FrameworkName>RegexKit</FrameworkName>\n";
-    $token .= $sp . "  </DeclaredIn>\n";
-    $token .= $sp . "  <Availability distribution=\"RegexKit\">\n";
-    $token .= $sp . "    <IntroducedInVersion bitsize=\"32\">0.2.0</IntroducedInVersion>\n";
-    $token .= $sp . "    <IntroducedInVersion bitsize=\"64\">0.3.0</IntroducedInVersion>\n";
-    $token .= $sp . "  </Availability>\n";
-    $token .= $sp . "  <NodeRef refid=\"$refid\" />\n";
-    $token .= seealso_tokens($sp . "  ", $hdcid);
-    $token .= $sp . "  <Anchor>" . $global_xtoc_cache{'xref'}{$tags->{'function'}}{'apple_ref'} . "</Anchor>\n";
-    $token .= $sp . "</Token>\n";
+sub common_token {
+  my ($sp, $th) = @_;
+  my($token, $header) = ("", $global_xtoc_cache{'headers'}[$th->{header}]{'fileName'});
+  if(defined($th->{addRefID})) {
+    my $file = $global_xtoc_cache{'xref'}{$th->{addRefID}}{'file'};
+    $th->{refid} = $libraryHash{$file} = $nodeRefHash{$file};
   }
+
+                                    $token .= $sp . "<Token>\n";
+                                    $token .= $sp . "  <TokenIdentifier>" . $th->{apple_ref} . "</TokenIdentifier>\n";
+  if(defined($th->{declaration})) { $token .= $sp . "  <Declaration type=\"html\">" . encode_entities("<pre>$th->{declaration}</pre>") . "</Declaration>\n"; }
+  if(defined($th->{abstract}))    { $token .= $sp . "  <Abstract type=\"html\">" . simpleHTML($th->{abstract}) . "</Abstract>\n"; }
+  if(defined($th->{header}))      { $token .= $sp . "  <DeclaredIn>\n";
+                                    $token .= $sp . "    <HeaderPath>RegexKit.framework/Headers/$header</HeaderPath>\n";
+                                    $token .= $sp . "    <FrameworkName>RegexKit</FrameworkName>\n";
+                                    $token .= $sp . "  </DeclaredIn>\n"; }
+  if(defined($th->{avail}))       { $token .= $sp . "  <Availability distribution=\"RegexKit\">\n";
+                                    $token .= $sp . "    <IntroducedInVersion bitsize=\"32\">0.2.0</IntroducedInVersion>\n";
+                                    $token .= $sp . "    <IntroducedInVersion bitsize=\"64\">0.3.0</IntroducedInVersion>\n";
+                                    $token .= $sp . "  </Availability>\n"; }
+  if(defined($th->{refid}))       { $token .= $sp . "  <NodeRef refid=\"$th->{refid}\" />\n"; }
+  $token .= seealso_tokens($sp . "  ", $th->{hdcid});
+  if(defined($th->{path}))        { $token .= $sp . "  <Path>" . $th->{path} . "</Path>\n"; }
+  if(defined($th->{anchor}))      { $token .= $sp . "  <Anchor>" . $th->{anchor} . "</Anchor>\n"; }
+                                    $token .= $sp . "</Token>\n";
   
   return($token);
 }
 
-sub meth_token {
+sub typedef_token {
   my $sp = shift(@_);
-  my $ocmid = shift(@_);
-  my($token, $row) = ("");
+  my $tdeid = shift(@_);
   
-  if(defined($global_xtoc_cache{'methods'}[$ocmid])) {
-    my $row = $global_xtoc_cache{'methods'}[$ocmid]; 
-    my ($pretty, $hdcid, $tags, $mxref) = ($row->{'prettyText'}, $row->{'hdcid'}, $global_xtoc_cache{'tags'}[$row->{'hdcid'}], "$row->{'class'}/$row->{'type'}$row->{'selector'}");
-    my $type = $row->{'type'} eq "-" ? "instm" : "clm";
-    $pretty =~ s/(\((.*?)\))/{my ($full, $mid) = ($1, $2); $mid =~ s?(\S+)?if(defined($global_xtoc_cache{'xref'}{$1}{'apple_href'})) { "&lt;a href=\"$global_xtoc_cache{'xref'}{$1}{'apple_href'}\"&gt;$1&lt;\/a&gt;" } else { $1 }?sge; "($mid)"} /sge;
-    my $refid = $nodeRefHash{$global_xtoc_cache{'xref'}{$mxref}{'file'}};
-    $libraryHash{$global_xtoc_cache{'xref'}{$mxref}{'file'}} = $refid;
-
-    $token .= $sp . "<Token>\n";
-    $token .= $sp . "  <TokenIdentifier>$global_xtoc_cache{'xref'}{$mxref}{'apple_ref'}</TokenIdentifier>\n";
-    if (defined($tags->{'abstract'})) { $token .= $sp . "  <Abstract type=\"html\">" . simpleHTML($tags->{'abstract'}) . "</Abstract>\n"; }
-    $token .= $sp . "  <Declaration type=\"html\">&lt;pre&gt;$pretty&lt;/pre&gt;</Declaration>\n";
-    $token .= $sp . "  <DeclaredIn>\n";
-    $token .= $sp . "    <HeaderPath>/Developer/Leopard/RegexKit/RegexKit.framework/Headers/$global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'}</HeaderPath>\n";
-    $token .= $sp . "    <FrameworkName>RegexKit</FrameworkName>\n";
-    $token .= $sp . "  </DeclaredIn>\n";
-    $token .= $sp . "  <Availability distribution=\"RegexKit\">\n";
-    $token .= $sp . "    <IntroducedInVersion bitsize=\"32\">0.2.0</IntroducedInVersion>\n";
-    $token .= $sp . "    <IntroducedInVersion bitsize=\"64\">0.3.0</IntroducedInVersion>\n";
-    $token .= $sp . "  </Availability>\n";
-    $token .= $sp . "  <NodeRef refid=\"$refid\" />\n";
-    $token .= $sp . "  <Anchor>" . $global_xtoc_cache{'xref'}{$mxref}{'apple_ref'} . "</Anchor>\n";
-    $token .= seealso_tokens($sp . "  ", $hdcid);
-    $token .= $sp . "</Token>\n";
+  if(defined($global_xtoc_cache{'typedefs'}[$tdeid])) {
+    my $row = $global_xtoc_cache{'typedefs'}[$tdeid]; 
+    my ($token, $tags, $hdcid, $hid, $name, @enums) = ("", $global_xtoc_cache{'tags'}[$row->{'hdcid'}], $row->{'hdcid'}, $row->{'hid'}, $row->{'name'}, @{$global_xtoc_cache{'enums'}[$row->{'tdeid'}]});
+    
+    $token .= common_token($sp, {apple_ref => $apple_ref{$row->{'name'}}, hdcid => $hdcid, declaration => $row->{'name'}, header => $hid, addRefID => $name, abstract => $tags->{'abstract'}, avail => 1, anchor => $apple_ref{$row->{'name'}}});
+    
+    for my $e (@enums) { my $id = $e->{'identifier'}; my $ar = $apple_ref{$id}; $token .= common_token($sp, {apple_ref => $ar, declaration => $id, header => $hid, addRefID => $name, abstract => $e->{'tagText'}, avail => 1, anchor => $ar}); }
+    return($token);
   }
-  
-  return($token);
-}
+}  
 
 
 sub seealso_tokens {
   my $sp = shift(@_);
   my $hdcid = shift(@_);
+  if(!defined($hdcid)) { return(""); }
   my $tags = $global_xtoc_cache{'tags'}[$hdcid];
 
   my $token = "";
@@ -524,20 +487,13 @@ sub seealso_tokens {
     for my $s (@{$tags->{'seealso'}}) {
       my(%links) = extractLinks($s);
 
-      for my $atLink (sort keys %links) {
-        if (defined($global_xtoc_cache{'xref'}->{$links{$atLink}}{'apple_ref'})) {
-          push(@related_tokens, $sp . "  <TokenIdentifier>".$global_xtoc_cache{'xref'}->{$links{$atLink}}{'apple_ref'} . "</TokenIdentifier>");
-        }
-      }
+      for my $atLink (sort keys %links) { if (defined($apple_ref{$links{$atLink}})) { push(@related_tokens, $sp . "  <TokenIdentifier>" . $apple_ref{$links{$atLink}} . "</TokenIdentifier>"); } }
       if($s =~ /<a\s+[^>]*href="([^\"]*)"[^>]*>(.*)<\/a>/si) {
         my ($href, $name) = ($1, $2);
         if($href !~ /^http:/) {
           my ($row) = $dbh->selectrow_hashref($sqlSelectRefID, {MaxRows => 1}, ($docset, $href, $name));
           if ($row) { $nodeRefHash{$href} = $row->{'refid'}; }
-          if (defined($nodeRefHash{$href})) {
-            push(@related_documents, $sp . '  <NodeRef refid="' . $nodeRefHash{$href} . '" />');
-            $libraryHash{$href} = $nodeRefHash{$href};
-          }
+          if (defined($nodeRefHash{$href})) { push(@related_documents, $sp . '  <NodeRef refid="' . $nodeRefHash{$href} . '" />'); $libraryHash{$href} = $nodeRefHash{$href}; }
         }
       }
     }
@@ -546,54 +502,6 @@ sub seealso_tokens {
   }
   return($token);
 }
-
-sub typedef_token {
-  my $sp = shift(@_);
-  my $tdeid = shift(@_);
-
-  if(defined($global_xtoc_cache{'typedefs'}[$tdeid])) {
-    my $row = $global_xtoc_cache{'typedefs'}[$tdeid]; 
-    my ($token, $tags, $hdcid, $const_token) = ("", $global_xtoc_cache{'tags'}[$row->{'hdcid'}], $row->{'hdcid'}, "");
-    my $refid = $nodeRefHash{$global_xtoc_cache{'xref'}{$row->{'name'}}{'file'}};
-    $libraryHash{$global_xtoc_cache{'xref'}{$row->{'name'}}{'file'}} = $refid;
-
-    $token .= $sp . "<Token>\n";
-    $token .= $sp . "  <TokenIdentifier>" . $global_xtoc_cache{'xref'}{$row->{'name'}}{'apple_ref'} . "</TokenIdentifier>\n";
-    if (defined($tags->{'abstract'})) { $token .= $sp . "  <Abstract type=\"html\">" . simpleHTML($tags->{'abstract'}) . "</Abstract>\n"; }
-    $token .= $sp . "  <Declaration type=\"html\">&lt;pre&gt;$row->{'name'}&lt;/pre&gt;</Declaration>\n";
-    $token .= $sp . "  <DeclaredIn>\n";
-    $token .= $sp . "    <HeaderPath>/Developer/Leopard/RegexKit/RegexKit.framework/Headers/$global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'}</HeaderPath>\n";
-    $token .= $sp . "    <FrameworkName>RegexKit</FrameworkName>\n";
-    $token .= $sp . "  </DeclaredIn>\n";
-    $token .= $sp . "  <Availability distribution=\"RegexKit\">\n";
-    $token .= $sp . "    <IntroducedInVersion bitsize=\"32\">0.2.0</IntroducedInVersion>\n";
-    $token .= $sp . "    <IntroducedInVersion bitsize=\"64\">0.3.0</IntroducedInVersion>\n";
-    $token .= $sp . "  </Availability>\n";
-    $token .= $sp . "  <NodeRef refid=\"$refid\" />\n";
-    $token .= seealso_tokens($sp . "  ", $hdcid);
-    $token .= $sp . "  <Anchor>" . $global_xtoc_cache{'xref'}{$row->{'name'}}{'apple_ref'} . "</Anchor>\n";
-    $token .= $sp . "</Token>\n";
-    
-    for my $tderow (@{$global_xtoc_cache{'enums'}[$row->{'tdeid'}]}) {
-      $token .= $sp . "<Token>\n";
-      $token .= $sp . "  <TokenIdentifier>" . $global_xtoc_cache{'xref'}{$tderow->{'identifier'}}{'apple_ref'} . "</TokenIdentifier>\n";
-      if (defined($tderow->{'tagText'})) { $token .= $sp . "  <Abstract type=\"html\">" . simpleHTML($tderow->{'tagText'}) . "</Abstract>\n"; }
-      $token .= $sp . "  <Declaration type=\"html\">&lt;pre&gt;$tderow->{'identifier'}&lt;/pre&gt;</Declaration>\n";
-      $token .= $sp . "  <DeclaredIn>\n";
-      $token .= $sp . "    <HeaderPath>/Developer/Leopard/RegexKit/RegexKit.framework/Headers/$global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'}</HeaderPath>\n";
-      $token .= $sp . "    <FrameworkName>RegexKit</FrameworkName>\n";
-      $token .= $sp . "  </DeclaredIn>\n";
-      $token .= $sp . "  <Availability distribution=\"RegexKit\">\n";
-      $token .= $sp . "    <IntroducedInVersion bitsize=\"32\">0.2.0</IntroducedInVersion>\n";
-      $token .= $sp . "    <IntroducedInVersion bitsize=\"64\">0.3.0</IntroducedInVersion>\n";
-      $token .= $sp . "  </Availability>\n";
-      $token .= $sp . "  <NodeRef refid=\"$refid\" />\n";
-      $token .= $sp . "  <Anchor>" . $global_xtoc_cache{'xref'}{$tderow->{'identifier'}}{'apple_ref'} . "</Anchor>\n";
-      $token .= $sp . "</Token>\n";
-    }
-    return($token);
-  }
-}  
 
 
 sub stripExcess {
@@ -630,6 +538,18 @@ sub simpleHTML {
   return($html);
 }
 
+# This takes a function or method 'pretty text' definition and scans it to
+# see if we have links for whatever.. So, (RKRegex *) becomes something like
+# (<a href="RKRegex.html">RKRegex</a> *)
+sub addLinks {
+  my $pretty = shift(@_);
+  $pretty =~ s/(\((.*?)\))/{my ($full, $mid) = ($1, $2); $mid =~ s?(\S+)?if(defined($global_xtoc_cache{'xref'}{$1}{'apple_href'})) { "<a href=\"$global_xtoc_cache{'xref'}{$1}{'apple_href'}\">$1<\/a>" } else { $1 }?sge; "($mid)"} /sge;
+  return($pretty);
+}
+
+# inhales large portions of the documentation database and stuffs it in to
+# various hashes.  This is taken wholesale from the html doc generation script
+# and could stand to be cleaned up a bit.
 
 sub gen_xtoc_cache {
   my (%cache);
@@ -641,6 +561,8 @@ sub gen_xtoc_cache {
     $cache{'xref'}->{$row->{'xref'}}{'apple_href'} = $row->{'file'} . '#' . $row->{'apple_ref'};
     $cache{'xref'}->{$row->{'xref'}}{'file'} = $row->{'file'};
     $cache{'xref'}->{$row->{'xref'}}{'class'} = "code";
+
+    $apple_ref{$row->{'xref'}} = $row->{'apple_ref'};
   }
 
   for my $row (selectall_hash($dbh, "SELECT DISTINCT xref, class, href  FROM xrefs WHERE href IS NOT NULL")) {
@@ -656,8 +578,8 @@ sub gen_xtoc_cache {
     push(@{$cache{'toc'}{'groupEntries'}{$row->{'tocName'}}[$row->{'pos'} - 1]}, $entry);
   }
   
-  for my $row (selectall_hash($dbh, "SELECT DISTINCT tbl, idCol, id, hdtype, tocName, linkId, apple_ref, href, linkText FROM t_xtoc WHERE tocName IS NOT NULL AND pos IS NOT NULL AND id IS NOT NULL AND href IS NOT NULL AND linkText IS NOT NULL ORDER BY linkText")) {
-    push(@{$cache{'toc'}{'contentsForToc'}{$row->{'tocName'}}}, {'table' => $row->{'tbl'}, 'idColumn' => $row->{'idCol'}, 'id' => $row->{'id'}, 'type' => $row->{'hdtype'}, 'href' => $row->{'href'}, 'linkId' => $row->{'linkId'},'apple_ref' => $row->{'apple_ref'}, 'linkText' => $row->{'linkText'}});
+  for my $row (selectall_hash($dbh, "SELECT DISTINCT tbl, idCol, id, hdtype, tocName, linkId, apple_ref, href, linkText, file, titleText, hdcid FROM t_xtoc WHERE tocName IS NOT NULL AND pos IS NOT NULL AND id IS NOT NULL AND href IS NOT NULL AND linkText IS NOT NULL ORDER BY linkText")) {
+    push(@{$cache{'toc'}{'contentsForToc'}{$row->{'tocName'}}}, {'table' => $row->{'tbl'}, 'idColumn' => $row->{'idCol'}, 'id' => $row->{'id'}, 'type' => $row->{'hdtype'}, 'href' => $row->{'href'}, 'linkId' => $row->{'linkId'},'apple_ref' => $row->{'apple_ref'}, 'linkText' => $row->{'linkText'}, file => $row->{file}, titleText => $row->{titleText}, hdcid => $row->{hdcid}});
   }
 
   for my $row (selectall_hash($dbh, "SELECT * FROM v_hd_tags ORDER BY hdcid, tpos")) {

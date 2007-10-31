@@ -1,3 +1,20 @@
+------------------------------------------------------------------------------
+Release Notes for 0.3.1 BETA
+----------------------------
+
+o Xcode 3.0 DocSet Subscription Enabled
+  -------------------------------------
+
+You can now 'Subscribe' to the RegexKit documentation.  Xcode will then
+periodically check to see if there's a newer version of the documentation
+available and allow you to automatically update to the newer documentation.
+
+NOTE: This does not update the corresponding RegexKit.framework binary,
+which would be out of step with the installed documentation.  You must
+update the framework manually.
+
+
+------------------------------------------------------------------------------
 Release Notes for 0.3.0 BETA
 ----------------------------
 
@@ -71,7 +88,8 @@ o Multi-threading memory leak
 Fixed a very minor memory leak.  Forgot to free() the per-thread local storage
 struct when a thread exited.
 
-----------------------------
+
+------------------------------------------------------------------------------
 Release Notes for 0.2.0 BETA
 ----------------------------
 

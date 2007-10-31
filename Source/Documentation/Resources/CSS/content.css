@@ -24,7 +24,7 @@ body { font: 12px "lucida grande", geneva, helvetica, arial, sans-serif; color: 
 .content .intro .text { white-space: inherit; font-size: 0.9167em; margin-top: 1.0em; margin-bottom: 0.5em; }
 
 .content .intro .box.frameworkSpecs > .row > .cell.left { font-weight: bold; border-right: none; }
-.content .intro .box.frameworkSpecs > .row > ul.cell.right { list-style-type: none; }
+.content .intro .box.frameworkSpecs > .row > ul.cell { list-style-type: none; }
 
 .content .references { white-space: inherit; display: table;  width: 100%; }
 .content .references .referenceRow { white-space: inherit; display: table-row; }
