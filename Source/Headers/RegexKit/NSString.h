@@ -48,6 +48,21 @@
 #import <RegexKit/RKEnumerator.h>
 #import <RegexKit/NSObject.h>
 #import <stdarg.h>
+
+/*!
+ @function  RKConvertUTF8ToUTF16RangeForString
+ @tocgroup   Functions Unicode Character Index Conversions
+ @abstract   Converts the UTF8 character index <span class="argument">range</span> for <span class="argument">string</span> to its UTF16 character index range equivalent.
+ @discussion Used to convert the character index values from PCREs native UTF8 string encoding to Foundations native UTF16 encoding.
+ */
+REGEXKIT_EXTERN NSRange RKConvertUTF8ToUTF16RangeForString(NSString *string, NSRange range);
+/*!
+ @function  RKConvertUTF16ToUTF8RangeForString
+ @tocgroup   Functions Unicode Character Index Conversions
+ @abstract   Converts the UTF16 character index <span class="argument">range</span> for <span class="argument">string</span> to its UTF8 character index range equivalent.
+ @discussion Used to convert the character index values from Foundations native UTF16 string encoding to PCREs native UTF8 encoding.
+ */
+REGEXKIT_EXTERN NSRange RKConvertUTF16ToUTF8RangeForString(NSString *string, NSRange range);
   
 /*!
  @category    NSString (RegexKitAdditions)

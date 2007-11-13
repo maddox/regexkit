@@ -17,7 +17,8 @@ A:visited:hover	{ text-decoration: underline; color: #FF6600; }
 
 .topFrameSet { border-width: 50px; }
 
-.nobr { white-space: nowrap; }
+.nobr { white-space: pre-wrap; }
+.hardNobr { white-space: nowrap; }
 
 .marginTopSpacer { margin-top: 1em !important; }
 .marginBottomSpacer { margin-bottom: 1em !important; }
@@ -43,7 +44,7 @@ A:visited:hover	{ text-decoration: underline; color: #FF6600; }
 .box p + p { margin-top: 1em; }
 
 .box.sourcecode { margin-left: 0px; margin-right: 0px; padding: 1.0em 2ex; border: 1px solid #c7cfd5; background-color: #f1f5f9; }
-.box.sourcecode { white-space: pre; font: 0.9167em monaco, courier, monospace; }
+.box.sourcecode { white-space: pre-wrap; font: 0.9167em monaco, courier, monospace; }
 
 /*.box.note      > p:before { content: "Note:";      font-weight: bold; margin-right: 1.5ex; }*/
 /*.box.important > p:before { content: "Important:"; font-weight: bold; margin-right: 1.5ex; }*/
@@ -66,6 +67,9 @@ A:visited:hover	{ text-decoration: underline; color: #FF6600; }
 .box.hasRows.zebraRows > .row.odd             { background-color: #F0F5F9;                       }
 .box.hasRows           > .row.headerRow       { background-color: #E2E2E2;                       }
 .box.hasRows           > .row.headerRow .cell { padding-top: 0.3334em; padding-bottom: 0.3334em; }
+
+/*.box.frameworkSpecs .row.regexKitVersion .version { margin-right: 2ex; }*/
+.box.frameworkSpecs .row.regexKitVersion .releaseNotes, .box.classSpecs .row.regexKitVersion .releaseNotes { margin-left: 2ex; }
 
 /* table styles */
 /* The standard table style */

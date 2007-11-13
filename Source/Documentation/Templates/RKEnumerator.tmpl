@@ -16,7 +16,7 @@
 <div class="box classSpecs hasRows zebraRows">
 <div class="row odd firstRow"><span class="cell left">Inherits from</span><span class="cell right lastCell"><a href="http://developer.apple.com/documentation/Cocoa/Reference/Foundation/Classes/NSEnumerator_Class/index.html" target="_top">NSEnumerator</a></span></div>
 <div class="row even"><span class="cell left">Framework</span><span class="cell right lastCell"><a href="index.html">RegexKit.framework</a></span></div>
-<div class="row odd"><span class="cell left">RegexKit</span><span class="cell right lastCell">\$ENV{PROJECT_CURRENT_VERSION}</span></div>
+<div class="row odd regexKitVersion"><span class="cell left">RegexKit</span><span class="cell right lastCell"><span class="version">\$ENV{PROJECT_CURRENT_VERSION}</span> <span class="releaseNotes"><a href="ReleaseNotes.html#Release_\$ENV{PROJECT_VERSION_MAJOR}_\$ENV{PROJECT_VERSION_MINOR}_\$ENV{PROJECT_VERSION_POINT}">Release Notes</a></span></span></div>
 <div class="row even"><span class="cell left">PCRE</span><span class="cell right lastCell">\$ENV{PCRE_VERSION}</span></div>
 <div class="row odd"><span class="cell left">Availability</span><span class="cell right lastCell">Available in Mac OS X v10.4 or later.</span></div>
 <div class="row even"><span class="cell left">Declared in</span><ul class="cell right lastCell"><li>RegexKit/RKEnumerator.h</li></ul></div>
@@ -50,11 +50,11 @@
 <table class="standard" summary="RKEnumerator Match Advancement Methods">
 <caption>@link RKEnumerator RKEnumerator @/link Match Advancement Methods</caption>
 <tr><th>Method</th><th>Returns</th><th>Returns When Exhausted</th><th>Speed</th><th>Description</th></tr>
-<tr><td>@link nextObject nextObject @/link</td><td><span class="nobr">@link NSArray NSArray * @/link</span></td><td><span class="code">NULL</span></td><td>Slowest</td><td>Creates a @link NSArray NSArray @/link of @link NSValue NSValue @/link objects containing a @link NSRange NSRange @/link of the match range of the next enumeration for each capture subpattern.</td></tr>
-<tr><td>@link nextRange nextRange @/link</td><td>@link NSRange NSRange @/link</td><td><span class="nobr"><span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span></span></td><td>Fast</td><td>Returns the entire range of the next enumeration that was matched by the regular expression.</td></tr>
-<tr><td>@link nextRangeForCapture: nextRangeForCapture: @/link</td><td>@link NSRange NSRange @/link</td><td><span class="nobr"><span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span></span></td><td>Medium</td><td>Returns the matching range of the next enumeration for a particular capture subpattern.</td></tr>
-<tr><td>@link nextRangeForCaptureName: nextRangeForCaptureName: @/link</td><td>@link NSRange NSRange @/link</td><td><span class="nobr"><span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span></span></td><td>Slow</td><td>Returns the matching range of the next enumeration for a particular named capture subpattern.</td></tr>
-<tr><td>@link nextRanges nextRanges @/link</td><td><span class="nobr">@link NSRange NSRange * @/link</span></td><td><span class="code">NULL</span></td><td>Fastest</td><td>Updates the objects private buffer of @link NSRange NSRange @/link structures with the results of the next enumeration and then returns a pointer to the buffer.</td></tr>
+<tr><td>@link nextObject nextObject @/link</td><td><span class="hardNobr">@link NSArray NSArray * @/link</span></td><td><span class="code">NULL</span></td><td>Slowest</td><td>Creates a @link NSArray NSArray @/link of @link NSValue NSValue @/link objects containing a @link NSRange NSRange @/link of the match range of the next enumeration for each capture subpattern.</td></tr>
+<tr><td>@link nextRange nextRange @/link</td><td>@link NSRange NSRange @/link</td><td><span class="hardNobr"><span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span></span></td><td>Fast</td><td>Returns the entire range of the next enumeration that was matched by the regular expression.</td></tr>
+<tr><td>@link nextRangeForCapture: nextRangeForCapture: @/link</td><td>@link NSRange NSRange @/link</td><td><span class="hardNobr"><span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span></span></td><td>Medium</td><td>Returns the matching range of the next enumeration for a particular capture subpattern.</td></tr>
+<tr><td>@link nextRangeForCaptureName: nextRangeForCaptureName: @/link</td><td>@link NSRange NSRange @/link</td><td><span class="hardNobr"><span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span></span></td><td>Slow</td><td>Returns the matching range of the next enumeration for a particular named capture subpattern.</td></tr>
+<tr><td>@link nextRanges nextRanges @/link</td><td><span class="hardNobr">@link NSRange NSRange * @/link</span></td><td><span class="code">NULL</span></td><td>Fastest</td><td>Updates the objects private buffer of @link NSRange NSRange @/link structures with the results of the next enumeration and then returns a pointer to the buffer.</td></tr>
 </table>
 </div>
 
@@ -69,6 +69,21 @@
   NSRange matchRange = [anEnumerator currentRange];
   
 }</div>
+
+  <h3><a name="overview_ImportantNSRangeDifferences">Important NSRange Differences</a></h3>
+
+<p>It is important to note that the public API for the @link RKEnumerator RKEnumerator @/link class returns and accepts character index values for strings, and therefore the location and length for @link NSRange NSRange @/link values, as if they were calculated as @link UTF16 UTF16 @/link characters.  This is the same method that is used by Foundation natively and therefore no coversions between @link UTF16 UTF16 @/link and other string encodings, such as @link UTF8 UTF8 @/link need to be performed.</p>
+
+<p>Additional details can be found in the <a href="NSString.html" class="section-link">NSString RegexKit Additions Reference</a> and <a href="RKRegex.html" class="section-link">RKRegex Class Reference</a>.</p>
+
+<div class="seealso">
+  <div class="section">See also</div>
+  <ul>
+    <li><a href="NSString.html#overview_NSRangeCompatibilitywithFoundation" class="section-link">NSRange Compatibility with Foundation</a></li>
+    <li><a href="RKRegex.html#overview_ImportantNSRangeDifferences" class="section-link">Important NSRange Differences</a></li>
+    <li><a href="RKRegex.html#overview_FoundationAdditionsRKCompileOptionRequirements" class="section-link">Foundation Additions RKCompileOption Requirements</a></li>
+  </ul>
+</div>
 
 <h3>Specifying a Regular Expression</h3>
 

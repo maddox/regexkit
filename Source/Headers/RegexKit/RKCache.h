@@ -200,7 +200,7 @@
  @tocgroup   RKCache Adding, Retrieving, and Removing Objects from the Cache
  @abstract   Removes the specified object from the cache.
  @discussion <p>Invokes @link removeObjectWithHash: removeObjectWithHash: @/link with the value of <span class="code">[</span><span class="argument">object</span> @link hash hash @/link<span class="code">]</span>.</p>
- <p>The returned object may not be the same object as <span class="argument">object</span>.  The returned object is the instantiated object that was originally added to the cache, but will have the same hash value as <span class="argument">object</span> and <span class="code">[</span><span class="argument">object</span> @link isEqualTo: isEqualTo:@/link<span class="argument">theRemovedObject</span><span class="code">] == YES</span>.</p>
+ <p>The returned object may not be the same object as <span class="argument">object</span>.  The returned object is the instantiated object that was originally added to the cache, but will have the same hash value as <span class="argument">object</span> and <span class="code">[</span><span class="argument">object</span> @link isEqual: isEqual:@/link<span class="argument">theRemovedObject</span><span class="code">] == YES</span>.</p>
  @result     Removes and returns the object in the cache that has a hash value of <span class="argument">object</span>.  Returns <span class="code">nil</span> if no such object was in the cache.
  @seealso    @link RKCache/addObjectToCache: - addObjectToCache: @/link
  @seealso    @link RKCache/removeObjectWithHash: - removeObjectWithHash: @/link

@@ -153,6 +153,12 @@ else
   "${MAKE}" -f "${MAKEFILE_DIST}" build_tarballs
 fi;
 
+if [ "${XCODE_VERSION_MAJOR}" != "0200" ]; then
+  echo "$0:$LINENO: note: Copying DocSet .xar file to Distribution directory."
+
+  "${RSYNC}" -aCE "${DOCUMENTATION_DOCSET_TARGET_DIR}/${DOCUMENTATION_DOCSET_PACKAGED_FILE}" "${DISTRIBUTION_TARGET_DIR}/${DOCUMENTATION_DOCSET_PACKAGED_FILE}"
+  if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to copy DocSet .xar to the Distribution directory."; exit 1; fi;
+fi;
 
 # Not yet moved to Makefile.dist
 
@@ -170,7 +176,7 @@ export DISTRIBUTION_TEMP_INSTALLER_PACKAGE="${DISTRIBUTION_TEMP_PACKAGES_DIR}/${
 # Clean any previous attempts and prep staging area.
 rm -rf "${DISTRIBUTION_TEMP_PACKAGES_DIR}" && \
   mkdir -p \
-    "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/${DOCUMENTAION_DOCSET_ID}" \
+    "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/${DOCUMENTATION_DOCSET_ID}" \
     "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation" \
     "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework" \
     "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Sourcecode" && \
@@ -200,16 +206,16 @@ if [ $? != 0 ]; then echo "$0:$LINENO: error: Could not update packages Info.pli
 #
 
 echo "$0:$LINENO: note: Copying files to the packaging staging area."
-"${RSYNC}" -aCE "${TARGET_BUILD_DIR}/DocSet/${DOCUMENTAION_DOCSET_ID}/" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/${DOCUMENTAION_DOCSET_ID}/${DOCUMENTAION_DOCSET_ID}" && \
-  "${RSYNC}" -aCE "${BUILD_DISTRIBUTION_DIR}/Documentation.html" "${BUILD_DISTRIBUTION_DIR}/Adding RegexKit to your Project.html" "${DOCUMENTATION_TARGET_DIR}" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation" && \
+"${RSYNC}" -aCE "${BUILD_DISTRIBUTION_DIR}/Documentation.html" "${BUILD_DISTRIBUTION_DIR}/Adding RegexKit to your Project.html" "${DOCUMENTATION_TARGET_DIR}" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation" && \
   "${SYSTEM_DEVELOPER_TOOLS}/SetFile" -a E "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation/Adding RegexKit to your Project.html" && \
   "${RSYNC}" -aCE "${TARGET_BUILD_DIR}/RegexKit.framework/" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework/RegexKit.framework" && \
   strip -S "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework//RegexKit.framework/Versions/A/RegexKit" && \
   "${RSYNC}" -aCE "${DISTRIBUTION_TEMP_SOURCE_DIR}/Sourcecode/" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Sourcecode/Sourcecode" && \
   if [ "${DISTRIBUTION_INCLUDE_PCRE_PACKAGE}" == "YES" ]; then "${RSYNC}" -a "${PCRE_TARBALL_FILE_PATH}" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/pcre/Sourcecode/Source/pcre/${PCRE_TARBALL_FILE_NAME}"; fi && \
+  if [ "${XCODE_VERSION_MAJOR}" != "0200" ]; then "${RSYNC}" -aCE "${TARGET_BUILD_DIR}/DocSet/${DOCUMENTATION_DOCSET_ID}/" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/${DOCUMENTATION_DOCSET_ID}/${DOCUMENTATION_DOCSET_ID}"; fi && \
   "${CHMOD}" -R g+w "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation" && \
   "${CHMOD}" -R g+w "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Sourcecode" && \
-  "${CHMOD}" -R g+w "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/com.zang.RegexKit.Documentation.docset"
+  if [ "${XCODE_VERSION_MAJOR}" != "0200" ]; then "${CHMOD}" -R g+w "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/com.zang.RegexKit.Documentation.docset"; fi
 if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to copy distribution files to staging area."; exit 1; fi;
 
 #
@@ -280,10 +286,12 @@ rm -f "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_HTML_DOCUMENTATI
   cd "${PROJECT_DIR}" && \
 if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to re-pax HTML Documenation (hide extension dropped work-around)."; exit 1; fi;
 
+
+if [ "${XCODE_VERSION_MAJOR}" != "0200" ]; then
 echo "$0:$LINENO: note: Packaging DocSet Documentation."
 "${PACKAGEMAKER}" -build \
     -p "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION}" \
-    -f "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/${DOCUMENTAION_DOCSET_ID}/" \
+    -f "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/${DOCUMENTATION_DOCSET_ID}/" \
     -u \
     -ds \
     -i "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}/DocSet_info.plist" \
@@ -292,6 +300,7 @@ echo "$0:$LINENO: note: Packaging DocSet Documentation."
   if [ "${DISTRIBUTION_GZIP_PACKAGES}" == "YES" ]; then "${GZIP_CMD}" -n9 "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION}/Contents/Archive.pax" ; fi && \
   "${PERL}" -e 'while(<>) { s/\x0\x0\x1\xf5\x0\x0\x1\xf5/\x0\x0\x0\x0\x0\x0\x0\x50/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION}/Contents/Archive.bom"
 if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to create DocSet Documentation package."; exit 1; fi;
+fi
 
 echo "$0:$LINENO: note: Packaging sourcecode."
 "${PACKAGEMAKER}" -build \
@@ -332,11 +341,13 @@ mkdir -p "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/Packages" && \
   "${RSYNC}" -aC \
     "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_FRAMEWORK}" \
     "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION}" \
-    "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION}" \
     "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE}" \
     "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/Packages" && \
   if [ "${DISTRIBUTION_INCLUDE_PCRE_PACKAGE}" == "YES" ]; then \
     "${RSYNC}" -aC "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE_PCRE}" "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/Packages"; \
+  fi
+  if [ "${XCODE_VERSION_MAJOR}" != "0200" ]; then \
+    "${RSYNC}" -aC "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION}" "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/Packages"; \
   fi
 if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to copy files in to final installer package."; exit 1; fi;
 

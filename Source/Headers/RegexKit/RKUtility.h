@@ -50,6 +50,7 @@
 /*!
  @toc Functions
  @group Utility Functions
+ @group Unicode Character Index Conversions
 */  
 
 /*!

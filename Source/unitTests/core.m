@@ -14,11 +14,14 @@ void startGC(void);
 
 static int32_t gcThreadStarted = 0;
 
+#ifdef    __MACOSX_RUNTIME__
+
 void startGC(void) {
   if(gcThreadStarted == 0) {
     gcThreadStarted = 1;
     if([objc_getClass("NSGarbageCollector") defaultCollector] != NULL) {
       NSLog(@"Garbage Collection is ENABLED.  Starting background collector thread.\n");
+      
       void (*objc_sct)(void);
       if((objc_sct = dlsym(RTLD_DEFAULT, "objc_startCollectorThread")) != NULL) {
         objc_sct();
@@ -29,6 +32,13 @@ void startGC(void) {
   }
 }
 
+#else  // __MACOSX_RUNTIME__
+
+void startGC(void) {
+  // NO-OP on GNUstep
+}
+
+#endif // __MACOSX_RUNTIME__
 
 @implementation core
 
@@ -409,10 +419,10 @@ void startGC(void) {
   STAssertNotNil(regexCaptureNameArray, nil);
   STAssertTrue([regexCaptureNameArray count] == 6, @"count: %u", [regexCaptureNameArray count]);
   
-  STAssertTrue([[regexCaptureNameArray objectAtIndex:0] isEqualTo:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:0]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:0] isEqual:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:0]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:1] isEqualToString:@"date"], @"== %@", [regexCaptureNameArray objectAtIndex:1]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:2] isEqualToString:@"year"], @"== %@", [regexCaptureNameArray objectAtIndex:2]);
-  STAssertTrue([[regexCaptureNameArray objectAtIndex:3] isEqualTo:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:3]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:3] isEqual:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:3]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:4] isEqualToString:@"month"], @"== %@", [regexCaptureNameArray objectAtIndex:4]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:5] isEqualToString:@"day"], @"== %@", [regexCaptureNameArray objectAtIndex:5]);
   
@@ -420,7 +430,7 @@ void startGC(void) {
   STAssertTrue(matchRanges != NULL, nil); if(matchRanges == NULL) { return; }
   
   STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:nil], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist"], NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist"], NSException, RKRegexCaptureReferenceException, nil);
   STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"date"] == 1), nil);
   STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"year"] == 2), nil);
   STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"month"] == 4), nil);
@@ -428,7 +438,7 @@ void startGC(void) {
 
   for(x = 0; x < captureCount; x++) { matchRanges[x] = NSMakeRange(NSNotFound, 0); }
   STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:NULL inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist" inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist" inMatchedRanges:matchRanges], NSException, RKRegexCaptureReferenceException, nil);
   STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"date" inMatchedRanges:NULL], NSException, NSInvalidArgumentException, nil);
   STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"date" inMatchedRanges:matchRanges] == NSNotFound), nil);
   STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"year" inMatchedRanges:matchRanges] == NSNotFound), nil);
@@ -469,23 +479,23 @@ void startGC(void) {
   STAssertTrue(matchRanges != NULL, nil); if(matchRanges == NULL) { return; }
   
   STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:nil], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist"], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"date"], NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist"], NSException, RKRegexCaptureReferenceException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"date"], NSException, RKRegexCaptureReferenceException, nil);
   
   for(x = 0; x < captureCount; x++) { matchRanges[x] = NSMakeRange(NSNotFound, 0); }
   STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:NULL inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist" inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist" inMatchedRanges:matchRanges], NSException, RKRegexCaptureReferenceException, nil);
   STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"date" inMatchedRanges:NULL], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"date" inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"year" inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"month" inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"day" inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"date" inMatchedRanges:matchRanges], NSException, RKRegexCaptureReferenceException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"year" inMatchedRanges:matchRanges], NSException, RKRegexCaptureReferenceException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"month" inMatchedRanges:matchRanges], NSException, RKRegexCaptureReferenceException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"day" inMatchedRanges:matchRanges], NSException, RKRegexCaptureReferenceException, nil);
   
   for(x = 0; x < captureCount; x++) { matchRanges[x] = NSMakeRange(0, 0); }
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"date" inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"year" inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"month" inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"day" inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"date" inMatchedRanges:matchRanges], NSException, RKRegexCaptureReferenceException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"year" inMatchedRanges:matchRanges], NSException, RKRegexCaptureReferenceException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"month" inMatchedRanges:matchRanges], NSException, RKRegexCaptureReferenceException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"day" inMatchedRanges:matchRanges], NSException, RKRegexCaptureReferenceException, nil);
   
   STAssertTrueNoThrow(([regex captureNameForCaptureIndex:0] == NULL), nil);
   STAssertTrueNoThrow(([regex captureNameForCaptureIndex:1] == NULL), nil);
@@ -524,10 +534,10 @@ void startGC(void) {
   STAssertNotNil(regexCaptureNameArray, nil);
   STAssertTrue([regexCaptureNameArray count] == 7, @"count: %u", [regexCaptureNameArray count]);
   
-  STAssertTrue([[regexCaptureNameArray objectAtIndex:0] isEqualTo:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:0]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:0] isEqual:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:0]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:1] isEqualToString:@"date"], @"== %@", [regexCaptureNameArray objectAtIndex:1]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:2] isEqualToString:@"year"], @"== %@", [regexCaptureNameArray objectAtIndex:2]);
-  STAssertTrue([[regexCaptureNameArray objectAtIndex:3] isEqualTo:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:3]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:3] isEqual:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:3]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:4] isEqualToString:@"month"], @"== %@", [regexCaptureNameArray objectAtIndex:4]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:5] isEqualToString:@"day"], @"== %@", [regexCaptureNameArray objectAtIndex:5]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:6] isEqualToString:@"month"], @"== %@", [regexCaptureNameArray objectAtIndex:6]);
@@ -549,7 +559,7 @@ void startGC(void) {
   STAssertTrue([regex captureIndexForCaptureName:@"day"] == 5, @"value: %u", [regex captureIndexForCaptureName:@"day"]);
   
   STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:nil], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist"], NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist"], NSException, RKRegexCaptureReferenceException, nil);
   STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"date"] == 1), nil);
   STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"year"] == 2), nil);
   STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"month"] == 4), nil);
@@ -558,7 +568,7 @@ void startGC(void) {
   for(x = 0; x < captureCount; x++) { matchRanges[x] = NSMakeRange(NSNotFound, 0); }
 
   STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:NULL inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist" inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist" inMatchedRanges:matchRanges], NSException, RKRegexCaptureReferenceException, nil);
   STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"date" inMatchedRanges:NULL], NSException, NSInvalidArgumentException, nil);
   STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"date" inMatchedRanges:matchRanges] == NSNotFound), nil);
   STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"year" inMatchedRanges:matchRanges] == NSNotFound), nil);
@@ -572,13 +582,88 @@ void startGC(void) {
   STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"day" inMatchedRanges:matchRanges] == 5), nil);
 
   matchRanges[4] = NSMakeRange(NSNotFound, 0);
-  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"month" inMatchedRanges:matchRanges] == 6), nil);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"month" inMatchedRanges:matchRanges] == 6), @"Got: %lu", (unsigned long)[regex captureIndexForCaptureName:@"month" inMatchedRanges:matchRanges]);
   matchRanges[6] = NSMakeRange(NSNotFound, 0);
   STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"month" inMatchedRanges:matchRanges] == NSNotFound), nil);
 
   STAssertThrows([regex captureIndexForCaptureName:@"UNKNOWN"], nil);
   STAssertThrows([regex captureIndexForCaptureName:nil], nil);
 }
+
+
+- (void)testDuplicateCaptureNameJOptionCornerCases
+{
+  NSString *regexString = @"(?J)(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))";
+  RKUInteger captureCount = 0, x = 0;
+  NSRange *matchRanges = NULL;
+  
+  RKRegex *regex = [RKRegex regexWithRegexString:regexString options:RKCompileNoOptions];
+  STAssertNotNil(regex, nil); if(regex == nil) { return; }
+  STAssertTrue((captureCount = [regex captureCount]) == 7, @"count: %u", captureCount);
+  
+  matchRanges = alloca(captureCount * sizeof(NSRange));
+  STAssertTrue(matchRanges != NULL, nil); if(matchRanges == NULL) { return; }
+  
+  NSArray *regexCaptureNameArray = [regex captureNameArray];
+  STAssertNotNil(regexCaptureNameArray, nil);
+  STAssertTrue([regexCaptureNameArray count] == 7, @"count: %u", [regexCaptureNameArray count]);
+  
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:0] isEqual:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:0]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:1] isEqualToString:@"date"], @"== %@", [regexCaptureNameArray objectAtIndex:1]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:2] isEqualToString:@"year"], @"== %@", [regexCaptureNameArray objectAtIndex:2]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:3] isEqual:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:3]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:4] isEqualToString:@"month"], @"== %@", [regexCaptureNameArray objectAtIndex:4]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:5] isEqualToString:@"day"], @"== %@", [regexCaptureNameArray objectAtIndex:5]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:6] isEqualToString:@"month"], @"== %@", [regexCaptureNameArray objectAtIndex:6]);
+  
+  STAssertTrueNoThrow(([regex captureNameForCaptureIndex:0] == NULL), nil);
+  STAssertTrueNoThrow(([[regex captureNameForCaptureIndex:1] isEqualToString:@"date"] == YES), nil);
+  STAssertTrueNoThrow(([[regex captureNameForCaptureIndex:2] isEqualToString:@"year"] == YES), nil);
+  STAssertTrueNoThrow(([regex captureNameForCaptureIndex:3] == NULL), nil);
+  STAssertTrueNoThrow(([[regex captureNameForCaptureIndex:4] isEqualToString:@"month"] == YES), nil);
+  STAssertTrueNoThrow(([[regex captureNameForCaptureIndex:5] isEqualToString:@"day"] == YES), nil);
+  STAssertTrueNoThrow(([[regex captureNameForCaptureIndex:6] isEqualToString:@"month"] == YES), nil);
+  STAssertThrowsSpecificNamed([regex captureNameForCaptureIndex:7], NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed([regex captureNameForCaptureIndex:8], NSException, NSInvalidArgumentException, nil);
+  
+  
+  STAssertTrue([regex captureIndexForCaptureName:@"date"] == 1, @"value: %u", [regex captureIndexForCaptureName:@"date"]);
+  STAssertTrue([regex captureIndexForCaptureName:@"year"] == 2, @"value: %u", [regex captureIndexForCaptureName:@"year"]);
+  STAssertTrue([regex captureIndexForCaptureName:@"month"] == 4, @"value: %u", [regex captureIndexForCaptureName:@"month"]); // Only the lowest index is returned
+  STAssertTrue([regex captureIndexForCaptureName:@"day"] == 5, @"value: %u", [regex captureIndexForCaptureName:@"day"]);
+  
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:nil], NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist"], NSException, RKRegexCaptureReferenceException, nil);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"date"] == 1), nil);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"year"] == 2), nil);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"month"] == 4), nil);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"day"] == 5), nil);
+  
+  for(x = 0; x < captureCount; x++) { matchRanges[x] = NSMakeRange(NSNotFound, 0); }
+  
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:NULL inMatchedRanges:matchRanges], NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist" inMatchedRanges:matchRanges], NSException, RKRegexCaptureReferenceException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"date" inMatchedRanges:NULL], NSException, NSInvalidArgumentException, nil);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"date" inMatchedRanges:matchRanges] == NSNotFound), nil);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"year" inMatchedRanges:matchRanges] == NSNotFound), nil);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"month" inMatchedRanges:matchRanges] == NSNotFound), nil);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"day" inMatchedRanges:matchRanges] == NSNotFound), nil);
+  
+  for(x = 0; x < captureCount; x++) { matchRanges[x] = NSMakeRange(0, 0); }
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"date" inMatchedRanges:matchRanges] == 1), nil);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"year" inMatchedRanges:matchRanges] == 2), nil);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"month" inMatchedRanges:matchRanges] == 4), nil);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"day" inMatchedRanges:matchRanges] == 5), nil);
+  
+  matchRanges[4] = NSMakeRange(NSNotFound, 0);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"month" inMatchedRanges:matchRanges] == 6), @"Got: %lu", (unsigned long)[regex captureIndexForCaptureName:@"month" inMatchedRanges:matchRanges]);
+  matchRanges[6] = NSMakeRange(NSNotFound, 0);
+  STAssertTrueNoThrow(([regex captureIndexForCaptureName:@"month" inMatchedRanges:matchRanges] == NSNotFound), nil);
+  
+  STAssertThrows([regex captureIndexForCaptureName:@"UNKNOWN"], nil);
+  STAssertThrows([regex captureIndexForCaptureName:nil], nil);
+}
+
 
 - (void)testRegexString
 {

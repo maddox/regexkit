@@ -35,6 +35,11 @@ export PROJECT_NAME=${PROJECT_NAME:?"Environment variable PROJECT_NAME must exis
 export RSYNC=${RSYNC:?"Environment variable RSYNC must exist, aborting."}
 export SQLITE=${SQLITE:?"Environment variable SQLITE must exist, aborting."}
 
+if [ "${XCODE_VERSION_MAJOR}" == "0200" ]; then
+  echo "$0:$LINENO: warning: DocSet is only supported on Xcode 3.0 and above.";
+  exit 0;
+fi
+
 "${PERL}" -e 'require DBD::SQLite;' >/dev/null 2>&1
 if [ $? != 0 ]; then echo "$0:$LINENO: error: The perl module 'DBD::SQLite' must be installed in order to build the the target '${TARGETNAME}'."; exit 1; fi;  
 
@@ -87,8 +92,8 @@ if [ $? != 0 ] ; then echo "$0:$LINENO: error: Unable to create temporary DocSet
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: SQL database prep for DocSet failed."; exit 1; fi;
 
 # Execute the DOCUMENTATION_CREATE_DOCSET_SCRIPT script.
-echo "$0:$LINENO: note: Creating DocSet '${DOCUMENTAION_DOCSET_ID}'."
-time "${DOCUMENTATION_CREATE_DOCSET_SCRIPT}"
+echo "$0:$LINENO: note: Creating DocSet '${DOCUMENTATION_DOCSET_ID}'."
+"${DOCUMENTATION_CREATE_DOCSET_SCRIPT}"
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: DocSet generation failed."; exit 1; fi;
 
 # We lint what we've generated through the docset relaxng schemas to catch
@@ -97,34 +102,35 @@ if [ $? != 0 ] ; then echo "$0:$LINENO: error: DocSet generation failed."; exit 
 DOCSETACCESS_FRAMEWORK="/Developer/Library/PrivateFrameworks/DocSetAccess.framework/Resources"
 
 if [ -x xmllint ] && [ -r "${DOCSETACCESS_FRAMEWORK}/NodesSchema.rng" ]; then
-  xmllint --noout --relaxng "${DOCSETACCESS_FRAMEWORK}/NodesSchema.rng" "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}/Contents/Resources/Nodes.xml"
+  xmllint --noout --relaxng "${DOCSETACCESS_FRAMEWORK}/NodesSchema.rng" "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTATION_DOCSET_ID}/Contents/Resources/Nodes.xml"
   if [ $? != 0 ] ; then echo "$0:$LINENO: error: DocSet Nodes.xml failed validation test."; exit 1; fi;
 fi;
 
 if [ -x xmllint ] && [ -r "${DOCSETACCESS_FRAMEWORK}/TokensSchema.rng" ]; then
-  xmllint --noout --relaxng "${DOCSETACCESS_FRAMEWORK}/TokensSchema.rng" "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}/Contents/Resources/Tokens.xml"
+  xmllint --noout --relaxng "${DOCSETACCESS_FRAMEWORK}/TokensSchema.rng" "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTATION_DOCSET_ID}/Contents/Resources/Tokens.xml"
   if [ $? != 0 ] ; then echo "$0:$LINENO: error: DocSet Tokens.xml failed validation test."; exit 1; fi;
 fi
 
 # 'validate' complains about a lot of things.  I think it's from the very poor
 # 'nodes' schema.  It doesn't seem to be broken in practice.
-"${DOCSETUTIL}" validate "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}"
+"${DOCSETUTIL}" validate "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTATION_DOCSET_ID}"
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: The 'docsetutil' command did not successfully validate the DocSet."; exit 1; fi;
 
-echo "$0:$LINENO: note: Indexing DocSet '${DOCUMENTAION_DOCSET_ID}'."
-"${DOCSETUTIL}" index "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}" &&
-  mv "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}/Contents/Resources/Nodes.xml" "${DOCUMENTATION_DOCSET_TEMP_DIR}" &&
-  mv "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}/Contents/Resources/Tokens.xml" "${DOCUMENTATION_DOCSET_TEMP_DIR}"
+
+echo "$0:$LINENO: note: Indexing DocSet '${DOCUMENTATION_DOCSET_ID}'."
+"${DOCSETUTIL}" index "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTATION_DOCSET_ID}" &&
+  mv "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTATION_DOCSET_ID}/Contents/Resources/Nodes.xml" "${DOCUMENTATION_DOCSET_TEMP_DIR}" &&
+  mv "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTATION_DOCSET_ID}/Contents/Resources/Tokens.xml" "${DOCUMENTATION_DOCSET_TEMP_DIR}"
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: DocSet indexing failed."; exit 1; fi;
 
 
-echo "$0:$LINENO: note: Packaging DocSet as '${DOCUMENTAION_DOCSET_PACKAGED_FILE}'."
-"${DOCSETUTIL}" package -output "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_PACKAGED_FILE}" "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}"
+echo "$0:$LINENO: note: Packaging DocSet as '${DOCUMENTATION_DOCSET_PACKAGED_FILE}'."
+"${DOCSETUTIL}" package -output "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTATION_DOCSET_PACKAGED_FILE}" "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTATION_DOCSET_ID}"
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: DocSet packaging failed."; exit 1; fi;
 
-mkdir -p "${DOCUMENTATION_DOCSET_TARGET_DIR}/${DOCUMENTAION_DOCSET_ID}" &&
-  "${RSYNC}" -a --delete --cvs-exclude "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}/" "${DOCUMENTATION_DOCSET_TARGET_DIR}/${DOCUMENTAION_DOCSET_ID}" &&
-  "${RSYNC}" -a --delete --cvs-exclude "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_PACKAGED_FILE}" "${DOCUMENTATION_DOCSET_TARGET_DIR}"
+mkdir -p "${DOCUMENTATION_DOCSET_TARGET_DIR}/${DOCUMENTATION_DOCSET_ID}" &&
+  "${RSYNC}" -a --delete --cvs-exclude "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTATION_DOCSET_ID}/" "${DOCUMENTATION_DOCSET_TARGET_DIR}/${DOCUMENTATION_DOCSET_ID}" &&
+  "${RSYNC}" -a --delete --cvs-exclude "${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTATION_DOCSET_PACKAGED_FILE}" "${DOCUMENTATION_DOCSET_TARGET_DIR}"
 if [ $? != 0 ] ; then echo "$0:$LINENO: error: Unable top copy the created DocSet to its final location."; exit 1; fi;
 
 

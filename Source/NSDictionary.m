@@ -70,8 +70,8 @@ static id RKDoDictionaryAction(id self, SEL _cmd, id matchAgainstDictionary, id 
   
   if((RK_EXPECTED(self == matchAgainstDictionary, 0)) && (performAction == RKDictionaryActionAddMatches)) { goto exitNow; } // Fast path bypass on unusual case.
 
-  if(aKeyRegex    != NULL) { keyRegex    = RKRegexFromStringOrRegex(self, _cmd, aKeyRegex,    RKCompileNoOptions, YES); }
-  if(aObjectRegex != NULL) { objectRegex = RKRegexFromStringOrRegex(self, _cmd, aObjectRegex, RKCompileNoOptions, YES); }
+  if(aKeyRegex    != NULL) { keyRegex    = RKRegexFromStringOrRegex(self, _cmd, aKeyRegex,    (RKCompileUTF8 | RKCompileNoUTF8Check), YES); }
+  if(aObjectRegex != NULL) { objectRegex = RKRegexFromStringOrRegex(self, _cmd, aObjectRegex, (RKCompileUTF8 | RKCompileNoUTF8Check), YES); }
   
 #ifdef USE_CORE_FOUNDATION
   if((dictionaryCount = (RKUInteger)CFDictionaryGetCount((CFDictionaryRef)matchAgainstDictionary)) == 0) { goto doAction; }

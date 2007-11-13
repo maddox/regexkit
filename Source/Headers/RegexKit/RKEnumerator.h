@@ -71,8 +71,10 @@
   NSString *string;
   RKUInteger atBufferLocation;
   RKUInteger regexCaptureCount;
-  NSRange searchRange;
-  RK_STRONG_REF NSRange *resultRanges;
+  NSRange searchByteRange;
+  NSRange searchUTF16Range;
+  RK_STRONG_REF NSRange *resultUTF8Ranges;
+  RK_STRONG_REF NSRange *resultUTF16Ranges;
   RKUInteger hasPerformedMatch:1;
 }
 

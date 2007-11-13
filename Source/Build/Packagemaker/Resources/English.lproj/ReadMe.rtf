@@ -1,13 +1,13 @@
 {\rtf1\ansi\ansicpg1252\cocoartf949
-{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fmodern\fcharset0 Courier;}
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fmodern\fcharset0 Courier;\f2\fmodern\fcharset0 CourierNewPSMT;
+\f3\fnil\fcharset0 Monaco;\f4\fmodern\fcharset0 Courier-Oblique;}
 {\colortbl;\red255\green255\blue255;}
-{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid1}
-{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid2}
-{\list\listtemplateid3\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid3}}
-{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}{\listoverride\listid3\listoverridecount0\ls3}}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid1}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
+\vieww9000\viewh8400\viewkind0
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 
-\f0\fs36 \cf0 RegexKit 0.3.1\
+\f0\fs36 \cf0 RegexKit 0.4.0\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 
 \fs24 \cf0 \
@@ -22,71 +22,40 @@ RegexKit will install in the following directories by default:\
 \cf0 \
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 
-\fs36 \cf0 What's New in 0.3.1\
+\fs36 \cf0 What's New in 0.4.0\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 
 \fs24 \cf0 \
-\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\ql\qnatural\pardirnatural
-\ls1\ilvl0\cf0 {\listtext	\'95	}Xcode 3.0 RegexKit documentation subscription and update notification.\
-  \
-  This release is largely a bug fix / workaround for a Safari 3 .dmg / sourceforge webserver mime-type issue.\
+\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\sa120\ql\qnatural\pardirnatural
+\ls1\ilvl0\cf0 {\listtext	\'95	}Many improvements in the handling of Unicode strings.\
+{\listtext	\'95	}The 
+\f2\fs22 NSString
+\f0\fs24  additions and 
+\f2 RKEnumerator
+\f0  class now calculate character indexes and 
+\f2\fs22 NSRange
+\f0\fs24  values the same way the Foundation 
+\f2\fs22 NSString
+\f0\fs24  class does for all string encodings.\
+{\listtext	\'95	}Perl style 
+\f3\fs20 \\u
+\f0\fs24 , 
+\f3\fs20 \\l
+\f0\fs24 , 
+\f3\fs20 \\U
+\f0\fs24 , 
+\f3\fs20 \\L
+\f0\fs24 , and 
+\f3\fs20 \\E
+\f0\fs24  escape sequences for case conversions, and 
+\f3\fs20 \\
+\f4\i\fs24 digit
+\f0\i0  for capture subpattern references in replacement reference strings.\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 \cf0 \
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
-
-\fs36 \cf0 What's New in 0.3.0\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
-
-\fs24 \cf0 \
-\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\ql\qnatural\pardirnatural
-\ls2\ilvl0\cf0 {\listtext	\'95	}Mac OS X Installer.\
-{\listtext	\'95	}Mac OS X 10.5 support.\
-{\listtext	\'95	}
-\f1 RegexKit.framework Info.plist
-\f0  version corrected.\
-{\listtext	\'95	}Minor documentation updates.\
-{\listtext	\'95	}Parallel target builds.\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
-\cf0 \
-The new Mac OS X 
-\f1 .dmg
-\f0  distribution combines the previously separate binary and source code bundles into a single, convenient installer based package.\
-\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
-
-\fs36 \cf0 Mac OS X 10.5 Features\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
-
-\fs24 \cf0 \
-\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\ql\qnatural\pardirnatural
-\ls3\ilvl0\cf0 {\listtext	\'95	}64 bit support.\
-{\listtext	\'95	}Garbage Collection enabled.\
-{\listtext	\'95	}Documentation available in native Xcode 3.0 DocSet format.\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
-\cf0 \
-The RegexKit.framework binary now includes support for four architectures: 
-\f1 ppc
-\f0 , 
-\f1 ppc64
-\f0 , 
-\f1 i386
-\f0 , and 
-\f1 x86_64
-\f0 .  The 32 bit architecture images require a minimum Mac OS X of 10.4, while the 64 bit architecture versions require a minimum of 10.5.\
-\
-The choice between using Garbage Collection or the traditional 
-\f1 retain
-\f0  / 
-\f1 release
-\f0  style of memory management is made at load time.  If the dynamic linker determines that the necessary Garbage Collection prerequisites have been met, RegexKit switches to using Garbage Collection.  Otherwise if Garbage Collection is not active at load time, RegexKit uses the traditional 
-\f1 retain
-\f0  / 
-\f1 release
-\f0  style of memory management.\
-\
-The documentation for RegexKit is now available in the new Xcode 3.0 DocSet format.  This allows you to access the frameworks documentation from within Xcode, including real time access via the Research Assistant.  The DocSet documentation is installed in 
-\f1 /Library/Developer/Shared/Documentation/DocSets/
-\f0 , which Xcode 3.0 is set to scan automatically.  You may have to quit and restart Xcode in order for the documentation to appear.  Subscriptions are not yet enabled despite the subscription button being present.\
+See 
+\i Release Information - Release Notes for 0.4.0 Beta
+\i0  for more information\
 \
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 

@@ -52,7 +52,7 @@ static id RKDoSetAction(id self, SEL _cmd, id matchAgainstSet, id regexObject, c
 @implementation NSSet (RegexKitAdditions)
 
 static id RKDoSetAction(id self, SEL _cmd, id matchAgainstSet, id regexObject, const RKSetAction performAction, RKUInteger *UIntegerResult) {
-  RKRegex *regex = RKRegexFromStringOrRegex(self, _cmd, regexObject, RKCompileNoOptions, YES);
+  RKRegex *regex = RKRegexFromStringOrRegex(self, _cmd, regexObject, (RKCompileUTF8 | RKCompileNoUTF8Check), YES);
   id returnObject = NULL, *setObjects = NULL, *matchedObjects = NULL;
   RKUInteger setCount = 0, atIndex = 0, matchedCount = 0, tempUIntegerResult = 0;
   

@@ -31,9 +31,10 @@ h5   { margin-top: 1.5em; margin-bottom: 0.5000em; font-size: 1.0834em; padding:
 .overview .seealso > ul > li { margin-left: 6.25ex; }
 
 .syntax > .specification { margin-left: 6.25ex; font: 1.1667em monaco, courier, monospace; }
-.syntax > .specification .parameter { font: italic 1.0834em "lucida grande", geneva, helvetica, arial, sans-serif; margin: 0px; border: 0px; }
+.syntax > .specification .parameter { font-style: italic; font: 1.0834em "lucida grande", geneva, helvetica, arial, sans-serif; margin: 0px; border: 0px; }
 .syntax > .specification .optional { -webkit-border-radius: 3px; -webkit-box-shadow: 2px 3px 5px #888; margin-left: 0.75ex; margin-right: 0.75ex; padding-left: 0.5ex; padding-right: 0.5ex; border: 1px solid #d1d5d9; background-color: #e8e8e8; }
 .syntax > .parameters { margin-top: 0.75em; }
+.syntax > .parameters > ul > li > .name { font-style: italic; }
 .syntax > .example { margin-top: 0.75em; margin-left: 2ex; }
 .syntax > .example > .header { font-weight: bold; font-size: 1em; margin-bottom: 0.1667em; margin-right: 1.25ex; }
 
@@ -114,7 +115,12 @@ h5   { margin-top: 1.5em; margin-bottom: 0.5000em; font-size: 1.0834em; padding:
 .chrono > .entry > .content                     { margin-top: 0.5em; }
 .chrono > .entry > .content > p:first-child     { margin-top: 0px; margin-bottom: 0px; }
 
-.pop-up_menu-selection, .pop-up_menu-name, .context-menu, .menu-selection, .checkbox-name, .tab-name, .button-name, .icon-button-name { white-space: nowrap; }
+.quotation { margin: 1em 6.25ex 1em 6.25ex; }
+.quotation .quote { font-style: italic; }
+.quotation .attribution:before { margin-left: 1.25ex; content:"-"; margin-right: 1.25ex; }
+.quotation .attribution {  }
+
+.pop-up_menu-selection, .pop-up_menu-name, .context-menu, .menu-selection, .checkbox-name, .tab-name, .button-name, .icon-button-name { white-space: pre-wrap; }
 
 .code              {        font:         0.9167em monaco, courier, monospace; }
 .regex             {        font:         0.8334em monaco, courier, monospace; white-space: nowrap; }
@@ -122,7 +128,7 @@ h5   { margin-top: 1.5em; margin-bottom: 0.5000em; font-size: 1.0834em; padding:
 .regex-textual     {        font:         0.9167em monaco, courier, monospace; white-space: nowrap; }
 .regex-def         {        font: italic  0.9167em monaco, courier, monospace; }
 .argument          {  font-style: italic; white-space: nowrap; }
-.section-link      {  font-style: italic; white-space: nowrap; }
+.section-link      {  font-style: italic; white-space: pre-wrap; }
 .cpp_flag          { font-weight: bold; }
 .cpp_definition    { font-weight: bold; }
 .header_file       {        font:         0.9167em monaco, courier, monospace; white-space: nowrap; }

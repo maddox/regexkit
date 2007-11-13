@@ -244,6 +244,9 @@ RKREGEX_STATIC_INLINE BOOL RKIsMainThread(void) { return((BOOL)pthread_main_np()
 //
 #define RKPrettyObjectDescription(prettyObject) ([NSString stringWithFormat:@"[%@ @ %p]: '%.40s'%@", [prettyObject className], prettyObject, ([[prettyObject description] UTF8String] == NULL) ? "" : [[prettyObject description] UTF8String], ([[prettyObject description] length] > 40) ? @"...":@""])
 
+#define RKutf16to8(a,b) RKConvertUTF16ToUTF8RangeForString(a, b)
+#define RKutf8to16(a,b) RKConvertUTF8ToUTF16RangeForString(a, b)
+
 
 // In RKRegex.c
 RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCompileOption compileOptions, const BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3), pure, used, visibility("hidden"));
@@ -311,20 +314,24 @@ RKREGEX_STATIC_INLINE RKUInteger RKHashForStringAndCompileOption(NSString * cons
 
 RKREGEX_STATIC_INLINE RKStringBuffer RKStringBufferWithString(NSString * const RK_C99(restrict) string) {
   RKStringBuffer stringBuffer = RKMakeStringBuffer(string, NULL, 0, 0);
-  
+
 #ifdef USE_CORE_FOUNDATION
   if(RK_EXPECTED(string != NULL, 1)) {
     stringBuffer.encoding = CFStringGetFastestEncoding((CFStringRef)string);
-    
+
     if((stringBuffer.encoding == kCFStringEncodingMacRoman) || (stringBuffer.encoding == kCFStringEncodingASCII) || (stringBuffer.encoding == kCFStringEncodingUTF8)) {
       stringBuffer.characters = CFStringGetCStringPtr((CFStringRef)string, stringBuffer.encoding);
-      stringBuffer.length = (RKUInteger)CFStringGetLength((CFStringRef)string);
+      if((stringBuffer.encoding == kCFStringEncodingMacRoman) || (stringBuffer.encoding == kCFStringEncodingASCII)) {
+        stringBuffer.length = (RKUInteger)CFStringGetLength((CFStringRef)string);
+      } else {
+        stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters);
+      }
     }
     if(RK_EXPECTED(stringBuffer.characters == NULL, 0)) {
       stringBuffer.characters = [string UTF8String];
       stringBuffer.encoding = kCFStringEncodingUTF8;
       if(RK_EXPECTED(stringBuffer.characters != NULL, 1)) { stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters); }
-      //NSLog(@"CF UTF8String conversion path. string = %p '%.40s' UTF8length = %u, original encoding: %d %@ length: %u", stringBuffer.characters, stringBuffer.characters, stringBuffer.length, cfStringEncoding, CFStringGetNameOfEncoding(cfStringEncoding), CFStringGetLength((CFStringRef)string));
+      //NSLog(@"CF UTF8String conversion path. string = %p '%.40s' UTF8length = %u, original encoding: %d %@ length: %u", stringBuffer.characters, stringBuffer.characters, stringBuffer.length, stringBuffer.encoding, CFStringGetNameOfEncoding(stringBuffer.encoding), CFStringGetLength((CFStringRef)string));
     }
   }
 #else // No Core Foundation, NextStep Foundation instead
@@ -333,7 +340,11 @@ RKREGEX_STATIC_INLINE RKStringBuffer RKStringBufferWithString(NSString * const R
     
     if((stringBuffer.encoding == NSMacOSRomanStringEncoding) || (stringBuffer.encoding == NSASCIIStringEncoding) || (stringBuffer.encoding == NSUTF8StringEncoding)) {
       stringBuffer.characters = [string cStringUsingEncoding:stringBuffer.encoding];
-      stringBuffer.length = [string length];
+      if((stringBuffer.encoding == NSMacOSRomanStringEncoding) || (stringBuffer.encoding == NSASCIIStringEncoding)) {
+        stringBuffer.length = [string length];
+      } else {
+        stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters);
+      }
     }
     if(RK_EXPECTED(stringBuffer.characters == NULL, 0)) {
       stringBuffer.characters = [string UTF8String];
@@ -430,12 +441,16 @@ RKREGEX_STATIC_INLINE NSNumberFormatter *RKGetThreadLocalNumberFormatter(void) {
 
 #define RK_DEFAULT_STACK_INSTRUCTIONS (1024)
 
-#define OP_STOP               0
-#define OP_COPY_CAPTUREINDEX  1
-#define OP_COPY_CAPTURENAME   2
-#define OP_COPY_RANGE         3
-#define OP_COMMENT            4
-
+#define OP_STOP                 0
+#define OP_COPY_CAPTUREINDEX    1
+#define OP_COPY_CAPTURENAME     2
+#define OP_COPY_RANGE           3
+#define OP_COMMENT              4
+#define OP_UPPERCASE_NEXT_CHAR  5
+#define OP_LOWERCASE_NEXT_CHAR  6
+#define OP_UPPERCASE_BEGIN      7
+#define OP_LOWERCASE_BEGIN      8
+#define OP_CHANGE_CASE_END      9
 
 struct referenceInstruction {
                 int op;
@@ -449,10 +464,10 @@ struct copyInstruction {
 };
 
 typedef struct referenceInstruction RKReferenceInstruction;
-typedef struct copyInstruction RKCopyInstruction;
+typedef struct copyInstruction      RKCopyInstruction;
 
 struct referenceInstructionsBuffer {
-                RKUInteger              length, capacity;
+                RKUInteger               length, capacity;
   RK_STRONG_REF RKReferenceInstruction * RK_C99(restrict) instructions;
   RK_STRONG_REF NSMutableData          * RK_C99(restrict) mutableData;
                 BOOL                     isValid;

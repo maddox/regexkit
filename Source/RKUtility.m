@@ -84,7 +84,8 @@ NSArray *RKArrayFromMatchOption(const RKMatchOption decodeMatchOption) {
   if((decodeMatchOption & RKMatchNewlineMask) != RKMatchNewlineDefault) {
     strings[atString] = RKStringFromNewlineOption(decodeMatchOption, @"RKMatch"); if(strings[atString] != NULL) { atString++; }
   }
-  
+  decodedOptions |= (decodeMatchOption & RKMatchNewlineMask);
+
   decodedOptions ^= UINT_MAX;
   if((decodedOptions & decodeMatchOption) != 0) {
     strings[atString] = [NSString stringWithFormat:@"/* Unknown match options remain: 0x%8.8x */", (unsigned int)(decodedOptions & decodeMatchOption)];
@@ -127,6 +128,7 @@ NSArray *RKArrayFromCompileOption(const RKCompileOption decodeCompileOption) {
   if((decodeCompileOption & RKCompileNewlineMask) != RKCompileNewlineDefault) {
     strings[atString] = RKStringFromNewlineOption(decodeCompileOption, @"RKCompile"); if(strings[atString] != NULL) { atString++; }
   }
+  decodedOptions |= (decodeCompileOption & RKCompileNewlineMask);
   
   decodedOptions ^= UINT_MAX;
   if((decodedOptions & decodeCompileOption) != 0) {
@@ -157,7 +159,8 @@ NSArray *RKArrayFromBuildConfig(const RKBuildConfig decodeBuildConfig) {
   if((decodeBuildConfig & RKBuildConfigNewlineMask) != RKBuildConfigNewlineDefault) {
     strings[atString] = RKStringFromNewlineOption(decodeBuildConfig, @"RKBuildConfig"); if(strings[atString] != NULL) { atString++; }
   }
-  
+  decodedBuildConfig |= (decodeBuildConfig & RKBuildConfigNewlineMask);
+
   decodedBuildConfig ^= UINT_MAX;
   if((decodedBuildConfig & decodeBuildConfig) != 0) {
     strings[atString] = [NSString stringWithFormat:@"/* Unknown build config options remain: 0x%8.8x */", (unsigned int)(decodedBuildConfig & decodeBuildConfig)];

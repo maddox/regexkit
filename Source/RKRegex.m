@@ -148,10 +148,10 @@ NSNumberFormatter *__RKGetThreadLocalNumberFormatter(void) {
     pcre *tempPCRE = NULL;
     
     tempPCRE = pcre_compile2("^(\\d+)\\.(\\d+)", 0, &tempErrorCode, &tempErrorPtr, &tempErrorOffset, NULL);
-    if((tempPCRE == NULL) || (tempErrorCode != 0)) { NSLog(RKPrettyObjectMethodString(@"Unable to determine the major and minor version of the pcre library.")); }
+    if((tempPCRE == NULL) || (tempErrorCode != 0)) { NSLog(@"%@", RKPrettyObjectMethodString(@"Unable to determine the major and minor version of the pcre library.")); }
     else {
       if((tempErrorCode = pcre_exec(tempPCRE, NULL, pcreVersionCharacters, (int)strlen(pcreVersionCharacters), 0, 0, vectors, 15)) <= 0) {
-        NSLog(RKPrettyObjectMethodString(@"Unable to determine the major and minor version of the pcre library."));
+        NSLog(@"%@", RKPrettyObjectMethodString(@"Unable to determine the major and minor version of the pcre library."));
       }
     }
     
@@ -163,7 +163,7 @@ NSNumberFormatter *__RKGetThreadLocalNumberFormatter(void) {
       
       RKRegexPCREMajorVersion = atoi(majorBuffer);
       RKRegexPCREMinorVersion = atoi(minorBuffer);
-    } else { NSLog(RKPrettyObjectMethodString(@"Unable to determine the major and minor version of the pcre library.")); }
+    } else { NSLog(@"%@", RKPrettyObjectMethodString(@"Unable to determine the major and minor version of the pcre library.")); }
 
     int tempConfigInt = 0;
     if(pcre_config(PCRE_CONFIG_UTF8, &tempConfigInt) != RKMatchErrorNoError) { goto errorExit; } else if(tempConfigInt == 1) { RKRegexPCREBuildConfig |= RKBuildConfigUTF8; }
@@ -301,8 +301,10 @@ RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCo
     return(cachedRegex);
   }
   else if(RK_EXPECTED([aRegex isKindOfClass:regexClass], 1)) {
-    if(shouldAutorelease == NO) { RKRetain(aRegex); }
-    return(aRegex);
+    RKRegex *returnRegex = aRegex;
+    if(([aRegex compileOption] & compileOptions) != compileOptions) { returnRegex = [RKRegex regexWithRegexString:[aRegex regexString] options:([aRegex compileOption] | compileOptions)]; }
+    if(shouldAutorelease == NO) { RKRetain(returnRegex); }
+    return(returnRegex);
   }
   else if(RK_EXPECTED(aRegex == NULL, 0)) { [[NSException exceptionWithName:NSInvalidArgumentException reason:RKPrettyObjectMethodString(@"The specified regular expression is nil.") userInfo:NULL] raise]; }
   
@@ -370,6 +372,7 @@ RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCo
 
   if(RK_EXPECTED(compiledRegexStringBuffer.characters == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"Unable to get string buffer from object '%@', which is a copy of the passed object '%@'.", RKPrettyObjectDescription(compiledRegexString), RKPrettyObjectDescription(regexString)) userInfo:NULL] raise]; }
 
+
   _compiledPCRE = pcre_compile2(compiledRegexStringBuffer.characters, (int)compileOption, (int *)&initErrorCode, &errorCharPtr, &compileErrorOffset, NULL);
   if(RK_EXPECTED(RK_EXPECTED((initErrorCode != RKCompileErrorNoError), 0) || RK_EXPECTED((_compiledPCRE == NULL), 0), 0)) {
     NSString *errorString = [NSString stringWithCString:(RK_EXPECTED((errorCharPtr == NULL), 0) ? "Internal error":errorCharPtr) encoding:NSUTF8StringEncoding];
@@ -431,7 +434,6 @@ RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCo
 
     for(x = 0; x < captureNameTableLength; x++) {
       captureNameIndex = (((((RKUInteger)(captureNameTable[(x * captureNameLength)])) & 0xff) << 8) + ((((RKUInteger)(captureNameTable[(x * captureNameLength) + 1])) & 0xff) << 0));
-      RKEnableCollectorForPointer(&captureNameTable[(x * captureNameLength) + 2]);
       arrayObjectPointers[captureNameIndex] = (id)CFMakeCollectable(CFStringCreateWithCString(NULL, &captureNameTable[(x * captureNameLength) + 2], compiledRegexStringBuffer.encoding));
       if(RK_EXPECTED(arrayObjectPointers[captureNameIndex] == NULL, 0)) { objectsReady = NO; break; }
     }
@@ -712,14 +714,21 @@ RKUInteger RKCaptureIndexForCaptureNameCharacters(RKRegex * const aRegex, const 
   }
   
 doesNotExist:
-  if(raiseExceptionOnDoesNotExist == YES ) { [[NSException exceptionWithName:NSInvalidArgumentException reason:RKPrettyObjectMethodString(@"The captureName '%*.*s' does not exist.", (int)length, (int)length, captureNameCharacters) userInfo:NULL] raise]; }
+  if(raiseExceptionOnDoesNotExist == YES ) { [[NSException exceptionWithName:RKRegexCaptureReferenceException reason:RKPrettyObjectMethodString(@"The captureName '%*.*s' does not exist.", (int)length, (int)length, captureNameCharacters) userInfo:NULL] raise]; }
   return(NSNotFound);
   
 validName:
   
   if(matchedRanges == NULL) { goto successExit;  }
 
-  if((self->compileOption & RKCompileDupNames) == 0) {
+  int optionJChanged = 0;
+
+#ifdef    PCRE_INFO_JCHANGED
+  // Only checked if defined, which is pcre >= 7.2
+  if(RK_EXPECTED(pcre_fullinfo(self->_compiledPCRE, self->_extraPCRE, PCRE_INFO_JCHANGED, &optionJChanged) != RKMatchErrorNoError, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"pcre_fullinfo for PCRE_INFO_JCHANGED failed.") userInfo:NULL] raise]; }
+#endif // PCRE_INFO_JCHANGED
+
+  if((optionJChanged == 0) && ((self->compileOption & RKCompileDupNames) == 0)) {
     if(matchedRanges[captureIndex].location == NSNotFound) { captureIndex = NSNotFound; }
     goto successExit;
   }

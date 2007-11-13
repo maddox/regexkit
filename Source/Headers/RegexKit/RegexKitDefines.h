@@ -227,8 +227,8 @@
  @tocgroup Constants Preprocessor Macros
  @abstract Preprocessor definition to enable <span class="nobr">Mac OS X 10.5 (Leopard)</span> <span class="nobr">Garbage Collection</span>.
  @discussion <p>This preprocessor define enables support for <span class="nobr">Garbage Collection</span> on <span class="nobr">Mac OS X 10.5 (Leopard)</span>.  Traditional <span class="nobr">@link retain retain @/link / @link release release @/link</span> functionality remains allowing the framework to be used in either <span class="nobr">Garbage Collected</span> enabled applications or reference counting applications.  The framework dynamically picks which mode to use at run-time base on whether or not the <span class="nobr">Garbage Collection</span> system is active.</p>
- @seealso <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/GarbageCollection/index.html" class="section-link">Garbage Collection Programming Guide</a>
- @seealso <a href="http://developer.apple.com/documentation/Cocoa/Reference/NSGarbageCollector_class/index.html" class="section-link">NSGarbageCollector Class Reference</a>
+ @seealso <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/GarbageCollection/index.html" class="section-link" target="_top">Garbage Collection Programming Guide</a>
+ @seealso <a href="http://developer.apple.com/documentation/Cocoa/Reference/NSGarbageCollector_class/index.html" class="section-link" target="_top">NSGarbageCollector Class Reference</a>
  */
 
 #if defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5)

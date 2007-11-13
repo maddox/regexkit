@@ -53,7 +53,7 @@ static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange
 
 static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange *againstRange, id regexObject, const RKArrayAction performAction, RKUInteger *UIntegerResult) {
   RKUInteger arrayCount = 0, atIndex = 0, matchedCount = 0, matchAgainstArrayCount = 0, *matchedIndexes = NULL, tempUIntegerResult = 23;
-  RKRegex *regex = RKRegexFromStringOrRegex(self, _cmd, regexObject, RKCompileNoOptions, YES);
+  RKRegex *regex = RKRegexFromStringOrRegex(self, _cmd, regexObject, (RKCompileUTF8 | RKCompileNoUTF8Check), YES);
   id returnObject = NULL, *arrayObjects = NULL, *matchedObjects = NULL;
   NSRange matchRange = NSMakeRange(NSNotFound, 0);
 

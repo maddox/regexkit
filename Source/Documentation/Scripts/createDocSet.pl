@@ -11,7 +11,7 @@ my ($program_name, $script_name) = ($0, (defined($ENV{"SCRIPT_NAME"}) && defined
 #$program_name =~ s/(.*?)\/?([^\/]+)$/$2/;
 $program_name =~ s/^$ENV{'PROJECT_DIR'}\/?//;
 
-for my $env (qw(DOCUMENTATION_SQL_DATABASE_FILE DOCUMENTAION_DOCSET_ID DOCUMENTATION_DOCSET_SOURCE_HTML DOCUMENTATION_DOCSET_TEMP_DIR)) {
+for my $env (qw(DOCUMENTATION_SQL_DATABASE_FILE DOCUMENTATION_DOCSET_ID DOCUMENTATION_DOCSET_SOURCE_HTML DOCUMENTATION_DOCSET_TEMP_DIR)) {
   if(!defined($ENV{$env}))  { print("${$program_name} error: Environment variable $env not set.\n"); exit(1); }
 }
 
@@ -84,7 +84,7 @@ for my $row (selectall_hash($dbh, "SELECT DISTINCT linkId, href, apple_ref, file
 }
 
 
-my $docset = $ENV{'DOCUMENTAION_DOCSET_ID'};
+my $docset = $ENV{'DOCUMENTATION_DOCSET_ID'};
 
 my @htmlFiles = @{$dbh->selectcol_arrayref("SELECT DISTINCT file FROM html ORDER BY file")};
 push(@htmlFiles, qw(content.html content_frame.html toc_opened.html));
@@ -150,7 +150,7 @@ my $FH;
 # Here we create the DocSets Info.plist.
 #
 
-open($FH, ">", "$ENV{'DOCUMENTATION_DOCSET_TEMP_DIR'}/$ENV{'DOCUMENTAION_DOCSET_ID'}/Contents/Info.plist");
+open($FH, ">", "$ENV{'DOCUMENTATION_DOCSET_TEMP_DIR'}/$ENV{'DOCUMENTATION_DOCSET_ID'}/Contents/Info.plist");
 
 print $FH <<END_PLIST;
 <?xml version="1.0" encoding="UTF-8"?>
@@ -174,7 +174,7 @@ print $FH <<END_PLIST;
     <key>DocSetFeedName</key>
     <string>RegexKit</string>
     <key>DocSetFeedURL</key>
-    <string>$ENV{'DOCUMENTAION_DOCSET_FEED_SCHEME'}//$ENV{'DOCUMENTAION_DOCSET_FEED_URL'}</string>
+    <string>$ENV{'DOCUMENTATION_DOCSET_FEED_SCHEME'}//$ENV{'DOCUMENTATION_DOCSET_FEED_URL'}</string>
     <key>NSHumanReadableCopyright</key>
     <string>Copyright © 2007, John Engelhart</string>
 </dict>
@@ -206,7 +206,7 @@ my %global_xtoc_cache = gen_xtoc_cache();
 # which creates a docset format 'see also' reference and marks any nodes
 # as referenced.
 
-open($FH, ">", "$ENV{'DOCUMENTATION_DOCSET_TEMP_DIR'}/$ENV{'DOCUMENTAION_DOCSET_ID'}/Contents/Resources/Tokens.xml");
+open($FH, ">", "$ENV{'DOCUMENTATION_DOCSET_TEMP_DIR'}/$ENV{'DOCUMENTATION_DOCSET_ID'}/Contents/Resources/Tokens.xml");
 
 print($FH "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 print($FH "<Tokens version=\"1.0\">\n");
@@ -262,15 +262,15 @@ my $docSetNodes = <<END_NODES;
   <TOC>
     <Node>
       <Name>Root</Name>
-      <Path>content.html</Path>
+      <Path>index.html</Path>
       <Subnodes>
         <Node>
           <Name>RegexKit</Name>
-          <Path>content.html</Path>
+          <Path>index.html</Path>
           <Subnodes>
             <Node>
               <Name>Guides</Name>
-              <Path>content.html</Path>
+              <Path>index.html</Path>
               <Subnodes>
                 <NodeRef refid="$nodeRefHash{'RegexKitImplementationTopics.html'}" />
                 <NodeRef refid="$nodeRefHash{'RegexKitProgrammingGuide.html'}" />
@@ -278,7 +278,7 @@ my $docSetNodes = <<END_NODES;
             </Node>
             <Node>
               <Name>Reference</Name>
-              <Path>content.html</Path>
+              <Path>index.html</Path>
               <Subnodes>
 END_NODES
 # This spits out all the class and category nodes
@@ -319,7 +319,7 @@ $docSetNodes .= "  </Library>\n";
 $docSetNodes .= "</DocSetNodes>\n";
 
 # And, output the collected 'Nodes.xml' string we've been putting together..
-open($FH, ">", "$ENV{'DOCUMENTATION_DOCSET_TEMP_DIR'}/$ENV{'DOCUMENTAION_DOCSET_ID'}/Contents/Resources/Nodes.xml"); print($FH $docSetNodes); close($FH); undef($FH);
+open($FH, ">", "$ENV{'DOCUMENTATION_DOCSET_TEMP_DIR'}/$ENV{'DOCUMENTATION_DOCSET_ID'}/Contents/Resources/Nodes.xml"); print($FH $docSetNodes); close($FH); undef($FH);
 
 # We're done! Release our DB resources and go home.
 
@@ -446,10 +446,17 @@ sub common_token {
                                     $token .= $sp . "    <HeaderPath>RegexKit.framework/Headers/$header</HeaderPath>\n";
                                     $token .= $sp . "    <FrameworkName>RegexKit</FrameworkName>\n";
                                     $token .= $sp . "  </DeclaredIn>\n"; }
-  if(defined($th->{avail}))       { $token .= $sp . "  <Availability distribution=\"RegexKit\">\n";
+  if(defined($th->{refid}) && ($th->{apple_ref} =~ /RKConvertUTF/)) { # Cheap hack until we put a real system in place.
+    if(defined($th->{avail}))     { $token .= $sp . "  <Availability distribution=\"RegexKit\">\n";
+                                    $token .= $sp . "    <IntroducedInVersion bitsize=\"32\">0.4.0</IntroducedInVersion>\n";
+                                    $token .= $sp . "    <IntroducedInVersion bitsize=\"64\">0.4.0</IntroducedInVersion>\n";
+                                    $token .= $sp . "  </Availability>\n"; }
+  } else {
+    if(defined($th->{avail}))     { $token .= $sp . "  <Availability distribution=\"RegexKit\">\n";
                                     $token .= $sp . "    <IntroducedInVersion bitsize=\"32\">0.2.0</IntroducedInVersion>\n";
                                     $token .= $sp . "    <IntroducedInVersion bitsize=\"64\">0.3.0</IntroducedInVersion>\n";
                                     $token .= $sp . "  </Availability>\n"; }
+  }
   if(defined($th->{refid}))       { $token .= $sp . "  <NodeRef refid=\"$th->{refid}\" />\n"; }
   $token .= seealso_tokens($sp . "  ", $th->{hdcid});
   if(defined($th->{path}))        { $token .= $sp . "  <Path>" . $th->{path} . "</Path>\n"; }

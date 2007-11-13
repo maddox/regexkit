@@ -39,7 +39,7 @@ static NSString *timingEnvString = nil;
 #endif
 
 
-@interface extensions : SenTestCase {
+@interface collectionAdditions : SenTestCase {
 
 }
 

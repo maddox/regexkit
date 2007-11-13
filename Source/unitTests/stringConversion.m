@@ -18,8 +18,8 @@ void startGC(void);
 
 + (void)tearDown
 {
-  NSLog(RKPrettyObjectMethodString(@"Cache status:\n%@", [RKRegex regexCache]));
-  NSLog(RKPrettyObjectMethodString(@"Teardown complete\n\n"));
+  NSLog(@"%@", RKPrettyObjectMethodString(@"Cache status:\n%@", [RKRegex regexCache]));
+  NSLog(@"%@", RKPrettyObjectMethodString(@"Teardown complete\n\n"));
   fprintf(stderr, "-----------------------------------------\n\n");
 }
 

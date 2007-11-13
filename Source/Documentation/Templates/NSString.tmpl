@@ -6,17 +6,17 @@
 @import "CSS/doc.css";
 </style>
 <link rel="stylesheet" type="text/css" href="CSS/print.css" media="print">
-<title>NSString RegexKit.framework Category Extensions</title>
+<title>NSString RegexKit Additions Reference</title>
 </head>
 <body>
 <div class="bodyTop">
 
-<h1>NSString RegexKit.framework Category Extensions</h1>
+<h1>NSString RegexKit Additions Reference</h1>
 
 <div class="box classSpecs hasRows zebraRows">
 <div class="row odd"><span class="cell left">Extends by category</span><span class="cell right lastCell"><a href="http://developer.apple.com/documentation/Cocoa/Reference/Foundation/Classes/NSString_Class/index.html" target="_top">NSString</a></span></div>
 <div class="row even"><span class="cell left">Framework</span><span class="cell right lastCell"><a href="index.html">RegexKit.framework</a></span></div>
-<div class="row odd"><span class="cell left">RegexKit</span><span class="cell right lastCell">\$ENV{PROJECT_CURRENT_VERSION}</span></div>
+<div class="row odd regexKitVersion"><span class="cell left">RegexKit</span><span class="cell right lastCell"><span class="version">\$ENV{PROJECT_CURRENT_VERSION}</span> <span class="releaseNotes"><a href="ReleaseNotes.html#Release_\$ENV{PROJECT_VERSION_MAJOR}_\$ENV{PROJECT_VERSION_MINOR}_\$ENV{PROJECT_VERSION_POINT}">Release Notes</a></span></span></div>
 <div class="row even"><span class="cell left">PCRE</span><span class="cell right lastCell">\$ENV{PCRE_VERSION}</span></div>
 <div class="row odd"><span class="cell left">Availability</span><span class="cell right lastCell">Available in Mac OS X v10.4 or later.</span></div>
 <div class="row even"><span class="cell left">Declared in</span><ul class="cell right lastCell"><li>RegexKit/NSString.h</li></ul></div>
@@ -30,9 +30,45 @@
 <div class="overview">
   <div class="masthead">Overview</div>
 
-<h3><a name="CaptureSubpatternReferenceSyntax">Capture Subpattern Reference Syntax</a></h3>
+<h3><a name="overview_NSRangeCompatibilitywithFoundation">NSRange Compatibility with Foundation</a></h3>
 
-<p>Capture subpattern references have the following form:</p>
+<p>As of version 0.4, all @link NSRange NSRange @/link arguments and results of the RegexKit @link NSString NSString @/link additions and @link RKEnumerator RKEnumerator @/link class use the same method as @link Foundation Foundation @/link for calculating character index values.  Specifically, @link Foundation Foundation @/link treats all strings as if they were @link UTF16 UTF16 @/link encoded, whereas @link pcre PCRE @/link requires all strings to be @link UTF8 UTF8 @/link encoded.  The details of converting between @link UTF8 UTF8 @/link and @link UTF16 UTF16 @/link character index values, and therefore @link NSRange NSRange @/link values, are now handled automatically by the framework, providing a consistant @link UTF16 UTF16 @/link character index API for all @link Foundation Foundation @/link additions and @link RKEnumerator RKEnumerator @/link class objects.</p>
+
+<p>For @link UTF8 UTF8 @/link encoded strings, only character values &lt; <span class="code">128</span> / <span class="code">0x80</span> can be represented with a single byte, which is a one to one mapping to @link ASCII ASCII @/link characters.  To represent non-@link ASCII ASCII @/link characters, @link UTF8 UTF8 @/link uses a special encoding format that uses a variable number of additional bytes, from one to five, to represent a single Unicode character.  Therefore, when dealing with international text, there is no longer a one to one relationship between a 'character' and a byte as there is in @link ASCII ASCII @/link text.</p>
+
+<p>@link UTF16 UTF16 @/link encoded strings use two bytes as its fundamental date type.  The vast majority of text can be encoded in to a single @link UTF16 UTF16 @/link character, but some character encodings will require two or more @link UTF16 UTF16 @/link characters to represent a single Unicode character.  Only @link UTF32 UTF32 @/link has a fixed length at four bytes, which simplifies 'character index' issues, but is not space efficient for the majority of text.  Even @link ASCII ASCII @/link requires four bytes to encode one character in @link UTF32 UTF32 @/link, of which there are only 127 possible @link ASCII ASCII @/link characters.</p>
+
+<p>As of version 0.4, these issues are now abstracted by the framework.  All strings are treated logically as if they were encoded as @link UTF16 UTF16 @/link for @link NSRange NSRange @/link calculation purposes.  Previous versions calculated NSRange values based on @link pcre PCRE's @/link native @link UTF8 UTF8 @/link encoding format.  This meant that @link NSRange NSRange @/link results from RegexKit could be used as arguments by another RegexKit method correctly for international text, but could not be used as arguments for native Foundation methods and vice-versa.  In short, @link NSRange NSRange @/link results and arguments should 'just work' as expected with @link NSRange NSRange @/link results from native @link Foundation Foundation @/link methods.</p>
+
+<div class="box important marginTopSpacer marginBottomSpacer"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">The @link RKRegex RKRegex @/link class continues to use @link NSRange NSRange @/link values calculated as @link UTF8 UTF8 @/link character indexes.  See @link RKConvertUTF8ToUTF16RangeForString RKConvertUTF8ToUTF16RangeForString @/link and @link RKConvertUTF16ToUTF8RangeForString RKConvertUTF16ToUTF8RangeForString @/link if you need to perform conversions.</div></div></div></div>
+
+<div class="seealso">
+  <div class="section">See also</div>
+  <ul>
+    <li><a href="RKRegex.html#overview_ImportantNSRangeDifferences" class="section-link">Important NSRange Differences</a></li>
+    <li><a href="RKRegex.html#overview_FoundationAdditionsRKCompileOptionRequirements" class="section-link">Foundation Additions RKCompileOption Requirements</a></li>
+  </ul>
+</div>
+
+<h3><a name="ReferenceandReplacementStringSyntax">Reference and Replacement String Syntax</a></h3>
+
+<p>Several methods are available that allow you to create new strings, or replace the matched text, with a string that contains references to the capture subpatterns.  The syntax is modeled after Perls <i>dollar sign</i> variable references, i.e. <span class="regex">$1</span>.  In addition to capture subpattern references, you can also covert the case of the text.  Case conversion is also modeled after Perls <span class="regex">\\u</span>, <span class="regex">\\l</span>, <span class="regex">\\U</span>, <span class="regex">\\L</span>, and <span class="regex">\\E</span> escape sequences.</p>
+
+<h4><a name="CaptureSubpatternReferenceSyntax">Capture Subpattern Reference Syntax</a></h4>
+
+<p>Capture subpattern references have the following three forms:</p>
+
+<div class="syntax">
+  <div class="specification"><span class="nobr">\\<span class="parameter required" title="required Capture Subpattern Number">subpatternNumber</span></span></div>
+  <div class="parameters">
+    <ul>
+      <li><div class="name">subpatternNumber</div><div class="text">A single digit number of a <span class="argument nobr">capture subpattern</span>.</div></li>
+    </ul>
+  </div>
+  <div class="example"><span class="header">Example:</span><span class="text"><span class="code">\\1</span></span></div>
+</div>
+
+<p>Or,</p>
 
 <div class="syntax">
   <div class="specification"><span class="nobr">$<span class="parameter required" title="required Capture Subpattern Number">subpatternNumber</span></span></div>
@@ -77,9 +113,82 @@
 
 <p>To include a <span class="regex">$</span> from the reference string in the final replacement text without the possibility of additional interpretation, you may specify two <i class="nobr">dollar signs</i> consecutively.  Only a single <i class="nobr">dollar sign</i> will be copied to the final expanded text.  For example: <span class="regex nobr">You owe: $$1234.56</span> will be copied as <span class="regex nobr">You owe: $1234.56</span>.  Another example: <span class="regex nobr">Does not reference the $${0} capture subpattern</span> is copied as <span class="regex nobr">Does not reference the ${0} capture subpattern</span>.</p>
 
+<h4><a name="CaseConversionEscapeSequences">Case Conversion Syntax</a></h4>
+
+<p>The following escape sequences allow you to convert the text in the reference and replacement string.  The @link NSString NSString @/link @link uppercaseString uppercaseString @/link and @link lowercaseString lowercaseString @/link methods are used to perform the actual case conversion.</p>
+
+<div class="table">
+<table class="standard" summary="Case Conversion Escape Sequences">
+<caption>Case Conversion Escape Sequences</caption>
+<tr><th>Sequence</th><th>Description</th></tr>
+<tr><td><span class="regex">\\u</span></td><td>Convert the next character to upper case.</td></tr>
+<tr><td><span class="regex">\\l</span></td><td>Convert the next character to lower case.</td></tr>
+<tr><td><span class="regex">\\U</span></td><td>Convert the following characters to upper case until <span class="regex">\\E</span>.</td></tr>
+<tr><td><span class="regex">\\L</span></td><td>Convert the following characters to lower case until <span class="regex">\\E</span>.</td></tr>
+<tr><td><span class="regex">\\E</span></td><td>End case conversion.</td></tr>
+</table>
+</div>
+
+<p>The following is the example given in Apples @link NSString NSString @/link @link lowercaseString lowercaseString @/link method documentation, modified to illustrate the case conversion escape sequences.  As the example given in apples documentation illustrates, Unicode case conversion is not necessarily symmetrical.</p>
+<div class="box sourcecode marginTopSpacer marginBottomSpacer">example = [NSString stringWithUTF8String:"Stra\\xc3\\x9f" "e"]; // Stra&#223;e
+
+upper = [example stringByMatching:@"(.*)"
+                          replace:RKReplaceAll
+              withReferenceString:@"\\\\U$1\\\\E"];       // STRASSE
+                          
+lower = [upper   stringByMatching:@"(.*)"
+                          replace:RKReplaceAll
+              withReferenceString:@"\\\\L$1\\\\E"];       // strasse != Stra&#223;e
+</div>
+
+<p>The following example uses a regular expression that matches all the characters between <span class="regex">a</span> and <span class="regex">e</span> to replace the matched text with <span class="regex">\\U$1\\E</span>.</p>
+
+<div class="box sourcecode marginTopSpacer marginBottomSpacer">upper = [example stringByMatching:@"(?&lt;=a)(.*?)(?=e)"
+                          replace:RKReplaceAll
+              withReferenceString:@"\\\\U$1\\\\E"];       // StraSSe
+
+lower = [upper   stringByMatching:@"(?&lt;=a)(.*?)(?=e)"
+                          replace:RKReplaceAll
+              withReferenceString:@"\\\\L$1\\\\E"];       // Strasse
+</div>
+
+<p>The same regular expression is used in the following example, but the replacement reference string is now <span class="regex">\\u$1</span>.  The <span class="regex">\\u</span> escape sequences causes the next character to be converted to uppercase, and in this case <span class="regex">&#223;</span> is converted to <span class="regex">SS</span>.  The result string, <span class="regex">StraSSe</span>, has the same regular expression applied to it and the replacement reference string is changed to <span class="regex">\\l$1</span>, which converts the next character to lower case.  The final result is <span class="regex">StrasSe</span>.
+
+<div class="box sourcecode marginTopSpacer marginBottomSpacer">upper = [example stringByMatching:@"(?&lt;=a)(.*?)(?=e)"
+                          replace:RKReplaceAll
+              withReferenceString:@"\\\\u$1"];          // StraSSe
+
+lower = [upper   stringByMatching:@"(?&lt;=a)(.*?)(?=e)"
+                          replace:RKReplaceAll
+              withReferenceString:@"\\\\l$1"];          // StrasSe
+</div>
+
+<div class="seealso">
+  <div class="section">See also</div>
+  <ul>
+    <li><a href="http://developer.apple.com/documentation/Cocoa/Reference/Foundation/Classes/NSString_Class/Reference/NSString.html#//apple_ref/occ/instm/NSString/lowercaseString" class="code">- lowercaseString</a></li>
+    <li><a href="http://www.unicode.org/" class="section-link" target="_top">The Unicode Consortium Home Page</a></li>
+    <li><a href="http://developer.apple.com/documentation/CoreFoundation/Conceptual/CFStrings/Articles/UnicodeBasis.html#//apple_ref/doc/uid/20001178"  class="section-link">The Unicode Basis of CFString Objects</a></li>
+    <li><a href="pcre/pcre.html#utf8support" class="section-link">UTF-8 and Unicode Property Support</a></li>
+    <li><a href="RKRegex.html#overview_FoundationAdditionsRKCompileOptionRequirements" class="section-link">Foundation Additions RKCompileOption Requirements</a></li>
+  </ul>
+</div>
+
 <h3><a name="CaptureSubpatternReferenceandTypeConversionSyntax">Capture Subpattern Reference and Type Conversion Syntax</a></h3>
 
 <p>Capture subpattern references and type conversions extend regular capture subpattern references by allowing an optional <span class="argument">type</span> argument:</p>
+
+<div class="syntax">
+  <div class="specification"><span class="nobr">\\<span class="parameter required" title="required Capture Subpattern Number">subpatternNumber</span></span></div>
+  <div class="parameters">
+    <ul>
+      <li><div class="name">subpatternNumber</div><div class="text">A single digit number of a <span class="argument nobr">capture subpattern</span>.</div></li>
+    </ul>
+  </div>
+  <div class="example"><span class="header">Example:</span><span class="text"><span class="code">\\1</span></span></div>
+</div>
+
+<p>Or,</p>
 
 <div class="syntax">
   <div class="specification"><span class="nobr">$<span class="parameter required" title="required Capture Subpattern Number">subpatternNumber</span></span></div>

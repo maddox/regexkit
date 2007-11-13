@@ -31,7 +31,7 @@ void startGC(void);
   
   STAssertTrueNoThrow((enumerator = [[[RKEnumerator alloc] initWithRegex:@"\\s*\\S+\\s+" string:subjectString inRange:NSMakeRange(0, [subjectString length])] autorelease]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileNoOptions] isEqualTo:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
 
 #ifdef REGEXKIT_DEBUGGING
   RKRegex *debugRegex = NSAllocateObject([RKRegex class], 0, NULL);
@@ -46,24 +46,25 @@ void startGC(void);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
   [tempPool release]; tempPool = NULL;
   [enumerator autorelease];
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] isEqualTo:[enumerator regex]], nil);
+  STAssertFalse([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] isEqual:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileDupNames | RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
 
   
   enumerator = NULL;
   STAssertTrueNoThrow((enumerator = [[[RKEnumerator alloc] initWithRegex:@"\\s*\\S+\\s+" string:subjectString] autorelease]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileNoOptions] isEqualTo:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
 
 
   enumerator = NULL;
   STAssertTrueNoThrow((enumerator = [RKEnumerator enumeratorWithRegex:@"\\s*\\S+\\s+" string:subjectString inRange:NSMakeRange(0, [subjectString length])]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileNoOptions] isEqualTo:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
 
   enumerator = NULL;
   STAssertTrueNoThrow((enumerator = [RKEnumerator enumeratorWithRegex:@"\\s*\\S+\\s+" string:subjectString]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileNoOptions] isEqualTo:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
 
   STAssertThrowsSpecificNamed([[[RKEnumerator alloc] initWithRegex:@"\\s{1,6}\\S+\\s+" string:subjectString inRange:NSMakeRange(0, [subjectString length] + 1)] autorelease], NSException, NSRangeException, nil);
   STAssertThrowsSpecificNamed([[[RKEnumerator alloc] initWithRegex:@"\\s*\\S{3}\\s+" string:subjectString inRange:NSMakeRange([subjectString length] + 1, 100)] autorelease], NSException, NSRangeException, nil);
@@ -89,12 +90,12 @@ void startGC(void);
   enumerator = NULL;
   STAssertTrueNoThrow((enumerator = [subjectString matchEnumeratorWithRegex:@"\\s{5}\\S+?\\s?" inRange:NSMakeRange(0, [subjectString length])]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s{5}\\S+?\\s?" options:RKCompileNoOptions] isEqualTo:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s{5}\\S+?\\s?" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
 
   enumerator = NULL;
   STAssertTrueNoThrow((enumerator = [subjectString matchEnumeratorWithRegex:@"\\s{6}\\S+?\\s?"]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s{6}\\S+?\\s?" options:RKCompileNoOptions] isEqualTo:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s{6}\\S+?\\s?" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
 
 
   STAssertThrowsSpecificNamed([subjectString matchEnumeratorWithRegex:@"\\s{7}\\S+?\\s?" inRange:NSMakeRange(0, [subjectString length] + 1)], NSException, NSRangeException, nil);
@@ -120,10 +121,16 @@ void startGC(void);
 #ifdef REGEXKIT_DEBUGGING
   [[secondEnumerator regex] setDebugRetainCount:YES];
 #endif
-  
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] isEqualTo:[enumerator regex]], nil);
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] isEqualTo:[secondEnumerator regex]], nil);
-  STAssertTrue([RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] == [secondEnumerator regex], nil);
+
+  STAssertFalse([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] isEqual:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileDupNames | RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
+
+  STAssertFalse([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] isEqual:[secondEnumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileDupNames | RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[secondEnumerator regex]], nil);
+
+  STAssertFalse([RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] == [secondEnumerator regex], nil);
+  STAssertTrue([RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileDupNames | RKCompileUTF8 | RKCompileNoUTF8Check)] == [secondEnumerator regex], nil);
+
   STAssertTrue([RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] != [enumerator regex], nil);
 }
 
@@ -336,21 +343,21 @@ void startGC(void);
   STAssertTrueNoThrow(NSEqualRanges(matchedRange = [regexEnumerator nextRangeForCaptureName:@"everything"], NSMakeRange(0, 2)), @"Range: %@", NSStringFromRange(matchedRange));
   
   matchedRange = NSMakeRange(39293, 45833);
-  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator nextRangeForCaptureName:@"doesNotExist"]), NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator nextRangeForCaptureName:@"doesNotExist"]), NSException, RKRegexCaptureReferenceException, nil);
   STAssertTrue(NSEqualRanges(matchedRange, NSMakeRange(39293, 45833)), nil);
   
   matchedRange = NSMakeRange(39293, 45833);
   STAssertTrueNoThrow(NSEqualRanges(matchedRange = [regexEnumerator nextRangeForCaptureName:@"theNumber"], NSMakeRange(3, 1)), @"Range: %@", NSStringFromRange(matchedRange));
   
   matchedRange = NSMakeRange(39293, 45833);
-  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator nextRangeForCaptureName:@"theNumber_"]), NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator nextRangeForCaptureName:@"theNumber_"]), NSException, RKRegexCaptureReferenceException, nil);
   STAssertTrue(NSEqualRanges(matchedRange, NSMakeRange(39293, 45833)), nil);
   
   matchedRange = NSMakeRange(39293, 45833);
   STAssertTrueNoThrow(NSEqualRanges(matchedRange = [regexEnumerator nextRangeForCaptureName:@"everything"], NSMakeRange(5, 2)), @"Range: %@", NSStringFromRange(matchedRange));
   
   matchedRange = NSMakeRange(39293, 45833);
-  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator nextRangeForCaptureName:@"everything?"]), NSException, NSInvalidArgumentException, @"Range: %@", NSStringFromRange(matchedRange));
+  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator nextRangeForCaptureName:@"everything?"]), NSException, RKRegexCaptureReferenceException, @"Range: %@", NSStringFromRange(matchedRange));
   STAssertTrue(NSEqualRanges(matchedRange, NSMakeRange(39293, 45833)), nil);
   
   matchedRange = NSMakeRange(39293, 45833);
@@ -759,7 +766,7 @@ void startGC(void);
   STAssertTrueNoThrow(NSEqualRanges(matchedRange = [regexEnumerator currentRangeForCaptureName:@"everything"], NSMakeRange(0, 2)), @"Range: %@", NSStringFromRange(matchedRange));
   
   matchedRange = NSMakeRange(1214281727, 37607);
-  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator currentRangeForCaptureName:@"whichOne?"]), NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator currentRangeForCaptureName:@"whichOne?"]), NSException, RKRegexCaptureReferenceException, nil);
   STAssertTrue(NSEqualRanges(matchedRange, NSMakeRange(1214281727, 37607)), nil);
 
   matchedRange = NSMakeRange(1214281727, 37607);
@@ -770,14 +777,14 @@ void startGC(void);
   STAssertTrueNoThrow((firstRanges = [regexEnumerator nextRanges]) != NULL, nil);
 
   matchedRange = NSMakeRange(1214281727, 37607);
-  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator currentRangeForCaptureName:@"noWay"]), NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator currentRangeForCaptureName:@"noWay"]), NSException, RKRegexCaptureReferenceException, nil);
   STAssertTrue(NSEqualRanges(matchedRange, NSMakeRange(1214281727, 37607)), nil);
   
   matchedRange = NSMakeRange(1214281727, 37607);
   STAssertTrueNoThrow(NSEqualRanges(matchedRange = [regexEnumerator currentRangeForCaptureName:@"theNumber"], NSMakeRange(3, 1)), @"Range: %@", NSStringFromRange(matchedRange));
   
   matchedRange = NSMakeRange(1214281727, 37607);
-  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator currentRangeForCaptureName:@"cantBe"]), NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator currentRangeForCaptureName:@"cantBe"]), NSException, RKRegexCaptureReferenceException, nil);
   STAssertTrue(NSEqualRanges(matchedRange, NSMakeRange(1214281727, 37607)), nil);
 
 
@@ -789,14 +796,14 @@ void startGC(void);
   STAssertTrueNoThrow((firstRanges = [regexEnumerator nextRanges]) != NULL, nil);
   
   matchedRange = NSMakeRange(1214281727, 37607);
-  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator currentRangeForCaptureName:@"ohNo"]), NSException, NSInvalidArgumentException, @"Range: %@", NSStringFromRange(matchedRange));
+  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator currentRangeForCaptureName:@"ohNo"]), NSException, RKRegexCaptureReferenceException, @"Range: %@", NSStringFromRange(matchedRange));
   STAssertTrue(NSEqualRanges(matchedRange, NSMakeRange(1214281727, 37607)), nil);
   
   matchedRange = NSMakeRange(1214281727, 37607);
   STAssertTrueNoThrow(NSEqualRanges(matchedRange = [regexEnumerator currentRangeForCaptureName:@"everything"], NSMakeRange(5, 2)), @"Range: %@", NSStringFromRange(matchedRange));
   
   matchedRange = NSMakeRange(1214281727, 37607);
-  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator currentRangeForCaptureName:@"spoon!"]), NSException, NSInvalidArgumentException, @"Range: %@", NSStringFromRange(matchedRange));
+  STAssertThrowsSpecificNamed((matchedRange = [regexEnumerator currentRangeForCaptureName:@"spoon!"]), NSException, RKRegexCaptureReferenceException, @"Range: %@", NSStringFromRange(matchedRange));
   STAssertTrue(NSEqualRanges(matchedRange, NSMakeRange(1214281727, 37607)), nil);
 
   matchedRange = NSMakeRange(1214281727, 37607);

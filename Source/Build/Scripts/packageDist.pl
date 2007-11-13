@@ -8,16 +8,20 @@ my $NSStrings;
 my $dictionaries =
   { 'framework'           => NSDictionary->dictionaryWithContentsOfFile_(nsstring("$ENV{'DISTRIBUTION_TEMP_PACKAGES_DIR'}/$ENV{'DISTRIBUTION_PACKAGE_FRAMEWORK'}/Contents/Info.plist")),
     'htmlDocumentation'   => NSDictionary->dictionaryWithContentsOfFile_(nsstring("$ENV{'DISTRIBUTION_TEMP_PACKAGES_DIR'}/$ENV{'DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION'}/Contents/Info.plist")),
-    'docsetDocumentation' => NSDictionary->dictionaryWithContentsOfFile_(nsstring("$ENV{'DISTRIBUTION_TEMP_PACKAGES_DIR'}/$ENV{'DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION'}/Contents/Info.plist")),
     'sourcecode'          => NSDictionary->dictionaryWithContentsOfFile_(nsstring("$ENV{'DISTRIBUTION_TEMP_PACKAGES_DIR'}/$ENV{'DISTRIBUTION_PACKAGE_SOURCECODE'}/Contents/Info.plist"))
   };
 
 my $packages = 
   { 'framework'           => getPackageInfo($dictionaries->{'framework'},           "$ENV{'DISTRIBUTION_PACKAGE_FRAMEWORK'}"),
     'htmlDocumentation'   => getPackageInfo($dictionaries->{'htmlDocumentation'},   "$ENV{'DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION'}"),
-    'docsetDocumentation' => getPackageInfo($dictionaries->{'docsetDocumentation'}, "$ENV{'DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION'}"),
     'sourcecode'          => getPackageInfo($dictionaries->{'sourcecode'},          "$ENV{'DISTRIBUTION_PACKAGE_SOURCECODE'}")
   };
+
+if($ENV{XCODE_VERSION_MAJOR} ne "0200") {
+  $dictionaries->{docsetDocumentation} = NSDictionary->dictionaryWithContentsOfFile_(nsstring("$ENV{'DISTRIBUTION_TEMP_PACKAGES_DIR'}/$ENV{'DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION'}/Contents/Info.plist"));
+  $packages->{docsetDocumentation} = getPackageInfo($dictionaries->{'docsetDocumentation'}, "$ENV{'DISTRIBUTION_PACKAGE_DOCSET_DOCUMENTATION'}");
+
+}
 
 my ($pcreLineChoice, $pcreChoice, $pcrePkgRef, $pcreScripts) = ("", "", "", "");
 
@@ -126,7 +130,13 @@ $pcreScripts
 <choices-outline>
         <line choice="frameworkChoice"></line>
         <line choice="htmlDocumentationChoice"></line>
+END_OF_DIST
+if($ENV{XCODE_VERSION_MAJOR} ne "0200") {
+  print <<END_OF_DOCSET;
         <line choice="docsetDocumentationChoice"></line>
+END_OF_DOCSET
+}
+print <<END_OF_DIST;
         <line choice="sourcecodeChoice"></line>
         $pcreLineChoice
     </choices-outline>
@@ -136,16 +146,28 @@ $pcreScripts
     <choice id="htmlDocumentationChoice" title="HTML Documentation" description="RegexKit Framework HTML Documentation." tooltip="RegexKit HTML Documentation" start_selected="isNotDowngrade(choices.htmlDocumentationChoice)" start_enabled="isNotDowngradeEnabled(choices.htmlDocumentationChoice, 'RegexKit HTML Documentation')" start_visible="true">
         <pkg-ref id="$packages->{'htmlDocumentation'}->{'CFBundleIdentifier'}"></pkg-ref>
     </choice>
+END_OF_DIST
+if($ENV{XCODE_VERSION_MAJOR} ne "0200") {
+  print <<END_OF_DOCSET;
     <choice id="docsetDocumentationChoice" title="Xcode 3.0 DocSet Documentation" description="RegexKit Framework Documentation for Xcode 3.0 and Mac OS X 10.5 Leopard. Includes full support for Xcode 3.0's Research Assistant." tooltip="RegexKit Xcode 3.0 DocSet Documentation" start_selected="checkXcode3(choices.docsetDocumentationChoice)" start_enabled="isNotDowngradeEnabled(choices.docsetDocumentationChoice, 'RegexKit Xcode 3.0 DocSet Documentation')" start_visible="true">
         <pkg-ref id="$packages->{'docsetDocumentation'}->{'CFBundleIdentifier'}"></pkg-ref>
     </choice>
+END_OF_DOCSET
+}
+print <<END_OF_DIST;    
     <choice id="sourcecodeChoice" title="Source Code" description="The complete source code for the RegexKit Framework. Building the framework from the source is not required nor recommended for most RegexKit end-users." tooltip="RegexKit source code" start_selected="checkSourcecode()" start_enabled="isNotDowngradeEnabled(choices.sourcecodeChoice, 'RegexKit source code')" start_visible="true">
         <pkg-ref id="$packages->{'sourcecode'}->{'CFBundleIdentifier'}"></pkg-ref>
     </choice>
     $pcreChoice
     $packages->{'framework'}->{'pkgRef'}
     $packages->{'htmlDocumentation'}->{'pkgRef'}
+END_OF_DIST
+if($ENV{XCODE_VERSION_MAJOR} ne "0200") {
+  print <<END_OF_DOCSET;
     $packages->{'docsetDocumentation'}->{'pkgRef'}
+END_OF_DOCSET
+}
+print <<END_OF_DIST;    
     $packages->{'sourcecode'}->{'pkgRef'}
     $pcrePkgRef
 </installer-gui-script>

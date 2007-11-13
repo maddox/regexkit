@@ -20,6 +20,8 @@ _RKArrayFromMatchOption
 _RKStringFromCompileErrorCode
 _RKStringFromMatchErrorCode
 _RKStringFromNewlineOption
+_RKConvertUTF8ToUTF16RangeForString
+_RKConvertUTF16ToUTF8RangeForString
 #
 # Objective C
 #

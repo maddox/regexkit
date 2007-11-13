@@ -111,7 +111,7 @@ errorExit: // Catch point in case any clean up needs to be done.  Currently, non
 
 - (void)releaseResources
 {
-  NSLog(RKPrettyObjectMethodString(@"Cache status:\n%@", [RKRegex regexCache]));
+  NSLog(@"%@", RKPrettyObjectMethodString(@"Cache status:\n%@", [RKRegex regexCache]));
 
   testEndCPUTime = [NSDate cpuTimeUsed];
   testElapsedCPUTime = [NSDate differenceOfStartingTime:testStartCPUTime endingTime:testEndCPUTime];
@@ -192,7 +192,7 @@ errorExit: // Catch point in case any clean up needs to be done.  Currently, non
 
   fflush(stdout); fflush(stderr);
   NSLog(@"Completed dealloc");
-  NSLog(RKPrettyObjectMethodString(@"Teardown complete\n"));
+  NSLog(@"%@", RKPrettyObjectMethodString(@"Teardown complete\n"));
   fflush(stdout); fflush(stderr);
   fprintf(stderr, "-----------------------------------------\n\n");
   fflush(stdout); fflush(stderr);
@@ -634,7 +634,7 @@ exitNow:
   STAssertTrue([subString2 isEqualToString:@"/no_way/it really/does/match/"], @"len %d %@ = '%s'", [subString2 length], subString2, [subString2 UTF8String]);
 
   NSString *namedSubjectString = @" 1999 - 12 - 01 / 55 ";
-  NSString *namedRegexString = @"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))";
+  NSString *namedRegexString = @"(?J)(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))";
   NSString *subStringDate = nil, *subStringDay = nil, *subStringYear = nil;
   subString0 = nil, subString1 = nil, subString2 = nil;
 
@@ -895,7 +895,7 @@ exitNow:
   RKRegex *regex = [RKRegex regexWithRegexString:regexString options:0];
 
   STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:nil], NSException, NSInvalidArgumentException, nil);
-  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist"], NSException, NSInvalidArgumentException, nil);
+  STAssertThrowsSpecificNamed([regex captureIndexForCaptureName:@"Doesn't exist"], NSException, RKRegexCaptureReferenceException, nil);
 }
   
 //- (void)testSimpleCaptureName
@@ -911,10 +911,10 @@ exitNow:
   STAssertNotNil(regexCaptureNameArray, nil);
   STAssertTrue([regexCaptureNameArray count] == 6, @"count: %u", [regexCaptureNameArray count]);
   
-  STAssertTrue([[regexCaptureNameArray objectAtIndex:0] isEqualTo:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:0]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:0] isEqual:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:0]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:1] isEqualToString:@"date"], @"== %@", [regexCaptureNameArray objectAtIndex:1]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:2] isEqualToString:@"year"], @"== %@", [regexCaptureNameArray objectAtIndex:2]);
-  STAssertTrue([[regexCaptureNameArray objectAtIndex:3] isEqualTo:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:3]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:3] isEqual:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:3]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:4] isEqualToString:@"month"], @"== %@", [regexCaptureNameArray objectAtIndex:4]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:5] isEqualToString:@"day"], @"== %@", [regexCaptureNameArray objectAtIndex:5]);
 
@@ -942,10 +942,10 @@ exitNow:
   STAssertNotNil(regexCaptureNameArray, nil);
   STAssertTrue([regexCaptureNameArray count] == 7, @"count: %u", [regexCaptureNameArray count]);
   
-  STAssertTrue([[regexCaptureNameArray objectAtIndex:0] isEqualTo:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:0]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:0] isEqual:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:0]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:1] isEqualToString:@"date"], @"== %@", [regexCaptureNameArray objectAtIndex:1]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:2] isEqualToString:@"year"], @"== %@", [regexCaptureNameArray objectAtIndex:2]);
-  STAssertTrue([[regexCaptureNameArray objectAtIndex:3] isEqualTo:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:3]);
+  STAssertTrue([[regexCaptureNameArray objectAtIndex:3] isEqual:[NSNull null]], @"== %@", [regexCaptureNameArray objectAtIndex:3]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:4] isEqualToString:@"month"], @"== %@", [regexCaptureNameArray objectAtIndex:4]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:5] isEqualToString:@"day"], @"== %@", [regexCaptureNameArray objectAtIndex:5]);
   STAssertTrue([[regexCaptureNameArray objectAtIndex:6] isEqualToString:@"month"], @"== %@", [regexCaptureNameArray objectAtIndex:6]);
@@ -1980,7 +1980,7 @@ exitNow:
   
   STAssertTrueNoThrow((enumerator = [[[RKEnumerator alloc] initWithRegex:@"\\s*\\S+\\s+" string:subjectString inRange:NSMakeRange(0, [subjectString length])] autorelease]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileNoOptions] isEqualTo:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
   
   tempPool = [[NSAutoreleasePool alloc] init];
   enumerator = NULL;
@@ -1988,24 +1988,25 @@ exitNow:
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
   [tempPool release]; tempPool = NULL;
   [enumerator autorelease];
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] isEqualTo:[enumerator regex]], nil);
+  STAssertFalse([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] isEqual:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileDupNames | RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
   
   
   enumerator = NULL;
   STAssertTrueNoThrow((enumerator = [[[RKEnumerator alloc] initWithRegex:@"\\s*\\S+\\s+" string:subjectString] autorelease]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileNoOptions] isEqualTo:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
   
   
   enumerator = NULL;
   STAssertTrueNoThrow((enumerator = [RKEnumerator enumeratorWithRegex:@"\\s*\\S+\\s+" string:subjectString inRange:NSMakeRange(0, [subjectString length])]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileNoOptions] isEqualTo:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
   
   enumerator = NULL;
   STAssertTrueNoThrow((enumerator = [RKEnumerator enumeratorWithRegex:@"\\s*\\S+\\s+" string:subjectString]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileNoOptions] isEqualTo:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
   
   STAssertThrowsSpecificNamed([[[RKEnumerator alloc] initWithRegex:@"\\s{1,6}\\S+\\s+" string:subjectString inRange:NSMakeRange(0, [subjectString length] + 1)] autorelease], NSException, NSRangeException, nil);
   STAssertThrowsSpecificNamed([[[RKEnumerator alloc] initWithRegex:@"\\s*\\S{3}\\s+" string:subjectString inRange:NSMakeRange([subjectString length] + 1, 100)] autorelease], NSException, NSRangeException, nil);
@@ -2031,12 +2032,12 @@ exitNow:
   enumerator = NULL;
   STAssertTrueNoThrow((enumerator = [subjectString matchEnumeratorWithRegex:@"\\s{5}\\S+?\\s?" inRange:NSMakeRange(0, [subjectString length])]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s{5}\\S+?\\s?" options:RKCompileNoOptions] isEqualTo:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s{5}\\S+?\\s?" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
   
   enumerator = NULL;
   STAssertTrueNoThrow((enumerator = [subjectString matchEnumeratorWithRegex:@"\\s{6}\\S+?\\s?"]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
-  STAssertTrue([[RKRegex regexWithRegexString:@"\\s{6}\\S+?\\s?" options:RKCompileNoOptions] isEqualTo:[enumerator regex]], nil);
+  STAssertTrue([[RKRegex regexWithRegexString:@"\\s{6}\\S+?\\s?" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] isEqual:[enumerator regex]], nil);
   
   
   STAssertThrowsSpecificNamed([subjectString matchEnumeratorWithRegex:@"\\s{7}\\S+?\\s?" inRange:NSMakeRange(0, [subjectString length] + 1)], NSException, NSRangeException, nil);
@@ -2094,7 +2095,7 @@ exitNow:
   unsigned int x = 0;
   
   NSString *namedSubjectString = @" 1999 - 12 - 01 / 55 ";
-  NSString *namedRegexString = @"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))";
+  NSString *namedRegexString = @"(?J)(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))";
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
@@ -2118,7 +2119,7 @@ exitNow:
   unsigned int x = 0;
   
   NSString *namedSubjectString = @" 1999 - 12 - 01 / 55 ";
-  NSString *namedRegexString = @"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))";
+  NSString *namedRegexString = @"(?J)(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))";
 
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];

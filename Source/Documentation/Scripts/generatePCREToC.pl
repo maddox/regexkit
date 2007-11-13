@@ -230,7 +230,7 @@ TOC_END
         </div>
         <div class="contents">
           <div class="entries">
-            <div class="entry"><a href="pcre/$atfile">$single_title</a></div>
+            <div class="entry"><a href="pcre/$atfile" target="doc">$single_title</a></div>
           </div>
         </div>
       </div>

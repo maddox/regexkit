@@ -11,7 +11,7 @@
 
 void startGC(void);
 
-@implementation extensions
+@implementation collectionAdditions
 
 + (void)setUp
 {
@@ -57,7 +57,7 @@ void startGC(void);
   
   NSString *leaksCommandString = nil;
   
-  NSLog(RKPrettyObjectMethodString(@"Cache status:\n%@", [RKRegex regexCache]));
+  NSLog(@"%@", RKPrettyObjectMethodString(@"Cache status:\n%@", [RKRegex regexCache]));
   NSSet *regexCacheSet = [[RKRegex regexCache] cacheSet];
   NSLog(@"Cache set count: %d", [regexCacheSet count]);
 
@@ -101,7 +101,7 @@ void startGC(void);
 
   NSLog(@"Elapsed CPU time: %@", [NSDate stringFromCPUTime:testElapsedCPUTime]);
   NSLog(@"Elapsed CPU time: %@", [NSDate microSecondsStringFromCPUTime:testElapsedCPUTime]);
-  NSLog(RKPrettyObjectMethodString(@"Teardown complete\n"));
+  NSLog(@"%@", RKPrettyObjectMethodString(@"Teardown complete\n"));
   fprintf(stderr, "-----------------------------------------\n\n");
 }
 
@@ -733,75 +733,255 @@ void startGC(void);
   STAssertTrueNoThrow([mutableSet containsObjectMatchingRegex:@"No more matching!"] == NO, nil);
   STAssertTrueNoThrow([mutableSet anyObjectMatchingRegex:@"\\s\\d\\s"] != NULL, nil);
   STAssertTrueNoThrow([mutableSet anyObjectMatchingRegex:@"^Really! I've had enough of your pattern matching (ways|plays)!$"] == NULL, nil);
-  
 }
 
+- (void)testStringMatchAndReplaceCaseConversion
+{
+  NSString *searchString = @"one two three four five";
+  NSString *searchAndReplacedString = nil;
 
-/*
- [@"Feb 5th" getCapturesWithRegexAndReferences:@"(?<date>.*)", @"${date:@d}", &dateCapture, nil];
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"(two|four)" replace:RKReplaceAll withReferenceString:@"\\u$1"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"one Two three Four five"], @"String: %@", searchAndReplacedString);
 
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"\\s+(?<num>two|four)\\s+" replace:RKReplaceAll withReferenceString:@" \\U${num} Can iT UC this \\Est\\uuff? \\u$1, "], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"one TWO CAN IT UC THIS stUff? Two, three FOUR CAN IT UC THIS stUff? Four, five"], @"String: %@", searchAndReplacedString);
 
- NSString *searchString = @"<1: Neato!>, <2: Wahoo!>, <3: Zoinks>", *searchRegexString = @"<(\\d+):\\s+(?<what>\\w+)[^>]*>", *replaceString = @"<${what} :$1>";
- 
- NSString *searchAndReplacedString = nil;
- 
- nsprintf(@"   searchString           : %@\n", searchString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString replace:RKReplaceAll withString:replaceString];
- nsprintf(@"-- searchAndReplacedString: %@\n", searchAndReplacedString);
- 
- printf("\n");
- 
- searchAndReplacedString = [searchString stringByMatching:searchRegexString replace:1 withString:replaceString];
- nsprintf(@"1  searchAndReplacedString: %@\n", searchAndReplacedString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString range:NSMakeRange(3, [searchString length] - 3) replace:1 withString:replaceString];
- nsprintf(@"2  searchAndReplacedString: %@\n", searchAndReplacedString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString range:NSMakeRange(11, [searchString length] - 11) replace:1 withString:replaceString];
- nsprintf(@"3  searchAndReplacedString: %@\n", searchAndReplacedString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString range:NSMakeRange(12, [searchString length] - 12) replace:1 withString:replaceString];
- nsprintf(@"4  searchAndReplacedString: %@\n", searchAndReplacedString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString range:NSMakeRange(13, [searchString length] - 13) replace:1 withString:replaceString];
- nsprintf(@"5  searchAndReplacedString: %@\n", searchAndReplacedString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString range:NSMakeRange(14, [searchString length] - 14) replace:1 withString:replaceString];
- nsprintf(@"6  searchAndReplacedString: %@\n", searchAndReplacedString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString range:NSMakeRange(15, [searchString length] - 15) replace:1 withString:replaceString];
- nsprintf(@"7  searchAndReplacedString: %@\n", searchAndReplacedString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString range:NSMakeRange(16, [searchString length] - 16) replace:1 withString:replaceString];
- nsprintf(@"8  searchAndReplacedString: %@\n", searchAndReplacedString);
- 
- printf("\n");
- 
- searchAndReplacedString = [searchString stringByMatching:searchRegexString replace:2 withString:replaceString];
- nsprintf(@"1b searchAndReplacedString: %@\n", searchAndReplacedString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString range:NSMakeRange(3, [searchString length] - 3) replace:2 withString:replaceString];
- nsprintf(@"2b searchAndReplacedString: %@\n", searchAndReplacedString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString range:NSMakeRange(11, [searchString length] - 11) replace:2 withString:replaceString];
- nsprintf(@"3b searchAndReplacedString: %@\n", searchAndReplacedString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString range:NSMakeRange(12, [searchString length] - 12) replace:2 withString:replaceString];
- nsprintf(@"4b searchAndReplacedString: %@\n", searchAndReplacedString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString range:NSMakeRange(13, [searchString length] - 13) replace:2 withString:replaceString];
- nsprintf(@"5b searchAndReplacedString: %@\n", searchAndReplacedString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString range:NSMakeRange(14, [searchString length] - 14) replace:2 withString:replaceString];
- nsprintf(@"6b searchAndReplacedString: %@\n", searchAndReplacedString);
- searchAndReplacedString = [searchString stringByMatching:searchRegexString range:NSMakeRange(15, [searchString length] - 15) replace:2 withString:replaceString];
- nsprintf(@"7b searchAndReplacedString: %@\n", searchAndReplacedString);
- 
- 
- 
- 
- 
- NSNumber *convertedNumber = NULL;
- subjectString = @"He said the speed was 'one hundred and five point three two'.";
- 
- nsprintf(@"subjectString: %@\n", subjectString);
- [subjectString getCapturesWithRegexAndReferences:@"'([^\\']*)'", @"${1:@wn}", &convertedNumber, nil];
- 
- nsprintf(@"Number: %@\n", convertedNumber);
- 
- id convertedDate = NULL;
- subjectString = @"Current date and time: 6/20/2007, 11:34PM EDT.";
- [subjectString getCapturesWithRegexAndReferences:@":\\s*(?<date>.*)\\.", @"${date:@d}", &convertedDate, nil];
- nsprintf(@"Date: %@\n", convertedDate);
- 
-*/
+  STAssertNoThrow(searchAndReplacedString = [@"<1: Neato!>, <2: Wahoo!>, <3: Zoinks>" stringByMatching:@"<(\\d+):\\s+(?<what>\\w+)[^>]*>" replace:RKReplaceAll withReferenceString:@"<\\U${what}\\E :\\l$1>"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<NEATO :1>, <WAHOO :2>, <ZOINKS :3>"], @"String: %@", searchAndReplacedString);
 
+  STAssertNoThrow(searchAndReplacedString = [@"<1: Neato!>, <2: Wahoo!>, <3: Zoinks>" stringByMatching:@"<(\\d+):\\s+(?<what>\\w+)[^>]*>" replace:RKReplaceAll withReferenceString:@"<\\l${what}\\E \\U:$1\\E>"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<neato :1>, <wahoo :2>, <zoinks :3>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [@"<1: Neato!>, <2: Wahoo!>, <3: Zoinks>" stringByMatching:@"<(\\d+):\\s+(?<what>\\w+)[^>]*>" replace:RKReplaceAll withReferenceString:@"<\\l${what}\\Ex\\U:$1\\E>"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<neatox:1>, <wahoox:2>, <zoinksx:3>"], @"String: %@", searchAndReplacedString);
+  
+  NSString *straString = [NSString stringWithUTF8String:"Stra\xc3\x9f" "e"];
+
+  STAssertNoThrow(searchAndReplacedString = [straString stringByMatching:@"(.*)" replace:RKReplaceAll withReferenceString:@"\\U$1\\E"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"STRASSE"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchAndReplacedString stringByMatching:@"(.*)" replace:RKReplaceAll withReferenceString:@"\\L$1\\E"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"strasse"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [straString stringByMatching:@"(?<=a)(.*?)(?=e)" replace:RKReplaceAll withReferenceString:@"\\U$1\\E"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"StraSSe"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchAndReplacedString stringByMatching:@"(?<=a)(.*?)(?=e)" replace:RKReplaceAll withReferenceString:@"\\L$1\\E"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"Strasse"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [straString stringByMatching:@"(?<=a)(.*?)(?=e)" replace:RKReplaceAll withReferenceString:@"\\u$1"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"StraSSe"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchAndReplacedString stringByMatching:@"(?<=a)(.*?)(?=e)" replace:RKReplaceAll withReferenceString:@"\\l$1"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"StrasSe"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [straString stringByMatching:@"(?<=a)(.*?)(?=e)" replace:RKReplaceAll withReferenceString:@"\\l$1"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:straString], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [straString stringByMatching:@"(?<=a)(.*?)(?=e)" replace:RKReplaceAll withReferenceString:@"\\Z$1\\E"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:[NSString stringWithUTF8String:"Stra\\Z\xc3\x9f" "e"]], @"String: %@", searchAndReplacedString);
+}
+
+- (void)testStringMatchAndReplaceCaseConversionBackslashRef
+{
+  NSString *searchString = @"one two three four five";
+  NSString *searchAndReplacedString = nil;
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"(two|four)" replace:RKReplaceAll withReferenceString:@"\\u\\1"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"one Two three Four five"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"\\s+(?<num>two|four)\\s+" replace:RKReplaceAll withReferenceString:@" \\U\\1 Can iT UC this \\Est\\uuff? \\u\\1, "], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"one TWO CAN IT UC THIS stUff? Two, three FOUR CAN IT UC THIS stUff? Four, five"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [@"<1: Neato!>, <2: Wahoo!>, <3: Zoinks>" stringByMatching:@"<(\\d+):\\s+(?<what>\\w+)[^>]*>" replace:RKReplaceAll withReferenceString:@"<\\U\\2\\E :\\l\\1>"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<NEATO :1>, <WAHOO :2>, <ZOINKS :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [@"<1: Neato!>, <2: Wahoo!>, <3: Zoinks>" stringByMatching:@"<(\\d+):\\s+(?<what>\\w+)[^>]*>" replace:RKReplaceAll withReferenceString:@"<\\l\\2\\E \\U:\\1\\E>"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<neato :1>, <wahoo :2>, <zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [@"<1: Neato!>, <2: Wahoo!>, <3: Zoinks>" stringByMatching:@"<(\\d+):\\s+(?<what>\\w+)[^>]*>" replace:RKReplaceAll withReferenceString:@"<\\l\\2\\Ex\\U:\\1\\E>"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<neatox:1>, <wahoox:2>, <zoinksx:3>"], @"String: %@", searchAndReplacedString);
+  
+  NSString *straString = [NSString stringWithUTF8String:"Stra\xc3\x9f" "e"];
+  
+  STAssertNoThrow(searchAndReplacedString = [straString stringByMatching:@"(.*)" replace:RKReplaceAll withReferenceString:@"\\U\\1\\E"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"STRASSE"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchAndReplacedString stringByMatching:@"(.*)" replace:RKReplaceAll withReferenceString:@"\\L\\1\\E"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"strasse"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [straString stringByMatching:@"(?<=a)(.*?)(?=e)" replace:RKReplaceAll withReferenceString:@"\\U\\1\\E"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"StraSSe"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchAndReplacedString stringByMatching:@"(?<=a)(.*?)(?=e)" replace:RKReplaceAll withReferenceString:@"\\L\\1\\E"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"Strasse"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [straString stringByMatching:@"(?<=a)(.*?)(?=e)" replace:RKReplaceAll withReferenceString:@"\\u\\1"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"StraSSe"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchAndReplacedString stringByMatching:@"(?<=a)(.*?)(?=e)" replace:RKReplaceAll withReferenceString:@"\\l\\1"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"StrasSe"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [straString stringByMatching:@"(?<=a)(.*?)(?=e)" replace:RKReplaceAll withReferenceString:@"\\l\\1"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:straString], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [straString stringByMatching:@"(?<=a)(.*?)(?=e)" replace:RKReplaceAll withReferenceString:@"\\Z\\1\\E"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:[NSString stringWithUTF8String:"Stra\\Z\xc3\x9f" "e"]], @"String: %@", searchAndReplacedString);
+  
+  
+  //////////////////////////////////////////
+  // Corner cases
+  //////////////////////////////////////////
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"\\s+(?<num>two|four)\\s+" replace:RKReplaceAll withReferenceString:@" \\U\\1 Can iT UC this st\\uuff? \\u\\1, "], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"one TWO CAN IT UC THIS STUff? Two, three FOUR CAN IT UC THIS STUff? Four, five"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"\\s+(?<num>two|four)\\s+" replace:RKReplaceAll withReferenceString:@"\\U\\U\\u\\U\\E \\1 Can iT UC this st\\u\\U\\Euff? \\u\\E\\1, "], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"one two Can iT UC this stuff? two, three four Can iT UC this stuff? four, five"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"\\s+(?<num>two|four)\\s+" replace:RKReplaceAll withReferenceString:@"\\E\\l\\u\\L\\E \\1 Can iT UC this st\\L\\L\\Euff? \\l\\E\\1, "], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"one two Can iT UC this stuff? two, three four Can iT UC this stuff? four, five"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"\\s+(?<num>two|four)\\s+" replace:RKReplaceAll withReferenceString:@"\\E\\l\\u\\L\\E \\1 Can iT UC this st\\L\\L\\Euff\\l? \\l\\E\\1\\U, "], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"one two Can iT UC this stuff? two, three four Can iT UC this stuff? four, five"], @"String: %@", searchAndReplacedString);
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"\\s+(?<num>two|four)\\s+" replace:RKReplaceAll withReferenceString:@"\\E\\l\\u\\L\\E \\1 Can iT UC this st\\L\\L\\Euff\\u? \\l\\E\\1\\L, "], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"one two Can iT UC this stuff? two, three four Can iT UC this stuff? four, five"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"\\s+(?<num>two|four)\\s+" replace:RKReplaceAll withReferenceString:@"\\E\\l\\u\\L\\E \\1 Can iT UC this st\\L\\L\\Euff\\l?\\u \\l\\E\\1\\u, "], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"one two Can iT UC this stuff? two, three four Can iT UC this stuff? four, five"], @"String: %@", searchAndReplacedString);
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"\\s+(?<num>two|four)\\s+" replace:RKReplaceAll withReferenceString:@"\\E\\l\\u\\L\\E \\1 Can iT UC this st\\L\\L\\Euff\\u?\\l \\l\\E\\1\\l, "], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"one two Can iT UC this stuff? two, three four Can iT UC this stuff? four, five"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"\\s+(?<num>two|four)\\s+" replace:RKReplaceAll withReferenceString:@"\\E\\l\\u\\L \\E\\1\\l Can\\u iT UC this st\\L\\L\\Euff\\l?\\u \\l\\E\\1\\u, \\l"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"one two Can iT UC this stuff? two, three four Can iT UC this stuff? four, five"], @"String: %@", searchAndReplacedString);
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"\\s+(?<num>two|four)\\s+" replace:RKReplaceAll withReferenceString:@"\\E\\l\\u\\L \\E\\1\\l Can\\u iT UC this st\\L\\L\\Euff\\u?\\l \\l\\E\\1\\l, \\u"], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"one two Can iT UC this stuff? two, three four Can iT UC this stuff? four, five"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"\\s+(?<num>two|four)\\s+" replace:RKReplaceAll withReferenceString:[NSString stringWithUTF8String:"\\E\\l\\u\\L \\E\\1\\l C\xC3\xA4n\\u iT UC this st\\L\\L\\Euff\\l?\\u \\l\\E\\1\\u, \\l"]], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:[NSString stringWithUTF8String:"one two C\xC3\xA4n iT UC this stuff? two, three four C\xC3\xA4n iT UC this stuff? four, five"]], @"String: %@", searchAndReplacedString);
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:@"\\s+(?<num>two|four)\\s+" replace:RKReplaceAll withReferenceString:[NSString stringWithUTF8String:"\\E\\l\\u\\L \\E\\1\\l C\xC3\xA4n\\u iT UC this st\\L\\L\\Euff\\u?\\l \\l\\E\\1\\l, \\u"]], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:[NSString stringWithUTF8String:"one two C\xC3\xA4n iT UC this stuff? two, three four C\xC3\xA4n iT UC this stuff? four, five"]], @"String: %@", searchAndReplacedString);  
+}
+
+- (void)testStringMatchAndReplace
+{
+  NSString *searchString = @"<1: Neato!>, <2: Wahoo!>, <3: Zoinks>", *searchRegexString = @"<(\\d+):\\s+(?<what>\\w+)[^>]*>", *replaceString = @"<${what} :$1>";
+  NSString *searchAndReplacedString = nil;
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString replace:RKReplaceAll withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<Neato :1>, <Wahoo :2>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<Neato :1>, <2: Wahoo!>, <3: Zoinks>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(3, [searchString length] - 3) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <3: Zoinks>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(11, [searchString length] - 11) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <3: Zoinks>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(12, [searchString length] - 12) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <3: Zoinks>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(13, [searchString length] - 13) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <3: Zoinks>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(14, [searchString length] - 14) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <2: Wahoo!>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(15, [searchString length] - 15) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <2: Wahoo!>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(16, [searchString length] - 16) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <2: Wahoo!>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<Neato :1>, <Wahoo :2>, <3: Zoinks>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(3, [searchString length] - 3) replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(11, [searchString length] - 11) replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(12, [searchString length] - 12) replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(13, [searchString length] - 13) replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(14, [searchString length] - 14) replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <2: Wahoo!>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(15, [searchString length] - 15) replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <2: Wahoo!>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertThrowsSpecificNamed((searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(15, [searchString length] - 15) replace:2 withReferenceString:@"<${what} :$3>"]), NSException, RKRegexCaptureReferenceException, NULL);
+  STAssertThrowsSpecificNamed((searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(15, [searchString length] - 15) replace:2 withReferenceString:@"<${when} :$2>"]), NSException, RKRegexCaptureReferenceException, NULL);
+}
+
+- (void)testStringMatchAndReplaceBackslashRef
+{
+  NSString *searchString = @"<1: Neato!>, <2: Wahoo!>, <3: Zoinks>", *searchRegexString = @"<(\\d+):\\s+(?<what>\\w+)[^>]*>", *replaceString = @"<\\2 :\\1>";
+  NSString *searchAndReplacedString = nil;
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString replace:RKReplaceAll withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<Neato :1>, <Wahoo :2>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<Neato :1>, <2: Wahoo!>, <3: Zoinks>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(3, [searchString length] - 3) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <3: Zoinks>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(11, [searchString length] - 11) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <3: Zoinks>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(12, [searchString length] - 12) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <3: Zoinks>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(13, [searchString length] - 13) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <3: Zoinks>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(14, [searchString length] - 14) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <2: Wahoo!>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(15, [searchString length] - 15) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <2: Wahoo!>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(16, [searchString length] - 16) replace:1 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <2: Wahoo!>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<Neato :1>, <Wahoo :2>, <3: Zoinks>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(3, [searchString length] - 3) replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(11, [searchString length] - 11) replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(12, [searchString length] - 12) replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(13, [searchString length] - 13) replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <Wahoo :2>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(14, [searchString length] - 14) replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <2: Wahoo!>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertNoThrow(searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(15, [searchString length] - 15) replace:2 withReferenceString:replaceString], NULL);
+  STAssertTrue([searchAndReplacedString isEqualToString:@"<1: Neato!>, <2: Wahoo!>, <Zoinks :3>"], @"String: %@", searchAndReplacedString);
+  
+  STAssertThrowsSpecificNamed((searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(15, [searchString length] - 15) replace:2 withReferenceString:@"<\\2 :\\3>"]), NSException, RKRegexCaptureReferenceException, NULL);
+  STAssertThrowsSpecificNamed((searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(15, [searchString length] - 15) replace:2 withReferenceString:@"<\\4 :\\1>"]), NSException, RKRegexCaptureReferenceException, NULL);
+
+  STAssertThrowsSpecificNamed((searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange([searchString length] - 1, 2) replace:2 withReferenceString:@"<\\2 :\\1>"]), NSException, NSRangeException, NULL);
+  STAssertThrowsSpecificNamed((searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange([searchString length]    , 1) replace:2 withReferenceString:@"<\\2 :\\1>"]), NSException, NSRangeException, NULL);
+  STAssertThrowsSpecificNamed((searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange([searchString length] + 1, 1) replace:2 withReferenceString:@"<\\2 :\\1>"]), NSException, NSRangeException, NULL);
+
+  // Range is checked before the invalid capture references, so NSRangeException
+  STAssertThrowsSpecificNamed((searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(15, [searchString length] - 14) replace:2 withReferenceString:@"<\\8 :\\9>"]), NSException, NSRangeException, NULL);
+
+}
 @end

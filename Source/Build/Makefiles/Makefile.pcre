@@ -65,6 +65,15 @@ PCRE_NON_NATIVE_ARCH_DIRS           = $(foreach narch, ${PCRE_NON_NATIVE_ARCH_AR
 PCRE_NON_NATIVE_ARCH_FULLPATH_FILES = $(foreach ndir, ${PCRE_NON_NATIVE_ARCH_DIRS}, $(foreach file, ${PCRE_NATIVE_ARCH_FILES}, $(ndir)/$(file)))
 
 #
+# Add appropriate flags if SDKROOT is set
+#
+
+ifneq ($(strip ${SDKROOT}),)
+PCRE_CONF_CFLAGS += -isysroot ${SDKROOT}
+PCRE_CONF_LDFLAGS += -Wl,-syslibroot,${SDKROOT}
+endif
+
+#
 # Handle debugging information generation
 #
 
@@ -165,7 +174,7 @@ build: pcre
 pcre: ${PCRE_TARGET_LIB_FILE} ${PROJECT_PCRE_HEADER_FILE} check_pcre_header
 
 clean:
-	@echo "${MAKEFILE_PCRE}:168: note: Cleaning pcre."; \
+	@echo "${MAKEFILE_PCRE}:177: note: Cleaning pcre."; \
 	rm -rf ${PCRE_CLEAN_DIRECTORIES};
 
 distclean: clean
@@ -192,20 +201,20 @@ $(filter-out ${PCRE_TEMP_DIR}, ${PCRE_DIRECTORIES}):
 #
 
 ${PCRE_TARBALL_FILE_PATH}:
-	@echo "${MAKEFILE_PCRE}:195: note: The pcre library distribution file '${PCRE_TARBALL_FILE_NAME}' does not exist.  Downloading from '${PCRE_URL_ROOT}'."; \
+	@echo "${MAKEFILE_PCRE}:204: note: The pcre library distribution file '${PCRE_TARBALL_FILE_NAME}' does not exist.  Downloading from '${PCRE_TARBALL_URL}'."; \
 	mkdir -p '${PCRE_TARBALL_DISTRIBUTIONS_DIR}'; \
 	${PCRE_FETCH_COMMAND} || \
 	  if [ ! -f '${PCRE_TARBALL_FILE_PATH}' ] || [ -z '${PCRE_TARBALL_FILE_PATH}' ]; then \
-	    echo "${MAKEFILE_PCRE}:199: error: Unable to download the pcre library distribution file '${PCRE_TARBALL_FILE_NAME}'."; \
-		  echo "${MAKEFILE_PCRE}:200: error: The shell command that was executed: '${PCRE_FETCH_COMMAND}'."; \
-		  echo "${MAKEFILE_PCRE}:201: error: You can manually download the appropriate distribution file from 'http://www.pcre.org/'."; \
-		  echo "${MAKEFILE_PCRE}:202: error: Place the downloaded distribution file in the directory '${PCRE_TARBALL_DISTRIBUTIONS_DIR}'."; \
-		  echo "${MAKEFILE_PCRE}:203: error: The full path including the file name that I expect the tarball at is: '${PCRE_TARBALL_FILE_PATH}'."; \
+	    echo "${MAKEFILE_PCRE}:208: error: Unable to download the pcre library distribution file '${PCRE_TARBALL_FILE_NAME}'."; \
+		  echo "${MAKEFILE_PCRE}:209: error: The shell command that was executed: '${PCRE_FETCH_COMMAND}'."; \
+		  echo "${MAKEFILE_PCRE}:210: error: You can manually download the appropriate distribution file from 'http://www.pcre.org/'."; \
+		  echo "${MAKEFILE_PCRE}:211: error: Place the downloaded distribution file in the directory '${PCRE_TARBALL_DISTRIBUTIONS_DIR}'."; \
+		  echo "${MAKEFILE_PCRE}:212: error: The full path including the file name that I expect the tarball at is: '${PCRE_TARBALL_FILE_PATH}'."; \
 		  exit 1; \
 	  fi;
 		
 ${PCRE_TEMP_DIR}: ${PCRE_TARBALL_FILE_PATH}
-	@echo "${MAKEFILE_PCRE}:208: note: Untaring ${PCRE_TARBALL_FILE_NAME}."; \
+	@echo "${MAKEFILE_PCRE}:217: note: Untaring '${PCRE_TARBALL_FILE_NAME}'."; \
 	cd '${PCRE_TEMP_ROOT}' && \
 	  ${PCRE_UNTAR_COMMAND};
 
@@ -233,7 +242,7 @@ ${PCRE_ARCH_MAKEFILES}: ${PCRE_TEMP_DIR}/configure
 	case $${BUILD_FOR_ARCH} in ppc64 | x86_64 ) ARCH_MACOSX_DEPLOYMENT_TARGET="10.5"; esac; \
 	if [ "$${BUILD_FOR_ARCH}" == "ppc" ]; then ARCH_TUNE_FLAGS="-mtune=G4"; fi; \
 	if [ "$${BUILD_FOR_ARCH}" == "ppc64" ]; then ARCH_TUNE_FLAGS="-mtune=G5"; fi; \
-	echo "${MAKEFILE_PCRE}:236: note: Configuring the pcre library for the '$${BUILD_FOR_ARCH}' architecture using the '${CONFIGURATION}' configuration. This may take some time."; \
+	echo "${MAKEFILE_PCRE}:245: note: Configuring the pcre library for the '$${BUILD_FOR_ARCH}' architecture using the '${CONFIGURATION}' configuration. This may take some time."; \
 	mkdir -p "${PCRE_CONFIGURE_DIR}/$${BUILD_FOR_ARCH}"; \
 	cd "${PCRE_CONFIGURE_DIR}/$${BUILD_FOR_ARCH}" && \
 	  ../../configure --prefix="${PCRE_INSTALL_DIR}/$${BUILD_FOR_ARCH}" \
@@ -251,12 +260,12 @@ ${PCRE_NATIVE_ARCH_FULLPATH_FILES}: ${PCRE_NATIVE_ARCH_MAKEFILE}
 	@BUILD_FOR_ARCH="${NATIVE_ARCH}"; \
 	BUILD_FOR_TARGET="$(patsubst ${PCRE_NATIVE_ARCH_DIR}/%,%, $@)"; \
 	BUILD_FOR_CONF_DIR="${PCRE_NATIVE_ARCH_DIR}"; \
-	echo "${MAKEFILE_PCRE}:254: note: Pre-building the pcre library for the '$${BUILD_FOR_ARCH}' native architecture using the '${CONFIGURATION}' configuration. This may take some time."; \
+	echo "${MAKEFILE_PCRE}:263: note: Pre-building the pcre library for the '$${BUILD_FOR_ARCH}' native architecture using the '${CONFIGURATION}' configuration. This may take some time."; \
 	cd "$${BUILD_FOR_CONF_DIR}" && \
 	  '${MAKE}' $${BUILD_FOR_TARGET} &>/dev/null; \
 	LAST_RESULT=$$?; \
 	if [ $${LAST_RESULT} != 0 ]; then \
-		echo "${MAKEFILE_PCRE}:259: note: '$${BUILD_FOR_TARGET}' returned code '$${LAST_RESULT}'. Possibly an invalid target for this pcre version.  Continuing."; \
+		echo "${MAKEFILE_PCRE}:268: note: '$${BUILD_FOR_TARGET}' returned code '$${LAST_RESULT}'. Possibly an invalid target for this pcre version.  Continuing."; \
 		touch "$${BUILD_FOR_TARGET}"; \
 	fi; \
 	if [ -h "$${BUILD_FOR_TARGET}" ]; then \
@@ -270,7 +279,7 @@ ${PCRE_NON_NATIVE_ARCH_FULLPATH_FILES}: ${PCRE_NON_NATIVE_ARCH_DIRS}/%: ${PCRE_N
 	@BUILD_FOR_TARGET="$(notdir $@)"; \
 	BUILD_FOR_ARCH="$(patsubst ${PCRE_CONFIGURE_DIR}/%/$(notdir $@),%, $@)"; \
 	BUILD_FOR_CONF_DIR="${PCRE_CONFIGURE_DIR}/$${BUILD_FOR_ARCH}"; \
-	echo "${MAKEFILE_PCRE}:273: note: Copying the required pre-built file '$${BUILD_FOR_TARGET}' from the '$${BUILD_FOR_ARCH}' native architecture to the '$${BUILD_FOR_TARGET}' non-native architecture."; \
+	echo "${MAKEFILE_PCRE}:282: note: Copying the required pre-built file '$${BUILD_FOR_TARGET}' from the '$${BUILD_FOR_ARCH}' native architecture to the '$${BUILD_FOR_TARGET}' non-native architecture."; \
 	'${CP}' -f '$<' '$@'
 
 ##### build
@@ -281,14 +290,14 @@ ${PCRE_NON_NATIVE_ARCH_FULLPATH_FILES}: ${PCRE_NON_NATIVE_ARCH_DIRS}/%: ${PCRE_N
 ${PCRE_ARCH_LIB_FILES}: ${PCRE_ARCH_MAKEFILES} ${PCRE_NATIVE_ARCH_FULLPATH_FILES} ${PCRE_NON_NATIVE_ARCH_FULLPATH_FILES}
 	@BUILD_FOR_ARCH="$(patsubst ${PCRE_INSTALL_DIR}/%/lib/libpcre.a,%, $@)"; \
 	BUILD_FOR_CONF_DIR="${PCRE_CONFIGURE_DIR}/$${BUILD_FOR_ARCH}"; \
-	echo "${MAKEFILE_PCRE}:284: note: Building the pcre library for the '$${BUILD_FOR_ARCH}' architecture using the '${CONFIGURATION}' configuration. This may take some time."; \
+	echo "${MAKEFILE_PCRE}:293: note: Building the pcre library for the '$${BUILD_FOR_ARCH}' architecture using the '${CONFIGURATION}' configuration. This may take some time."; \
 	mkdir -p "$${BUILD_FOR_CONF_DIR}"; \
 	cd "$${BUILD_FOR_CONF_DIR}" && \
 		'${MAKE}' install
 #	  if [ '${PCRE_PARALLEL_BUILD}' == "YES" ]; then '${MAKE}' -j '${CPUS}' -l '${MAXLOAD}' install; else '${MAKE}' install; fi;
 
 ${PCRE_UNIVERSAL_LIB_FILE}: ${PCRE_ARCH_LIB_FILES} ${PCRE_INSTALL_DIR}/lib
-	@echo "${MAKEFILE_PCRE}:291: note: Combining the separate architectures libpcre.a results into a single universal binary libpcre.a."; \
+	@echo "${MAKEFILE_PCRE}:300: note: Combining the separate architectures libpcre.a results into a single universal binary libpcre.a."; \
 	lipo $(foreach lib, $(filter-out ${PCRE_INSTALL_DIR}/lib, $^), "$(lib)") -create -output '${PCRE_UNIVERSAL_LIB_FILE}'
 
 ##### install
@@ -303,8 +312,8 @@ ${PCRE_UNIVERSAL_LIB_FILE}: ${PCRE_ARCH_LIB_FILES} ${PCRE_INSTALL_DIR}/lib
 #
 
 ${PCRE_TARGET_LIB_FILE}: ${PCRE_UNIVERSAL_LIB_FILE} ${PCRE_TARGET_BUILD_DIR}/lib
-	if [ ! -L '${PCRE_TARGET_LIB_FILE}' ]; then \
-		@echo "${MAKEFILE_PCRE}:307: note: Symlinking build/${CONFIGURATION}/${PCRE_NAME_VERSION}/lib/libpcre.a -> actual libpcre.a."; \
+	@if [ ! -L '${PCRE_TARGET_LIB_FILE}' ]; then \
+		echo "${MAKEFILE_PCRE}:316: note: Symlinking build/${CONFIGURATION}/${PCRE_NAME_VERSION}/lib/libpcre.a -> actual libpcre.a."; \
 		ln -sf '${PCRE_UNIVERSAL_LIB_FILE}' '${PCRE_TARGET_LIB_FILE}'; \
 	fi;
 
@@ -326,10 +335,10 @@ check_pcre_header: ${PCRE_UNIVERSAL_LIB_FILE}
 	if [ -f '${PROJECT_PCRE_HEADER_FILE}' ]; then \
 		PCRE_DIST_HEADER=`diff -q '${PROJECT_PCRE_HEADER_FILE}' '${PCRE_HEADER_FILE}'`; \
 		if [ "$${PCRE_DIST_HEADER}" != "" ]; then \
-			echo "${MAKEFILE_PCRE}:329: warning: The pcre distributions '${PCRE_HEADER_FILE}' header file and the frameworks '${PROJECT_PCRE_HEADER_FILE}' header file differ."; \
-			echo "${MAKEFILE_PCRE}:330: warning: This should be investigated and corrected if appropriate."; \
-			echo "${MAKEFILE_PCRE}:331: warning: This is likely due to rebuilding with a different version of the pcre library."; \
-			echo "${MAKEFILE_PCRE}:332: warning: If this is the case, replace the frameworks header file with the current pcre distributions version."; \
-			echo "${MAKEFILE_PCRE}:333: warning: I will not replace the frameworks header file because it may contain local edits."; \
+			echo "${MAKEFILE_PCRE}:338: error: The pcre distributions '${PCRE_HEADER_FILE}' header file and the frameworks '${PROJECT_PCRE_HEADER_FILE}' header file differ."; \
+			echo "${MAKEFILE_PCRE}:339: warning: This should be investigated and corrected if appropriate."; \
+			echo "${MAKEFILE_PCRE}:340: warning: This is likely due to rebuilding with a different version of the pcre library."; \
+			echo "${MAKEFILE_PCRE}:341: warning: If this is the case, replace the frameworks header file with the current pcre distributions version."; \
+			echo "${MAKEFILE_PCRE}:342: warning: I will not replace the frameworks header file because it may contain local edits."; \
 		fi; \
 	fi;

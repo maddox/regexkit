@@ -43,9 +43,9 @@ void startGC(void);
   [[RKRegex regexCache] clearCache];
   [[RKRegex regexCache] clearCounters];
 
-  iterations = 500000;
+  //iterations = 500000;
   //iterations = 50000;
-  //iterations = 10000;
+  iterations = 10000;
   if(([leakEnvString intValue] > 0) || ([debugEnvString intValue] > 0)) { iterations = 500; }
 
   if(([leakEnvString intValue] > 0)) {
@@ -75,6 +75,8 @@ void startGC(void);
   testElapsedCPUTime = [NSDate differenceOfStartingTime:testStartCPUTime endingTime:testEndCPUTime];
   
   NSString *leaksCommandString = nil;
+
+  NSLog(@"%@", [RKRegex regexCache]);
   
   NSSet *regexCacheSet = [[RKRegex regexCache] cacheSet];
   NSLog(@"Cache set count: %d", [regexCacheSet count]);
@@ -127,7 +129,7 @@ void startGC(void);
   NSLog(@"starting autoreleased objects: %u  Now: %u  Diff: %u", startAutoreleasedObjects, (([NSAutoreleasePool respondsToSelector:@selector(totalAutoreleasedObjects)]) ? [NSAutoreleasePool totalAutoreleasedObjects] : 0), (([NSAutoreleasePool respondsToSelector:@selector(totalAutoreleasedObjects)]) ? [NSAutoreleasePool totalAutoreleasedObjects] : 0) - startAutoreleasedObjects);
   NSLog(@"Elapsed CPU time: %@", [NSDate stringFromCPUTime:testElapsedCPUTime]);
   NSLog(@"Elapsed CPU time: %@", [NSDate microSecondsStringFromCPUTime:testElapsedCPUTime]);
-  NSLog(RKPrettyObjectMethodString(@"Teardown complete\n"));
+  NSLog(@"%@", RKPrettyObjectMethodString(@"Teardown complete\n"));
   fprintf(stderr, "-----------------------------------------\n\n");
   //fprintf(stderr, "Forcing full collection.\n");
   //objc_collect(OBJC_EXHAUSTIVE_COLLECTION | OBJC_WAIT_UNTIL_DONE);
@@ -228,7 +230,7 @@ void startGC(void);
   unsigned int x = 0;
   
   NSString *namedSubjectString = @" 1999 - 12 - 01 / 55 ";
-  NSString *namedRegexString = @"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))";
+  NSString *namedRegexString = @"(?J)(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))";
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
@@ -252,7 +254,7 @@ void startGC(void);
   unsigned int x = 0;
   
   NSString *namedSubjectString = @" 1999 - 12 - 01 / 55 ";
-  NSString *namedRegexString = @"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))";
+  NSString *namedRegexString = @"(?J)(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))";
 
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;

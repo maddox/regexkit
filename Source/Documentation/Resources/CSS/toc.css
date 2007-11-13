@@ -7,6 +7,7 @@ body { margin: 0px; background-color: white; font: 12px "lucida grande", geneva,
 .toc             { overflow: hidden; background-color: #e9e9e9; border: 1px solid #919699; }
 
 .toc .bar { border-top: 1px solid #cccccc; border-bottom: 1px solid #f0f0f0; }
+.toc .break { margin: 0.5em 0em 0em 0em; padding: 0em; }
 .toc .spacer { border-top: 1px; border-bottom: 1px; }
 
 .toc   .masthead { padding: 1em 2ex 0px 2ex; }

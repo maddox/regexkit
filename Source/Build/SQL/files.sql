@@ -59,6 +59,7 @@ INSERT INTO file (cid, name, type, mode) VALUES (1, '/LICENSE', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/README', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/ReleaseNotes', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation', 'd', 16877);
+INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/ChangeLog.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/Constants.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/content.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/content_frame.html', 'f', 33188);
@@ -76,6 +77,8 @@ INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/NSSet.html',
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/NSString.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/RegexKitImplementationTopics.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/RegexKitProgrammingGuide.html', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/ReleaseNotes.html', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/ReleaseInformation.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/RKCache.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/RKEnumerator.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/RKRegex.html', 'f', 33188);
@@ -178,6 +181,7 @@ INSERT INTO file (cid, name, type, mode) VALUES (2, '/README.MacOSX', 'f', 33188
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/ReleaseNotes', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation', 'd', 16877);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation.html','f',33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/ChangeLog.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/Constants.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/content.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/content_frame.html', 'f', 33188);
@@ -195,6 +199,8 @@ INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/NSSet.html',
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/NSString.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/RegexKitImplementationTopics.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/RegexKitProgrammingGuide.html', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/ReleaseInformation.html', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/ReleaseNotes.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/RKCache.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/RKEnumerator.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/RKRegex.html', 'f', 33188);
@@ -366,8 +372,11 @@ INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/SQL/d
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/SQL/init.sql', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Static', 'd', 16877);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Static/index.html', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Static/ChangeLog.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Static/RegexKitImplementationTopics.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Static/RegexKitProgrammingGuide.html', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Static/ReleaseInformation.html', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Static/ReleaseNotes.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Templates', 'd', 16877);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Templates/Constants.tmpl', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Templates/content.tmpl', 'f', 33188);
@@ -427,6 +436,8 @@ INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/unitTests/stringCon
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/unitTests/stringConversion.m', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/unitTests/timing.h', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/unitTests/timing.m', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/unitTests/unicode.h', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/unitTests/unicode.m', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/unitTests/Unit Tests-Info.plist', 'f', 33188);
 
 CREATE INDEX file_cid_idx ON file (cid);

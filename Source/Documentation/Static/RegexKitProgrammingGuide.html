@@ -25,7 +25,7 @@
 <div class="highlights">
 <h3><a name="Introduction_Highlights">Highlights</a></h3>
 
-<ul>
+<ul class="square">
 <li>Multithreading safe.</li>
 <li>Automatically caches compiled regular expressions.</li>
 <li>For <span class="nobr">Mac OS X</span>, the framework is built as a <span class="nobr">Universal Binary.</span></li>
@@ -39,7 +39,7 @@
 <div class="prerequisites">
 <h3><a name="Introduction_Prerequisites">Prerequisites</a></h3>
 
-<ul>
+<ul class="square">
 <li>An <span class="nobr">Objective-C</span> development environment.</li>
 <li><a href="http://www.gnustep.org/resources/OpenStepSpec/OpenStepSpec.html"><i>OpenStep</i></a> <a href="http://developer.apple.com/documentation/Cocoa/Reference/Foundation/ObjC_classic/index.html"><i>Foundation</i></a> compatible framework, such as <span class="nobr">Mac OS X <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/CocoaFundamentals/index.html"><i>Cocoa</i></a></span> or <a href="http://www.gnustep.org/"><i>GNUstep</i></a>.
 <li>For <span class="nobr">Mac OS X, 10.4</span> or greater is required.</li>
@@ -174,12 +174,20 @@
 
 <h3><a name="RegularExpressions_ItOnlyGetsMoreComplicatedfromHere">It Only Gets More Complicated from Here</a></h3>
 
+<div class="quotation">
+  <span class="quote">Some people, when confronted with a problem, think "I know, I'll use regular expressions."   Now they have two problems.</span>
+  <span class="attribution">Jamie Zawinski</span>
+</div>
+
 <p>Past this point things start to get more complicated quickly.  Using features that are obviously not covered here, it is possible to craft a single regular expression that is capable of matching a wide range of <span class="nobr">"numbers",</span> from the most basic representation of just numeric digits, to optionally accepting digits after the decimal point, but always requiring at least one digit before the decimal point (ie, <span class="regex-textual">.234</span> would not be valid), with optional scientific exponent tacked on the end.  For details on these more advanced features you will need to read the <a href="pcre/pcrepattern.html" class="section-link nobr">PCRE Regular Expression Syntax</a> documentation.</p>
 
 <p>If you're new to regular expressions, hopefully the three basic points (<span class="regex-def">what</span>, <span class="regex-def">how much</span>, <span class="regex-def">which part</span>) covered here are enough to be useful to you.  Regular expressions make most text processing tasks <b>much</b> easier.  A common need is to strip any leading or trailing whitespace in a string and a regular expression like <span class="regex">\s*(.*\S+)\s*</span> will do just that.  Nearly any task that requires a @link NSScanner NSScanner @/link can be done faster and with less code with a regular expression.</p>
 
+<p>However, regular expressions are not the solution to every pattern matching problem.  Regular expressions tend to be very difficult for other programmers to read and understand, let alone maintain, and are often described as "write only." Even after careful review, their can be spectacularly large, but hidden, differences between what a regular expression actually matches and what its author intended.  This can have enormous repercussions in some usage scenarios, such as depending on a regular expression for validation in a security context.  As with all tools, make sure it's the right one for the problem you're trying to solve.</p>
+
+
 <div class="seealso"><div class="header">See Also</div>
-  <ul>
+  <ul class="seealso">
     <li><a href="pcre/pcrepattern.html" class="section-link">PCRE Regular Expression Syntax</a></li>
     <li><a href="pcre/pcrecompat.html" class="section-link">PCRE Compatibility with Perl</a></li>
     <li><a href="NSString.html" class="section-link">NSString RegexKit Additions</a></li>
@@ -228,23 +236,23 @@
 <caption>@link RKRegex RKRegex @/link Matching Primitives</caption>
 <tr><th>Method</th><th>Result</th><th>Description</th></tr>
 <tr>
-<td><span class="nobr">@link getRanges:withCharacters:length:inRange:options: getRanges:withCharacters:length:inRange:options: @/link</span></td>
-<td><span class="nobr">@link RKMatchErrorCode RKMatchErrorCode @/link</span></td>
+<td>@link getRanges:withCharacters:length:inRange:options: getRanges: withCharacters: length: inRange: options: @/link</td>
+<td>@link RKMatchErrorCode RKMatchErrorCode @/link</td>
 <td>Copies an array of @link NSRange NSRange @/link structures to a user supplied buffer that is at least <span class="nobr"><span class="code">[</span><span class="argument">aRegex</span> @link captureCount captureCount@/link<span class="code">]</span></span> big.</td>
 </tr>
 <tr>
-<td><span class="nobr">@link matchesCharacters:length:inRange:options: matchesCharacters:length:inRange:options: @/link</span></td>
-<td><span class="nobr">@link BOOL BOOL @/link</span></td>
+<td>@link matchesCharacters:length:inRange:options: matchesCharacters: length: inRange: options: @/link</td>
+<td>@link BOOL BOOL @/link</td>
 <td>A boolean <span class="code">YES</span> or <span class="code">NO</span> depending on whether or not the regular expression matched the string.</td>
 </tr>
 <tr>
-<td><span class="nobr">@link rangeForCharacters:length:inRange:captureIndex:options: rangeForCharacters:length:inRange:captureIndex:options: @/link</span></td>
-<td><span class="nobr">@link NSRange NSRange @/link</span></td>
+<td>@link rangeForCharacters:length:inRange:captureIndex:options: rangeForCharacters: length: inRange: captureIndex: options: @/link</td>
+<td>@link NSRange NSRange @/link</td>
 <td>The @link NSRange NSRange @/link for the <span class="code">captureIndex:</span> subcapture</td>
 </tr>
 <tr>
-<td><span class="nobr">@link rangesForCharacters:length:inRange:options: rangesForCharacters:length:inRange:options: @/link</span></td>
-<td><span class="nobr">@link NSRange NSRange * @/link</span></td>
+<td>@link rangesForCharacters:length:inRange:options: rangesForCharacters: length: inRange: options: @/link</td>
+<td>@link NSRange NSRange * @/link</td>
 <td>An autoreleased block of memory containing a C array of @link NSRange NSRange @/link structures, one for each capture. Accessed via <span class="nobr">@link NSRange NSRange@/link<span class="code">[0]</span></span> through <span class="nobr">@link NSRange NSRange@/link<span class="code">[<i>Max Subcapture</i>]</span></span>.</td>
 </tr>
 </table>
@@ -255,7 +263,7 @@
 <div class="box note"><div class="table"><div class="row"><div class="label cell">Note:</div><div class="message cell">The @link getRanges:withCharacters:length:inRange:options: getRanges:withCharacters:length:inRange:options: @/link method is the analog of the PCRE libraries @link pcre_exec pcre_exec @/link function.  The primary difference is @link getRanges:withCharacters:length:inRange:options: getRanges:withCharacters:length:inRange:options: @/link automatically sizes a buffer from the stack to hold the temporary results from @link pcre_exec pcre_exec@/link, then while copying to the user supplied buffer, converts those results to their equivalent @link NSRange NSRange @/link results.</div></div></div></div>
 
 <div class="seealso"><div class="header">See Also</div>
-  <ul>
+  <ul class="seealso">
     <li><a href="RegexKitImplementationTopics.html#MultithreadingSafety" class="section-link">Multithreading Safety</a></li>
     <li><a href="pcre/pcrepattern.html" class="section-link">PCRE Regular Expression Syntax</a></li>
     <li><a href="RKRegex.html" class="section-link">RKRegex class</a></li>
@@ -314,7 +322,7 @@ while((atString = [stringEnumerator nextObject]) != NULL) {
 }</div>
 
 <div class="seealso"><div class="header">See Also</div>
-  <ul>
+  <ul class="seealso">
     <li><a href="RegexKitImplementationTopics.html#MultithreadingSafety" class="section-link">Multithreading Safety</a></li>
     <li><a href="RKCache.html" class="section-link">RKCache Class</a></li>
   </ul>
@@ -327,7 +335,7 @@ while((atString = [stringEnumerator nextObject]) != NULL) {
 <p>In addition to basic enumeration, the @link RKEnumerator RKEnumerator @/link class provides a number of methods to extract, convert, and format the currently enumerated match that are similar to the various @link NSString NSString @/link additions.  These include methods such as @link RKEnumerator/getCapturesWithReferences: getCapturesWithReferences:@/link, @link stringWithReferenceString: stringWithReferenceString:@/link, and @link stringWithReferenceFormat: stringWithReferenceFormat:@/link.</p>
 
 <div class="seealso"><div class="header">See Also</div>
-  <ul>
+  <ul class="seealso">
     <li><a href="NSString.html" class="section-link">NSString RegexKit Additions</a></li>
     <li><a href="RKEnumerator.html" class="section-link">RKEnumerator Class</a></li>
   </ul>
@@ -350,7 +358,7 @@ while((atString = [stringEnumerator nextObject]) != NULL) {
 <p>Along with the immutable collection classes, the mutable collection classes receive a number of additions as well.  These are mostly convenience methods, allowing you to remove items from a collection based on whether or not a item is matched by a regular expression, or allowing you to add items matched by a regular expression from a second collection.</p>
 
 <div class="seealso"><div class="header">See Also</div>
-  <ul>
+  <ul class="seealso">
     <li><a href="NSArray.html" class="section-link">NSArray RegexKit Additions</a></li>
     <li><a href="NSDictionary.html" class="section-link">NSDictionary RegexKit Additions</a></li>
     <li><a href="NSSet.html" class="section-link">NSSet RegexKit Additions</a></li>
@@ -459,7 +467,7 @@ NSLog(@"Converted date = %@\n", convertedDate);
 // NSLog output: Converted date = 2007-06-20 23:34:00 -0400</div>
 
 <div class="seealso"><div class="header">See Also</div>
-  <ul>
+  <ul class="seealso">
     <li><a href="NSString.html#CaptureSubpatternReferenceandTypeConversionSyntax" class="section-link">Capture Subpattern Reference and Type Conversion Syntax</a></li>
     <li><a href="NSString.html#ConversionTypeSyntax" class="section-link">Conversion Type Syntax</a></li>
     <li><a href="NSString.html#CDataTypeConversions" class="section-link">C Data Type Conversions</a></li>
@@ -576,7 +584,7 @@ newString = [subjectString stringByMatching:regexString withReferenceFormat:temp
 <p>The methods @link stringByMatching:inRange:withReferenceString: stringByMatching:inRange:withReferenceString: @/link and @link stringByMatching:inRange:withReferenceFormat: stringByMatching:inRange:withReferenceFormat: @/link are also available which allow you to work on sub-ranges of strings.</p>
 
 <div class="seealso"><div class="header">See Also</div>
-  <ul>
+  <ul class="seealso">
     <li><a href="NSString.html#CaptureSubpatternReferenceSyntax" class="section-link">Capture Subpattern Reference Syntax</a></li>
     <li><a href="NSString.html" class="section-link">NSString RegexKit Additions</a></li>
   </ul>
@@ -695,182 +703,13 @@ while([matchEnumerator nextRanges] != NULL) {
 // String: #4: 15112.90</div>
 
 <div class="seealso"><div class="header">See Also</div>
-  <ul>
+  <ul class="seealso">
     <li><a href="NSString.html#CaptureSubpatternReferenceSyntax" class="section-link">Capture Subpattern Reference Syntax</a></li>
     <li><a href="NSString.html#CaptureSubpatternReferenceandTypeConversionSyntax" class="section-link">Capture Subpattern Reference and Type Conversion Syntax</a></li>
     <li><a href="RKEnumerator.html" class="section-link">RKEnumerator Class</a></li>
   </ul>
 </div>
 
-
-</div>
-
-<!-- ____________________________________________ -->
-
-<div class="version-info">
-
-<h2><a name="ReleaseInformation">Release Information</a></h2>
-
-<h3><a name="ReleaseInformation_ReleaseHistory">Release History</a></h3>
-
-<div class="chrono">
-  <div class="entry">
-    <div class="banner"><span class="date">2007/10/31</span><span class="bannerItemSpacer">-</span><span class="release">0.3.1 Beta</span></div>
-    <div class="bannerSpacer"></div>
-    <div class="content">
-      
-      <p>Release highlights:</p>
-      <ul>
-        <li>Xcode 3.0 RegexKit documentation subscription and update notification.</li>
-      </ul>
-      <p>This release is largely to address a sourceforge.net webserver issue which does not send the correct mime type for .dmg files.  This results in Safari 3 misidentifying the .dmg as a .bz2 file.  As a workaround, the .dmg is wrapped in a .tar file to protect it.  Bug <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=1823644&amp;group_id=1&amp;atid=200001">1823644</a> filed with sourceforge.net.</p>
-    </div>
-  </div>
-
-  <div class="entry">
-    <div class="banner"><span class="date">2007/10/29</span><span class="bannerItemSpacer">-</span><span class="release">0.3.0 Beta</span></div>
-    <div class="bannerSpacer"></div>
-    <div class="content">
-      
-      <p>Release highlights:</p>
-      <ul>
-        <li>Mac OS X Installer.</li>
-        <li>Mac OS X 10.5 support.</li>
-        <li><span class="file">RegexKit.framework</span> <span class="file">Info.plist</span> version corrected.</li>
-        <li>Minor documentation updates.</li>
-        <li>Parallel target builds.</li>
-      </ul>
-      <p>The new Mac OS X <span class="file">.dmg</span> distribution combines the previously separate binary and source code bundles into a single, convenient installer based package.</p>
-      
-      <p>Mac OS X 10.5 Features:</p>
-      <ul>
-        <li>64 bit support.</li>
-        <li>Garbage Collection enabled.</li>
-        <li>Documentation available in native Xcode 3.0 DocSet format.</li>
-      </ul>
-      <p>The RegexKit.framework binary now includes support for four architectures: <span class="code">ppc</span>, <span class="code">ppc64</span>, <span class="code">i386</span>, and <span class="code">x86_64</span>.  The 32 bit architecture images require a minimum Mac OS X of 10.4, while the 64 bit architecture versions require a minimum of 10.5.</p>
-      <p>The choice between using Garbage Collection or the traditional @link retain retain @/link / @link release release @/link style of memory management is made at load time.  If the dynamic linker determines that the necessary Garbage Collection prerequisites have been met, RegexKit switches to using Garbage Collection.  Otherwise if Garbage Collection is not active at load time, RegexKit uses the traditional @link retain retain @/link / @link release release @/link style of memory management.</p>
-      <p>The documentation for RegexKit is now available in the new <span class="nobr">Xcode 3.0 DocSet</span> format.  This allows you to access the frameworks documentation from within Xcode, including real time access via the <span class="nobr">Research Assistant</span>.  The DocSet documentation is installed in <span class="file">/Library/Developer/Shared/Documentation/DocSets/</span>, which Xcode 3.0 is set to scan automatically.  You may have to quit and restart Xcode in order for the documentation to appear.  Subscriptions are not yet enabled despite the subscription button being present.</p>
-    </div>
-  </div>
-
-  <div class="entry">
-    <div class="banner"><span class="date">2007/10/09</span><span class="bannerItemSpacer">-</span><span class="release">0.2.0 Beta</span></div>
-    <div class="bannerSpacer"></div>
-    <div class="content">
-      <p>The largest user visible change in this release is the upgrade to PCRE 7.4 from the previous releases 7.3.  The majority of work went towards bug fixes and improvements in the build system.</p>
-      <p>Release highlights:</p>
-      <ul>
-        <li>PCRE upgraded to 7.4.</li>
-        <li>Version numbering system implemented.  The framework version is also used for the frameworks shared library version.  The previous release did not set a version and used the default of <span class="code">1</span>.  This release has the version <span class="code">0.2.0</span>.  Due to the fact that the framework is used as an embedded private framework, this should be a non-issue.</li>
-        <li>~<span class="code">15K</span> smaller executable due to build setting optimizations.  Now optimized with <span class="code">-Oz</span> and dead code stripped.</li>
-        <li>The source code distribution no longer contains the <span class="nobr">Mac OS X</span> framework binary.</li>
-        <li>PCRE build system received a major overhaul.</li>
-        <li>All project build configuration settings were removed from <span class="file">RegexKit.xcodeproj/project.pbxproj</span> and placed in <span class="file">Source/Build/Xcode/RegexKit Build Settings.xcconfig</span>.  This allows easier maintenance of the variables and the ability to document them with comments.</li>
-        <li>There were several bugs in the build system regarding availability of tools and packages and their versions.  This release should be more tolerant of differences and handle any issues much more gracefully.</li>
-        <li>Minor documentation updates.</li>
-        <li>Changed the framework initialization to use the more portable @link NSObject/load +load @/link method rather than <span class="code">__attribute__(constructor).</span></li>
-      </ul>
-    </div>
-  </div>
-  <div class="entry">
-    <div class="banner"><span class="date">2007/08/31</span><span class="bannerItemSpacer">-</span><span class="release">Alpha</span></div>
-    <div class="bannerSpacer"></div>
-    <div class="content">
-      <p>The first public release of the RegexKit framework.</p>
-    </div>
-  </div>
-</div>
-
-<p>The <span class="file">.dmg</span> Installer distributions include the following:</p>
-<ul>
-<li>RegexKit framework binary for <span class="code">ppc</span>, <span class="code">ppc64</span>, <span class="code">i386</span>, and <span class="code">x86_64</span> architectures.</li>
-<li>Documentation in HTML.</li>
-<li>Documentation in Xcode 3.0 DocSet form.</li>
-<li>Complete source code.</li>
-</ul>
-<table class="standard marginSpacer" summary="Mac OS X .dmg Installer Distributions">
-  <caption>Mac OS X <span class="file">.dmg</span> Installer Distributions</caption>
-  <tr><th>Date</th><th>Version</th><th>PCRE</th><th>Operating System</th><th>Architecture</th><th>Size</th><th>File</th><th>Format</th></tr>
-  <tr><td>2007/10/31</td><td>0.3.1 Beta</td><td>7.4</td><td>Mac OS X 10.4 and later</td><td>ppc, ppc64, i386, x86_64</td><td>1,340K</td><td><a href="http://downloads.sourceforge.net/regexkit/RegexKit_0.3.1.dmg.tar" class="file">RegexKit_0.3.1.dmg.tar</a></td><td>Apple Disk Image inside a .tar</td></tr>
-  <tr><td>2007/10/29</td><td>0.3.0 Beta</td><td>7.4</td><td>Mac OS X 10.4 and later</td><td>ppc, ppc64, i386, x86_64</td><td>1,333K</td><td><a href="http://downloads.sourceforge.net/regexkit/RegexKit_0.3.0.dmg" class="file">RegexKit_0.3.0.dmg</a></td><td>Apple Disk Image</td></tr>
-</table>
-
-<table class="standard marginSpacer" summary="Mac OS X Binary Distributions">
-  <caption>Mac OS X Binary Distributions</caption>
-  <tr><th>Date</th><th>Version</th><th>PCRE</th><th>Operating System</th><th>Architecture</th><th>Size</th><th>File</th><th>Format</th></tr>
-  <tr><td>2007/10/09</td><td>0.2.0 Beta</td><td>7.4</td><td>Mac OS X 10.4 and later</td><td>Universal, PowerPC and Intel</td><td>412K</td><td><a href="http://downloads.sourceforge.net/regexkit/RegexKit_0.2.0.tar.bz2" class="file">RegexKit_0.2.0.tar.bz2</a></td><td>bzip2 compressed tar archive</td></tr>
-  <tr><td>2007/08/31</td><td>Alpha</td><td>7.3</td><td>Mac OS X 10.4 and later</td><td>Universal, PowerPC and Intel</td><td>412K</td><td><a href="http://downloads.sourceforge.net/regexkit/RegexKit_ALPHA.tar.bz2" class="file">RegexKit_ALPHA.tar.bz2</a></td><td>bzip2 compressed tar archive</td></tr>
-</table>
-
-<table class="standard marginSpacer" summary="Source Code Distributions">
-  <caption>Source Code Distributions</caption>
-  <tr><th>Date</th><th>Version</th><th>PCRE</th><th>Development Environment</th><th>Size</th><th>File</th><th>Format</th></tr>
-  <tr><td>2007/10/29</td><td>0.3.0 Beta</td><td>7.4</td><td>Xcode 2.4.1</td><td>515K</td><td><a href="http://downloads.sourceforge.net/regexkit/RegexKit_0.3.0_source.tar.bz2" class="file">RegexKit_0.3.0_source.tar.bz2</a></td><td>bzip2 compressed tar archive</td></tr>
-  <tr><td>2007/10/09</td><td>0.2.0 Beta</td><td>7.4</td><td>Xcode 2.4.1</td><td>484K</td><td><a href="http://downloads.sourceforge.net/regexkit/RegexKit_0.2.0_source.tar.bz2" class="file">RegexKit_0.2.0_source.tar.bz2</a></td><td>bzip2 compressed tar archive</td></tr>
-  <tr><td>2007/08/31</td><td>Alpha</td><td>7.3</td><td>Xcode 2.4.1</td><td>655K</td><td><a href="http://downloads.sourceforge.net/regexkit/RegexKit_source_ALPHA.tar.bz2" class="file">RegexKit_source_ALPHA.tar.bz2</a></td><td>bzip2 compressed tar archive</td></tr>
-</table>
-
-<h3><a name="ReleaseInformation_VersionNumberingInformation">Version Numbering Information</a></h3>
-
-<p>The following section outlines the the version numbering system adopted by the RegexKit framework and the changes you can expect between different versions of the framework.</p>
-
-
-<div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">The following should serve as a guideline as the nature of some changes may not be easily categorized by the following system.</div></div></div></div>
-
-<p>A set of three point delimited numbers is used to indicate the version number.  This follows the common hierarchical version numbering system where each number represents one of the following:</p>
-
-<ul>
-  <li>Major Version Number</li>
-  <li>Minor Version Number</li>
-  <li>Point Version Number</li>
-</ul>
-
-<h4><a name="ReleaseInformation_VersionNumberingInformation_MajorVersionNumber">Major Version Number</a></h4>
-
-<p>A major version of the framework incorporates significant changes that are may not be compatible with previous major versions. Some example changes that would require a new major version are:</p>
-
-<ul>
-<li>A fundamental change to the API that is not backwards compatible.</li>
-<li>Significant addition of features and functionality.</li>
-<li>A dependency of the framework has fundamentally changed.</li>
-<li>A change in the underlying ABI which would result in binary incompatibility between versions.</li>
-<li>A new major version release of the PCRE library.</li>
-</ul>
-
-<p>When upgrading to a new major version, users should expect that a significant effort on their part may be required in order to use the new major version, depending on the nature of the changes.</p>
-
-<h4><a name="ReleaseInformation_VersionNumberingInformation_MinorVersionNumber">Minor Version Number</a></h4>
-
-<p>A new minor version is used to indicate changes that are not likely to be disruptive to current users.  Some example changes when the minor version is incremented are:</p>
-
-<ul>
-<li>Minor, incremental enhancements.</li>
-<li>Significant bug fixes.</li>
-<li>A new minor version release of the PCRE library.</li>
-</ul>
-
-<p>Users upgrading to a later minor version should expect to a minimal amount of work to be required on their part.  A given minor version is likely to be forward compatible with later minor versions of a given major version, but may not be fully backwards compatible with previous minor versions.  Use of any new features introduced in a minor version would almost certainly preclude the use of any previous minor versions.</p>
-
-<h4><a name="ReleaseInformation_VersionNumberingInformation_PointVersionNumber">Point Version Number</a></h4>
-
-<p>A new point version indicates changes that do not alter the features or functionality of the framework in any significant way.  Examples of a point version change include:</p>
-
-<ul>
-<li>Minor bug fixes that do not significantly alter the behavior of the API interface.</li>
-<li>Corrections, clarifications, or minor additions to documentation.</li>
-<li>Changes in the build system that result in no framework executable changes.</li>
-</ul>
-
-<p>Users upgrading to a later point version of a <i>major</i>.<i>minor</i> version should expect full compatibility with the previous <i>major</i>.<i>minor</i> release and no changes on their part should be required.</p>
-
-<div class="seealso"><div class="header">See Also</div>
-  <ul>
-    <li><a href="http://developer.apple.com/documentation/DeveloperTools/Conceptual/DynamicLibraries/index.html" class="section-link nobr" target="_top">Dynamic Library Programming Topics</a></li>
-    <li><a href="http://developer.apple.com/documentation/DeveloperTools/Conceptual/DynamicLibraries/Articles/DynamicLibraryDesignGuidelines.html#//apple_ref/doc/uid/TP40002013-SW20" class="section-link nobr">Managing Client Compatibility With Dependent Libraries</a></li>
-    <li><a href="http://developer.apple.com/documentation/DeveloperTools/Conceptual/DynamicLibraries/Articles/DynamicLibraryDesignGuidelines.html#//apple_ref/doc/uid/TP40002013-DontLinkElementID_10" class="section-link nobr">Specifying Version Information</a></li>
-  </ul>
-</div>
 
 </div>
 
@@ -886,7 +725,7 @@ while([matchEnumerator nextRanges] != NULL) {
 <p>Your applications executable file, which is in the <span class="file">My App.app/Contents/MacOS</span> directory, is then dynamically linked to the embedded private framework. The linker records that the path to the embedded private framework, and therefore the shared library that contains the code for the framework, exists within the applications bundle.  Then, when your application is executed, the dynamic linker knows to find the frameworks shared library in the applications bundle and not the standard framework search paths, such as <span class="file">/System/Library/Frameworks</span> or <span class="file">/Library/Frameworks</span>.</p>
 
 <div class="seealso"><div class="header">See Also</div>
-  <ul>
+  <ul class="seealso">
     <li><a href="http://developer.apple.com/documentation/MacOSX/Conceptual/BPFrameworks/index.html" class="section-link nobr" target="_top">Framework Programming Guide</a></li>
     <li><a href="http://developer.apple.com/documentation/MacOSX/Conceptual/BPFrameworks/Tasks/CreatingFrameworks.html#//apple_ref/doc/uid/20002258-106880-BAJJBIEF" class="section-link nobr">Embedding a Private Framework in Your Application Bundle</a></li>
     <li><a href="http://developer.apple.com/documentation/DeveloperTools/Conceptual/DynamicLibraries/index.html" class="section-link nobr" target="_top">Dynamic Library Programming Topics</a></li>
@@ -897,7 +736,7 @@ while([matchEnumerator nextRanges] != NULL) {
 
 <p>The following outlines the steps required to use the framework in your project.</p>
 
-<ul>
+<ul class="square">
 <li>Linking the framework to your executable.</li>
 <li>Adding a <span class="build-phase">Copy Files</span> build phase to your executable target.</li>
 <li>Import the <span class="file nobr">RegexKit/RegexKit.h</span> header.</li>
@@ -949,7 +788,7 @@ while([matchEnumerator nextRanges] != NULL) {
 <p>Within the <span class="xcode-group">Targets</span> group, right-click on your application and choose <span class="context-menu">Add &gt; New Build Phase &gt; New Copy Files Build Phase</span> as show in <span class="nobr">Figure 4.</span></p>
 <div class="figure">
 <div class="caption"><span class="number">Figure 4</span><span class="text">Adding a Copy Files build phase to the applications target</span></div>
-<img alt="Adding a Copy Files build phase to your applications target" src="Images/4_copy_files.png">
+<img alt="Adding a Copy Files build phase to your applications target" src="Images/4_copy_files.png" class="printImg">
 </div>
 </li>
 

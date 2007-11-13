@@ -1,4 +1,4 @@
-personal_ws-1.1 en 1510 
+personal_ws-1.1 en 1547 
 ABI
 APIs
 ARGS
@@ -6,6 +6,7 @@ AbsoluteTime
 AbsoluteToNanoseconds
 AppKit
 BOOL
+BZip
 CFAllocatorRef
 CFArray
 CFArrayCallBacks
@@ -31,6 +32,7 @@ CFSetCreate
 CFSetGetCount
 CFSetGetValues
 CFSetRef
+CFString
 CFStringConvertEncodingToNSStringEncoding
 CFStringCreateCopy
 CFStringCreateWithBytes
@@ -43,6 +45,7 @@ CFStringReplaceAll
 CFTypeRef
 CFZombieLevel
 CONF
+CPU's
 CPUTime
 CRLF
 CTORS
@@ -80,6 +83,7 @@ IEEE
 IMPL
 INITIALIZERS
 INLINE
+JCHANGED
 JavaScript
 LDFLAGS
 LF
@@ -220,6 +224,7 @@ NewlineLF
 NextStep
 OBJC
 OCUnit
+ORd
 OSX
 ObjC
 OpenStep
@@ -229,6 +234,7 @@ PCREBuildConfig
 PCREMajorVersion
 PCREMinorVersion
 PCREVersionString
+PCREs
 POSIX
 PREBIND
 PREBINDING
@@ -381,6 +387,8 @@ RKCompileReferenceString
 RKCompileUTF
 RKCompileUngreedy
 RKCompileUnsupported
+RKConvertByteRangeToUTF
+RKConvertUTF
 RKCopyInstruction
 RKCopyInstructions
 RKCopyInstructionsBuffer
@@ -476,6 +484,7 @@ RKRegexCoderDifferencesDictionary
 RKRegexDef
 RKRegexEncodeWithCoder
 RKRegexFromStringOrRegex
+RKRegexGarbageCollect
 RKRegexInitWithCoder
 RKRegexLinkerInitialized
 RKRegexPCRECallout
@@ -511,12 +520,15 @@ RKUtility
 RKYesOrNo
 RSYNC
 RTP
+RangeForString
+RangeToByteRangeForString
 ReadMe
 Redistributions
 RegexKit
 RegexKitAdditions
 RegexKitDefines
 RegexKitPrivate
+RegexKitProgrammingGuide
 RegexKitTypes
 RegexKits
 SDKROOT
@@ -526,13 +538,19 @@ SIGINT
 SQLite
 SRCROOT
 STDC
+STRASSE
 SUPERCLASSES
 SetFile
 Solaris
 SourceForge
+Stra
+StraSSe
+StrasSe
+Strasse
 SysBreak
 TIMESTAMP
 ThreadDebug
+ToUTF
 UDBZ
 UInt
 ULONG
@@ -549,6 +567,7 @@ Xcode
 Xcodes
 Yoo
 Zang
+Zawinski
 Zoinks
 aCache
 aKeyRegex
@@ -558,6 +577,7 @@ aPtr
 aRegex
 aString
 abcd
+activecpu
 addAttributes
 addEntriesFromDictionary
 addEventListener
@@ -650,6 +670,7 @@ bsection
 btitle
 btoc
 bufferLength
+buildDocSet
 builtin
 busyCount
 bzebraRows
@@ -758,6 +779,7 @@ countOfObjectsMatchingRegex
 cp
 cpp
 cpuTimeUsed
+createDocSet
 createMutableConvertedString
 currentClass
 currentFormatterStyle
@@ -775,6 +797,7 @@ dateWithNaturalLanguageString
 dbh
 dbi
 dbname
+dcs
 dealloc
 deallocated
 deallocation
@@ -815,6 +838,7 @@ dir
 dirs
 dmg
 doAction
+docsetutil
 doesNotExist
 dollarsString
 doubleValue
@@ -838,6 +862,7 @@ enabledState
 encodeInt
 encodeObject
 encodeWithCoder
+encodings
 endBracket
 endFormat
 endReference
@@ -914,6 +939,7 @@ functionString
 fus
 gcc
 generateHTML
+generatePCREToC
 getCapturesWithReferences
 getCapturesWithRegex
 getCapturesWithRegexAndReferences
@@ -1044,6 +1070,7 @@ lookup
 lookupEnabledState
 lookupInitialized
 lowestCaptureIndex
+lpcre
 lproj
 lt
 machtimeStringFromCPUTime
@@ -1094,6 +1121,7 @@ mkdir
 mozilla
 mpkg
 msgSends
+multi
 multithreaded
 multithreading
 mutableArray
@@ -1187,6 +1215,7 @@ perls
 pid
 plist
 plistUtil
+plists
 png
 pos
 ppc
@@ -1202,6 +1231,7 @@ prerelease
 prettyString
 prettyText
 printf
+projectExportedSymbols
 pthread
 pthreadError
 pthreads
@@ -1349,6 +1379,7 @@ stderr
 stdout
 sth
 stmt
+strasse
 strerror
 strictReference
 stringArg
@@ -1369,6 +1400,7 @@ stringWithFormat
 stringWithReferenceFormat
 stringWithReferenceString
 stringWithString
+stringWithUTF
 stripExcess
 stripFirstLastCell
 stripFirstLastRow
@@ -1394,6 +1426,7 @@ svr
 sw
 sym
 symlink
+sysctl
 syslibroot
 systemCPUTime
 tagArguments
@@ -1439,6 +1472,7 @@ tocOuterID
 tocTmplFilename
 tocgroup
 tocid
+tocs
 toggleWithElement
 topCaptureName
 totalAutoreleasedObjects
@@ -1468,6 +1502,7 @@ unknownNewline
 unlockExitNow
 unsignedConversion
 untar
+untaring
 updateToNextMatch
 useVarArgsList
 useable
@@ -1482,6 +1517,7 @@ validRegex
 validVarRange
 valueWithRange
 varArgsList
+versa
 versioning
 vnsprintf
 webKit
@@ -1504,6 +1540,7 @@ xcconfig
 xcodeproj
 xfedc
 xjf
+xml
 yesOrNo
 zebraBox
 zebraRows

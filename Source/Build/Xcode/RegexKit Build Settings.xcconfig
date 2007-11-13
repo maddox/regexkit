@@ -21,20 +21,27 @@ REGEXKIT_XCODE_CONFIG_FILE = ${BUILD_SOURCE_DIR}/Xcode/RegexKit\ Project.xcconfi
 // Project version information
 
 PROJECT_VERSION_MAJOR           = 0
-PROJECT_VERSION_MINOR           = 3
-PROJECT_VERSION_POINT           = 1
+PROJECT_VERSION_MINOR           = 4
+PROJECT_VERSION_POINT           = 0
 
 PROJECT_CURRENT_VERSION         = ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_POINT}
-PROJECT_COMPATIBLE_VERSION      = 0.3.0
+PROJECT_COMPATIBLE_VERSION      = 0.4.0
 
 // Enable parallel building where possible
 
 PARALLEL_BUILD                  = YES
 
-// The version of Mac OS X we are targeting
+// The SDK for the current Mac OS X release
 
-SDKROOT                         = /Developer/SDKs/MacOSX10.5.sdk
-ARCHS                           = ppc ppc64 i386 x86_64
+SDKROOT_1040                    = /Developer/SDKs/MacOSX10.4u.sdk
+SDKROOT_1050                    = /Developer/SDKs/MacOSX10.5.sdk
+SDKROOT                         = ${SDKROOT_${MAC_OS_X_VERSION_MAJOR}}
+
+// The architectures we build for for the current Mac OS X release
+
+ARCHS_1040                      = ppc i386
+ARCHS_1050                      = ppc ppc64 i386 x86_64
+ARCHS                           = ${ARCHS_${MAC_OS_X_VERSION_MAJOR}}
 
 // MACOSX_DEPLOYMENT_TARGET is also set in Makefile.pcre, ppc & i386 @ 10.4, ppc64 & x86_64 @ 10.5
 
@@ -125,18 +132,34 @@ TEXTUTIL  = /usr/bin/textutil
 //
 
 // PCRE_VERSION is the fundamental setting that controls which version of the pcre library will be built.
-// The variable is used to construct the distribution tarball name, such as pcre-7.4.tar.bz2,
-// and ${PCRE_URL_ROOT} is the URL where the tarball can be found.
+// The variable is used to construct the distribution tarball name, such as pcre-7.4.tar.bz2.
 
-PCRE_VERSION  = 7.4
-PCRE_URL_ROOT = ftp:\/\/ftp.csx.cam.ac.uk/pub/software/programming/pcre
-// PCRE_URL_ROOT starts with ftp:\/\/ because Xcode interprets '//' as a start of a comment.  :(
-// The \/\/ work-around is correctly interpreted by curl, thankfully.
+PCRE_VERSION         = 7.4
+
+// ${PCRE_URL_ROOT} is the URL where the tarball can be found. It is assembled from the SCHEME, SITE, and PATH
+// build settings.  The SCHEME build setting contains a trailing ':/' which is important because Xcode will
+// always interpret a // as a comment.  The final PCRE_URL_ROOT supplies the additional '/' when it pieces
+// everything together.
+
+// An alternate download location is ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
+//
+//PCRE_URL_ROOT_SCHEME = ftp:/
+//PCRE_URL_ROOT_SITE   = ftp.csx.cam.ac.uk
+//PCRE_URL_ROOT_PATH   = pub/software/programming/pcre
+//PCRE_FETCH_OPTIONS   =                                // No options.
+
+
+PCRE_URL_ROOT_SCHEME = http:/
+PCRE_URL_ROOT_SITE   = downloads.sourceforge.net
+PCRE_URL_ROOT_PATH   = pcre
+PCRE_FETCH_OPTIONS   = -LR                        // -L, follow 302 redirect to mirror, -R set timestamp to remotes timestamp.
+
+PCRE_URL_ROOT        = ${PCRE_URL_ROOT_SCHEME}/${PCRE_URL_ROOT_SITE}/${PCRE_URL_ROOT_PATH}
 
 // Options for how and what to fetch from the master pcre site.
 
 PCRE_TARBALL_URL   = ${PCRE_URL_ROOT}/${PCRE_TARBALL_FILE_NAME}
-PCRE_FETCH_COMMAND = curl ${PCRE_TARBALL_URL} -o '${PCRE_TARBALL_FILE_PATH}'
+PCRE_FETCH_COMMAND = curl ${PCRE_FETCH_OPTIONS} '${PCRE_TARBALL_URL}' -o '${PCRE_TARBALL_FILE_PATH}'
 
 // The base name of the pcre distribution.
 
@@ -165,8 +188,8 @@ PCRE_UNTAR_COMMAND = ${TAR} xjf '${PCRE_TARBALL_FILE_PATH}'
 // settings, such as GCC_OPTIMIZATION_LEVEL.
 
 PCRE_CONF_OPTIONS = --enable-utf8 --enable-unicode-properties --disable-cpp --disable-shared
-PCRE_CONF_CFLAGS  = -isysroot ${SDKROOT}
-PCRE_CONF_LDFLAGS = -Wl,-syslibroot,${SDKROOT}
+//PCRE_CONF_CFLAGS  = -isysroot ${SDKROOT}
+//PCRE_CONF_LDFLAGS = -Wl,-syslibroot,${SDKROOT}
 
 // Locations of important files.
 
@@ -240,12 +263,12 @@ DOCUMENTATION_TARGET_DIR             = ${TARGET_BUILD_DIR}/Documentation
 DOCUMENTATION_TEMP_DIR               = ${PROJECT_TEMP_DIR}/${CONFIGURATION}/Documentation.build
 DOCUMENTATION_TEMPLATES_DIR          = ${DOCUMENTATION_SOURCE_DIR}/Templates
 
-DOCUMENTAION_DOCSET_ID               = com.zang.RegexKit.Documentation.docset
-DOCUMENTAION_DOCSET_PACKAGED_FILE    = ${PROJECT_NAME}_${PROJECT_CURRENT_VERSION}_docset.xar
+DOCUMENTATION_DOCSET_ID              = com.zang.RegexKit.Documentation.docset
+DOCUMENTATION_DOCSET_PACKAGED_FILE   = ${PROJECT_NAME}_${PROJECT_CURRENT_VERSION}_docset.xar
                                     // Because xcode thoughtfully chops // off, we can't use http://...
                                     // We glue it together in createDocSet.pl
-DOCUMENTAION_DOCSET_FEED_SCHEME      = http:
-DOCUMENTAION_DOCSET_FEED_URL         = regexkit.sourceforge.net/RegexKitDocSets.atom
+DOCUMENTATION_DOCSET_FEED_SCHEME     = http:
+DOCUMENTATION_DOCSET_FEED_URL        = regexkit.sourceforge.net/RegexKitDocSets.atom
 
 DOCUMENTATION_SQL_DATABASE_DIR       = ${DOCUMENTATION_TEMP_DIR}
 DOCUMENTATION_SQL_DATABASE_FILE      = ${DOCUMENTATION_SQL_DATABASE_DIR}/${PROJECT_NAME}_headerdoc.sqlitedb
@@ -262,7 +285,7 @@ DOCUMENTATION_PARSE_HEADERS_SCRIPT   = ${DOCUMENTATION_SCRIPTS_DIR}/parseHeaders
 DOCUMENTATION_RESOLVE_LINKS_SCRIPT   = ${DOCUMENTATION_SCRIPTS_DIR}/resolveLinks.pl
 
 DOCUMENTATION_DOCSET_TEMP_DIR        = ${PROJECT_TEMP_DIR}/${CONFIGURATION}/DocSet.build
-DOCUMENTATION_DOCSET_TEMP_DOCS_DIR   = ${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTAION_DOCSET_ID}/Contents/Resources/Documents
+DOCUMENTATION_DOCSET_TEMP_DOCS_DIR   = ${DOCUMENTATION_DOCSET_TEMP_DIR}/${DOCUMENTATION_DOCSET_ID}/Contents/Resources/Documents
 DOCUMENTATION_DOCSET_SOURCE_HTML     = ${DOCUMENTATION_TARGET_DIR}
 DOCUMENTATION_DOCSET_TARGET_DIR      = ${TARGET_BUILD_DIR}/DocSet
 
