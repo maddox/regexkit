@@ -1,0 +1,86 @@
+Release Notes for 0.2.0 BETA
+----------------------------
+
+The version of PCRE used was updated to the latest available: 7.4.
+
+Nearly all changes have been to the build system.  Very few changes, with
+the exception of upgrading to PCRE 7.4, resulted in any changes to the
+framework proper.
+
+A priority for the project is to get a usable version of the framework
+in to the hands of developers.  This means that the framework code,
+API documentation, and end user distribution packaging and layout are
+the top priorities.  Other issues, such as documentation on the
+implementation, will be allowed to fall behind in order to meet the
+other objectives in a timely manner.
+
+o Framework Versioning
+  --------------------
+
+This release adds the first version numbers internal to the framework.
+Some of these changes technically have a substantial impact to those
+linking to the framework, but pragmatically are a complete non-issue because
+the framework is embedded and copied in to end users application bundles.
+See ChangeLog for additional information.
+
+o NSString / NSMutableString Additions
+  ------------------------------------
+
+The framework additions to these two classes are likely to be the most
+volatile going forward, as I expect that vast majority of users need to
+perform regex operations on strings.
+
+Candidly, it is extremely difficult to craft a usable, clean, and
+intuitive API.  I often lack the proper perspective of what's required by
+end users since I tend to view things from the perspective of whats
+easiest to implement, rather than what's the easiest to use.  FEEDBACK
+REGARDING THE API IS EXTREMELY APPRECIATED.
+
+
+
+Known Issues
+------------
+
+
+o Unicode Support
+  ---------------
+
+I am still uncertain as to how well supported Unicode is in practice.  I
+have no Unicode experience to speak of, so it is extraordinarily difficult
+for me to conceive of test vectors to verify proper operation.  Being
+a native English speaker who cut his teeth exclusively on ASCII, I am
+certain there are things that would seem almost comically obvious to
+non-English readers and writers but I am completely ignorant of.  I strongly
+desire to have complete, error free Unicode support in the framework so
+any help you can provide is greatly appreciated!
+
+You can help in the following ways:
+
+- Providing known Unicode samples that illustrate a specific feature or
+  property.  Ideally these would be provided in a form that guarded against
+  any code of corruption, such as an archived NSDictionary that can be
+  readily loaded and used for testing.
+
+- Providing standard Xcode Unit Tests that exercise and verify proper Unicode
+  operation.  Patches are a bonus.
+
+o Implementation Documentation
+  ----------------------------
+
+The implementation documentation (RegexKitImplementation.html) has not
+been updated in any meaningful way to track the latest changes.  Since
+the audience for this documentation is expected to be a small fraction
+of the RegexKit user base, I'm letting it slip in the interest of getting
+out a product that is used by most people.
+
+
+o GNUstep Support
+  ---------------
+
+This release did not include any testing of the GNUstep configuration.  It is
+likely that there are a few issues that would prevent an 'out of the box'
+clean build under GNUstep at this time, but the amount of work should be
+minimal.  It has worked flawlessly in the past, so it should be a matter
+of bringing things up to date.  I certainly try to code things with
+GNUstep compatibility in mind, but 99.99% of the work happens under Mac OS X
+Cocoa, so things slip through.

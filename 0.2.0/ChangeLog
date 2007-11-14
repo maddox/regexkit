@@ -1,0 +1,156 @@
+Changes from Alpha test distribution
+------------------------------------
+
+o End User Framework Visible Changes
+  ----------------------------------
+
+The nature of changes for this release are almost all documentation or
+build system related.  Only a handful of changes resulted in any API
+level changes, the largest probably being the PCRE 7.3 to 7.4 change.
+
+Only one change stands out that may impact existing users of the framework.
+The Alpha version did not contain an explicit version of the framework,
+and used the default of '1' for the version that was used in the Mach-O
+library version information.
+
+This release begins the use of a framework versioning system.
+It is a standard "three point" version type system comprised of a
+Major, Minor, and Point version.  These versions are reflected in the 
+Mach-O library version.
+
+Refer to the RegexKit Programming Guide section on Release Information
+or more information.
+
+o Distribution Bundles
+  --------------------
+
+The file bundles for a distribution release has changed.  There is now
+a Mac OS X oriented binary + documentation release and a no binaries,
+source only + documentation bundle.
+
+o PCRE Version Changed
+  --------------------
+
+The PCRE library that the framework builds against was updated to 7.4.
+
+o 'const' Use Expanded
+  --------------------
+
+Where appropriate, the 'const' keyword was added.  Most of this was
+marking both the pointer and data pointed by the pointer as 'const'.
+
+For example:
+
+const NSRange *matchRanges
+
+changed to
+
+const NSRange * const matchRanges
+
+o Framework Initialization
+  ------------------------
+
+Previously, initialization that was required at load time was performed
+with functions marked with the attribute 'constructor'.  This was replaced
+with the more portable, but functionally identical, Objective-C +load method.
+
+o C99 'restrict' Added
+  --------------------
+
+A new pre-processor macro, RK_C99(), was added that causes the macros
+argument to either be replaced as-is, or removed depending on whether or
+not __STDC_VERSION__ >= 199901L (ie, C99).  This is used to selectively
+allow the C99 'restrict' qualifier through for various function /
+method prototypes.  This allows projects who are currently not using
+C99 to transparently use the framework without warnings/etc.
+
+o Framework Version
+  -----------------
+
+The build setting ${PROJECT_CURRENT_VERSION} now contains the frameworks
+version.  It is composed as the dot separated form of
+${PROJECT_VERSION_(MAJOR|MINOR|POINT)}, ie '0.2.0'.
+
+The version of the framework is now incorporated in to the mach-o
+shared library version information.  The project build setting
+${PROJECT_CURRENT_VERSION} sets the dynamic libraries version, and
+${PROJECT_COMPATIBLE_VERSION} sets the compatibility version.
+
+
+o Project Build Settings
+  ----------------------
+
+The various top-level project settings were moved out from the Xcode
+project.pbxproj file and in to a separate .xcconfig file.  The
+Xcode project build settings were then set to be 'based on' this file.
+The file is at 'Source/Build/Xcode/RegexKit Build Settings.xcconfig'.
+This makes it much easier to add and modify the build settings.  It also
+allows comments to be placed in the file, documenting the settings at
+the same time.
+
+These settings can then be easily over-ridden at either the project
+or per-target level within Xcode by selecting the appropriate 
+'Project > Edit ....' menu item and then simply entering the desired
+over-ride.
+
+A notable setting is 'GCC_OPTIMIZATION_LEVEL'.  Xcode normally only
+allows for '0|1|2|3|s' (ie, -O1, etc).  However, the Apple branch of GCC
+also supports a 'z' level optimization which is loosely defined as
+'Like -Os (-O2, preferring smaller code size to larger/faster code), but
+aggressively preferring smaller code size to any speed advantage.'.  There
+was approximately 24K smaller executable size difference for each step in
+2 to s to z settings and no timing difference reported by the timing
+unit test, so z was selected for a total executable size reduction of
+~49K.
+
+Opt           Size  Dead Code Stripped  Difference  Opt difference
+-O2  495776 (484K)       494608 (483K)   1168 (1K)
+-Os  475152 (464K)       469884 (458K)   5268 (5K)     24724 (24K)
+-Oz  450624 (440K)       445356 (434K)   5268 (5K)     24528 (24K)
+
+Total opt+dead strip savings: 50420 (49K)
+
+o PCRE Build Target
+  -----------------
+
+Substantial updates to the PCRE build target.  There is very little user
+visible changes, however.  
+
+The PCRE target has a 'Run Script' build phase which executes the
+'Source/Build/Scripts/buildPCRE.sh' script.  Since this is a target that
+is outside the control of Xcode, it must perform several dependency checks
+to ensure that what has been built is valid given the current build settings
+and target dependencies.  This script performs those checks manually by
+comparing the output of `env`, 'Source/Build/Scripts/buildPCRE.sh',
+and 'Source/Build/Makefiles/Makefile.pcre' to a copy of those settings / files
+that were used when the target was built.  Any change effectively causes
+the target to be rebuilt from scratch (ie, rm -rf / untar) to ensure any
+dependencies are accurately reflected in the built library.
+
+Altered the build system to place all temporary files used during the
+build process, including the untaring of the distribution, in to
+${PCRE_TEMP_ROOT}, which translates in to
+'build/RegexKit.build/CONFIGURATION/PCRE.build/pcre-VERSION/'.
+CONFIGURATION being either Debug or Release.
+
+o Build System Changes
+  --------------------
+
+Numerous build system changes, too many to list and nearly all are not
+important to end users.  Examples are the more robust PCRE build subsystem,
+clean up of the documentation build system, clean up of the 'aspell'
+spell checking of documentation, clean up of 'tidy' checking of the HTML
+output, etc.
+
+o SVN at SourceForge.net 
+  ----------------------
+
+This release represents the first import to the SVN repository at
+SourceForge.net.
+
+o File Encodings
+  --------------
+
+Updated/converted all appropriate files to Unicode UTF-8 encoding and
+updated the Xcode reference to reflect the new encoding.
+

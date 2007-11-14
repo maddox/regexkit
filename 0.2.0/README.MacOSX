@@ -1,0 +1,39 @@
+o DBD::SQLite required
+  --------------------
+
+A reasonably recent version of the perl 'DBD::SQLite' module is required to
+build the 'Documentation' and 'Distribution' targets.
+
+
+o Building from the command line
+  ------------------------------
+
+To build the framework from the command line, you may use the 'xcodebuild'
+command.  All intermediate and finished products will be placed in the
+'build' directory by default.
+
+To build the framework with this method, the following can be used:
+
+shell% xcodebuild -configuration Release -target 'RegexKit Framework'
+
+[ build messages cut ]
+
+** BUILD SUCCEEDED **
+shell%
+
+The completed framework build is 'build/Release/RegexKit.framework'.
+
+The documentation may also be built this way, for example:
+
+shell% xcodebuild -configuration Release -target Documentation
+
+The assembled documentation is at 'build/Release/Documentation'.
+
+o A note to 'ports' packagers
+  ---------------------------
+
+If you are creating a 'ports' package for the framework, I would suggest
+that you use the ports system to retrieve the required pcre tarball.  The
+built in retrieval system is not at all robust and easily confused.  If
+you place the pcre-x.y.tar.bz2 file in Source/pcre/pcre-x.y.tar.bz2, the
+makefile will not attempt to retrieve a copy.

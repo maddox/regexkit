@@ -1,0 +1,15 @@
+@import url(doc.css);
+
+.guide ul  { margin-left: 4.0ex; padding-left: 1ex; list-style-type: square; }
+.guide ul li { margin-top: 0.5em; }
+
+.guide .intro .overview ul { margin-left: 9.5ex; list-style-type: none; }
+.guide .intro .overview ul li { margin-top: 0em; }
+
+.guide .seealso > ul { margin: 0px; padding: 0px; list-style-type: none; }
+.guide .seealso > ul > li { margin: 0px 0px 0px 6.25ex; }
+
+.guide .parameters ul { list-style-type: none; margin: 0px 0px 0px 2ex; padding: 0px; } 
+
+
+.guide .sourceLicense pre { white-space: pre; font-family: courier, monospace; margin: 2em 4ex; }
