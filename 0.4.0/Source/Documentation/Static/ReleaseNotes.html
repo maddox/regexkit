@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<style type="text/css">
+@import "CSS/guide.css";
+</style>
+<link rel="stylesheet" type="text/css" href="CSS/print.css" media="print">
+<title>RegexKit Release Notes</title>
+</head>
+
+<body>
+<div class="releaseNotes">
+<h1>RegexKit Release Notes</h1>
+
+<div class="releaseNotesContents">
+<h4><a name="Contents">Contents:</a></h4>
+
+<ul class="contents">
+<li><a href="#Release_0_4_0">Release 0.4.0 Beta</a></li>
+<li><a href="#Release_0_3_1">Release 0.3.1 Beta</a></li>
+<li><a href="#Release_0_3_0">Release 0.3.0 Beta</a></li>
+<li><a href="#Release_0_2_0">Release 0.2.0 Beta</a></li>
+<li><a href="#Release_Alpha">Release Alpha</a></li>
+</ul>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+    <li><a href="ReleaseInformation.html" class="section-link nobr">RegexKit Framework Release Information - Release History</a></li>
+    <li><a href="ChangeLog.html" class="section-link nobr">RegexKit Framework Release Information - Change Log</a></li>
+  </ul>
+</div>
+
+</div> <!-- releaseNotesContents -->
+
+<div class="Release_0_4_0_Beta">
+<h2><a name="Release_0_4_0">Release Notes for 0.4.0 Beta</a></h2>
+
+<h4>Important Changes You Should Be Aware Of</h4>
+
+<p>Previously, the RegexKit @link NSString NSString @/link additions and @link RKEnumerator RKEnumerator @/link class expected and returned all @link NSRange NSRange @/link results as @link UTF8 UTF8 @/link character indexes.  This behavior was not explicitly documented.  From an API perspective, the Foundation @link NSString NSString @/link class treats all strings as if they were @link UTF16 UTF16 @/link encoded for the purposes calculating character indexes, regardless of the strings actual encoding.  This is a problem when moving from one character index domain to the other without first converting the results for Unicode strings that contain non-@link ASCII ASCII @/link characters.  As of version 0.4.0, the API for the @link NSString NSString @/link additions and the @link RKEnumerator RKEnumerator @/link class now calculate all character indexes exactly the same way as the Foundation @link NSString NSString @/link class does.  Because of this, RegexKit @link NSRange NSRange @/link values can be used interchangeably with Foundation @link NSRange NSRange @/link values and produce the expected results.  Previous versions of RegexKit may not have produced the expected results depending on the specific interaction of the regular expression and underlying strings being matched.</p>
+
+<p>It is important to note that the API of the @link RKRegex RKRegex @/link class continues to use PCREs native @link UTF8 UTF8 @/link format for the purposes of calculating character indexes.  This class is not used directly by most users, and those that make use of it require the more exposed access to the PCRE library that it provides.  See <a href="RKRegex.html#overview_ImportantNSRangeDifferences" class="section-link">Important NSRange Differences</a> for more information.</p>
+
+<p>In addition to this change, the @link NSString NSString @/link additions and @link RKEnumerator RKEnumerator @/link objects now require all @link RKRegex RKRegex @/link objects to have the @link RKCompileUTF8 RKCompileUTF8 @/link option set.  Normally, the bytes that PCRE performs matches against is treated as raw 8-bit data.  For Unicode strings, the most significant bit of a byte (ie, <span class="code">>= 128 / 0x80</span>) has special meaning that must be interpreted to extract the additional Unicode information.  Since the @link NSString NSString @/link additions and @link RKEnumerator RKEnumerator @/link class can only operate on @link NSString NSString @/link Unicode strings, @link RKCompileUTF8 RKCompileUTF8 @/link is now set for any @link NSString NSString @/link regex arguments <span class="hardNobr">(ie, <span class="code">[searchString</span> @link rangeOfRegex: rangeOfRegex:@/link<span class="code"><i>@"(.*)"</i>]</span>),</span> and for any @link RKRegex RKRegex @/link object arguments <span class="hardNobr">(ie, <span class="code">[searchString</span> @link rangeOfRegex: rangeOfRegex:@/link<span class="code"><i>regexObject</i>]</span>)</span> are recompiled with the option set if it is not enabled in the supplied @link RKRegex RKRegex @/link object.  See <a href="RKRegex.html#overview_FoundationAdditionsRKCompileOptionRequirements" class="section-link">Foundation Additions RKCompileOption Requirements</a> for more information.</p>
+
+<h4>Unicode Support Significantly Improved</h4>
+
+<p>Due in large part to the changes described above, Unicode support is significantly enhanced.  In addition to enabling the interpretation of Unicode information for the bytes that are being searched, @link RKCompileUTF8 RKCompileUTF8 @/link can subtly alter the behavior of regular expressions.  The reason for this is without @link RKCompileUTF8 RKCompileUTF8@/link, PCRE treats the search buffer as raw 8-bit data.  For example, the definition of the regular expression metacharacter <span class="regex">.</span> (dot) is <i>'match any character except newline'</i>.  A <i>character</i> is defined as a <i>single byte</i>, but @link RKCompileUTF8 RKCompileUTF8 @/link changes this to <i>a single Unicode character</i>, which can be anywhere from one to six bytes.  Normally these changes are invisible and alter the definitions in ways you would intuitively expect.  However, these changes can alter a regular expression in subtle, but critical, ways.  See <a href="pcre/pcre.html#utf8support" class="section-link">UTF8 Support</a> for more information.  It should be noted that RegexKit always enables the <i>UTF8</i> and <i>Unicode properties</i> features in the PCRE library.</p>
+
+<p>While these features and capabilities existed in prior versions of RegexKit, the @link RKCompileUTF8 RKCompileUTF8 @/link option was not enabled by default for either regular expressions passed as a @link NSString NSString@/link, or as a @link RKRegex RKRegex @/link object to the @link NSString NSString @/link additions and @link RKEnumerator RKEnumerator @/link class.  Certainly most users would expect this option and the behavior it enables to be enabled when matching @link NSString NSString @/link objects, which are always Unicode strings.  As mentioned previously, the @link NSString NSString @/link additions and @link RKEnumerator RKEnumerator @/link class now require the @link RKCompileUTF8 RKCompileUTF8 @/link option, and will forcibly enable it if not present.</p>
+
+<h4>Replacement Reference String Case Conversion Feature</h4>
+
+<p>RegexKit now supports the Perl style <span class="regex">\u</span>, <span class="regex">\l</span>, <span class="regex">\U</span>, <span class="regex">\L</span>, and <span class="regex">\E</span> case conversion escape sequences along with the <span class="hardNobr"><span class="regex">\</span><i>digit</i></span> capture subpattern syntax for replacement reference strings.  Case conversion is performed with the @link NSString NSString @/link @link uppercaseString uppercaseString @/link and @link lowercaseString lowercaseString @/link methods, which follow Unicode case conversion rules.</p>
+
+<p>See <a href="NSString.html#CaseConversionEscapeSequences" class="section-link">Case Conversion Syntax</a> for additional information.</p>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+      <li><a href="ChangeLog.html#Release_0_4_0" class="section-link">Release Information - Change Log for 0.4.0 Beta</a></li>
+  </ul>
+</div>
+
+</div> <!-- Release_0_4_0_Beta -->
+
+<div class="Release_0_3_1_Beta">
+<h2><a name="Release_0_3_1">Release Notes for 0.3.1 Beta</a></h2>
+
+<h4>Xcode 3.0 DocSet Subscription Enabled</h4>
+
+<p>You can now 'Subscribe' to the RegexKit documentation.  Xcode will then periodically check to see if there's a newer version of the documentation available and allow you to automatically update to the newer documentation.</p>
+
+<div class="box note marginTopSpacer marginBottomSpacer"><div class="table"><div class="row"><div class="label cell">Note:</div><div class="message cell">This does not update the corresponding RegexKit.framework binary or source code, which will be out of step with the newly installed documentation.  You must update the other framework components manually.</div></div></div></div>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+      <li><a href="ChangeLog.html#Release_0_3_1" class="section-link">Release Information - Change Log for 0.3.1 Beta</a></li>
+  </ul>
+</div>
+
+</div> <!-- Release_0_3_1_Beta -->
+
+<div class="Release_0_3_0_Beta">
+<h2><a name="Release_0_3_0">Release Notes for 0.3.0 Beta</a></h2>
+
+<h4>Xcode 3.0 DocSet Documentation</h4>
+
+
+<p>The documentation is now made available in the new Xcode 3.0 DocSet format. This allows you to access the RegexKit documentation from within Xcode. If you open the Research Assistant ( Help &gt; Show Research Assistant ), and then place the insert point over a RegexKit method, the Research Assistant will display the relevent section of documentation.  Also available is full text searching of the documentation from the documentation viewer. Although the Subscribe button is present, there is no subscription available at this time (this seems to be a bug with Xcode, no URL is present to even subscribe to.)  Automatic documentation updating will be added in a later release.</p>
+
+<h4>Garbage Collection support</h4>
+
+<p>RegexKit now includes support for Mac OS X 10.5's Garbage Collection feature. Cocoa's Garbage Collection system requires that all linked files have Garbage Collection enabled for it to be active.  RegexKit supports both the new Garbage Collection system and the older @link retain retain @/link / @link release release @/link system.  At load time, if Cocoa has enabled the GC system, RegexKit switches to using that.  Otherwise, it falls back to the older @link retain retain @/link / @link release release @/link way of managing memory automatically.</p>
+
+
+<h4>64-bit support</h4>
+
+<p>RegexKit now supports 64-bits cleanly.  For Mac OS X users, the framework binary now includes the following architectures:</p>
+
+<div class="table">
+<table class="standard" summary="Minimum Requirements per Architecture">
+<caption>Minimum Requirements per Architecture</caption>
+<tr><th>Architecture</th><th>ABI</th><th>Minimum Mac OS X</th></tr>
+<tr><td>ppc</td><td>32 bit</td><td>Mac OS X 10.4</td></tr>
+<tr><td>i386</td><td>32 bit</td><td>Mac OS X 10.4</td></tr>
+<tr><td>ppc64</td><td>64 bit</td><td>Mac OS X 10.5 / Leopard</td></tr>
+<tr><td>x86_64</td><td>64 bit</td><td>Mac OS X 10.5 / Leopard</td></tr>
+</table>
+</div>
+
+<h4>Mac OS X Installer <span class="file">.dmg</span> distribution</h4>
+
+<p>RegexKit 0.3.0 marks the introduction of a Mac OS X Installer based distribution.  It bundles together the Mac OS X Binary executable RegexKit.framework, the Documentation, and the source code in to one convenient package.</p>
+
+<h4>Build system improvements</h4>
+
+<p>Began to enable parallel building where possible.  For now, the PCRE target and part of the <span class="xcode-target">Distribution</span> target are converted.  The global build configuration flag <span class="xcode-setting">PARALLEL_BUILD</span> controls this feature.  The PCRE target can be selectively disabled with <span class="xcode-setting">PCRE_PARALLEL_BUILD</span> = <span class="code">NO</span>, and the <span class="xcode-target">Distribution</span> target can be selectively disabled with <span class="xcode-setting">DISTRIBUTION_PARALLEL_BUILD</span> = <span class="code">NO</span>.</p>
+
+<p>By default it will spawn as many jobs as there are CPU's.</p>
+
+<h4>RegexKit.framework <span class="file">Info.plist</span> version bug fix</h4>
+
+<p>RegexKit 0.2.0 had a bug in the <span class="file">Info.plist</span> file. The settings for the keys <span class="code">CFBundleShortVersionString</span> and <span class="code">CFBundleVersion</span> where set to the variable <span class="xcode-setting">${REGEXKIT_CURRENT_VERSION}</span> when they should have been set to <span class="xcode-setting">${PROJECT_CURRENT_VERSION}</span>.</p>
+
+<h4>Multi-threading memory leak</h4>
+
+<p>Fixed a very minor memory leak.  Forgot to @link free free() @/link the per-thread local storage struct when a thread exited.</p>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+      <li><a href="ChangeLog.html#Release_0_3_0" class="section-link">Release Information - Change Log for 0.3.0 Beta</a></li>
+  </ul>
+</div>
+
+</div> <!-- Release_0_3_0_Beta -->
+
+<div class="Release_0_2_0_Beta">
+<h2><a name="Release_0_2_0">Release Notes for 0.2.0 Beta</a></h2>
+
+<p>The version of PCRE used was updated to the latest available: 7.4.</p>
+
+<p>Nearly all changes have been to the build system.  Very few changes, with the exception of upgrading to PCRE 7.4, resulted in any changes to the framework proper.</p>
+
+<p>A priority for the project is to get a usable version of the framework in to the hands of developers.  This means that the framework code, API documentation, and end user distribution packaging and layout are the top priorities.  Other issues, such as documentation on the implementation, will be allowed to fall behind in order to meet the other objectives in a timely manner.</p>
+
+<h4>Framework Versioning</h4>
+
+<p>This release adds the first version numbers internal to the framework. Some of these changes technically have a substantial impact to those linking to the framework, but pragmatically are a complete non-issue because the framework is embedded and copied in to end users application bundles. See ChangeLog for additional information.</p>
+
+<h4>NSString / NSMutableString Additions</h4>
+
+<p>The framework additions to these two classes are likely to be the most volatile going forward, as I expect that vast majority of users need to perform regex operations on strings.</p>
+
+<p>Candidly, it is extremely difficult to craft a usable, clean, and intuitive API.  I often lack the proper perspective of what's required by end users since I tend to view things from the perspective of whats easiest to implement, rather than what's the easiest to use.  <b>FEEDBACK REGARDING THE API IS EXTREMELY APPRECIATED</b>.</p>
+
+<h3>Known Issues</h3>
+
+<h4>Unicode Support</h4>
+
+<p>I am still uncertain as to how well supported Unicode is in practice.  I have no Unicode experience to speak of, so it is extraordinarily difficult for me to conceive of test vectors to verify proper operation.  Being a native English speaker who cut his teeth exclusively on ASCII, I am certain there are things that would seem almost comically obvious to non-English readers and writers but I am completely ignorant of.  I strongly desire to have complete, error free Unicode support in the framework so any help you can provide is greatly appreciated!</p>
+
+<p>You can help in the following ways:</p>
+
+<ul>
+<li>Providing known @link Unicode Unicode @/link samples that illustrate a specific feature or property.  Ideally these would be provided in a form that guarded against any code of corruption, such as an archived @link NSDictionary NSDictionary @/link that can be readily loaded and used for testing.</li>
+<li>Providing standard Xcode Unit Tests that exercise and verify proper @link Unicode Unicode @/link operation.  Patches are a bonus.</li>
+</ul>
+
+<h4>Implementation Documentation</h4>
+
+<p>The implementation documentation (<span class="file">RegexKitImplementation.html</span>) has not been updated in any meaningful way to track the latest changes.  Since the audience for this documentation is expected to be a small fraction of the RegexKit user base, I'm letting it slip in the interest of getting out a product that is used by most people.</p>
+
+<h4>GNUstep Support</h4>
+
+<p>This release did not include any testing of the @link GNUstep GNUstep @/link configuration.  It is likely that there are a few issues that would prevent an 'out of the box' clean build under @link GNUstep GNUstep @/link at this time, but the amount of work should be minimal.  It has worked flawlessly in the past, so it should be a matter of bringing things up to date.  I certainly try to code things with @link GNUstep GNUstep @/link compatibility in mind, but 99.99% of the work happens under Mac OS X Cocoa, so things slip through.</p>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+      <li><a href="ChangeLog.html#Release_0_2_0" class="section-link">Release Information - Change Log for 0.2.0 Beta</a></li>
+  </ul>
+</div>
+
+</div> <!-- Release_0_2_0_Beta -->
+
+<div class="Release_Alpha">
+<h2><a name="Release_Alpha">Release Notes for Alpha</a></h2>
+
+<p>The first public release of the RegexKit framework.</p>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+      <li><a href="ChangeLog.html#Release_Alpha" class="section-link">Release Information - Change Log for Alpha</a></li>
+  </ul>
+</div>
+
+</div> <!-- Release_Alpha -->
+
+
+</div> <!-- releaseNotes -->
+<script type="text/javascript" language="JavaScript" src="JavaScript/common.js"></script>
+</body>
+</html>
