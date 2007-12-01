@@ -98,7 +98,7 @@ exit(0);
 sub extractLinks {
   my($text) = @_;
   my %links;
-  while ($text =~ /\@link\s(.*?)\s(.*?)\s?\@\/link/sg) { my ($x, $y) = ($1, $1); $y =~ s?//apple_ref/\w+/\w+/(\w+)(\?:/.*)\??$1?; $links{$x} = $y; }
+  while ($text =~ /\@link\s+([^\s]+)\s+(.*?)\s?\@\/link/sg) { my ($x, $y) = ($1, $1); $y =~ s?//apple_ref/\w+/\w+/(\w+)(\?:/.*)\??\Q$1\E?; $links{$x} = $y; }
   return(%links);
 }
 
@@ -106,16 +106,18 @@ sub replaceLinks {
   my($text, $className) = ($_[0], $_[1]);
   my(%links) = extractLinks($text);
 
+  #print(Dumper(%links));
+  
   for my $atLink (sort keys %links) {
     if ($no_link{$links{$atLink}} || $links{$atLink} eq $className) {
-      $text =~ s/\@link\s+$atLink\s+(.*?)\s?\@\/link/{
+      $text =~ s/\@link\s+\Q$atLink\E\s+(.*?)\s?\@\/link/{
         my $x=$1;
         if($x !~ ?(\?i)<span class=\"code\">(.*\?)<\/span>?) { $x="<span class=\"code\">$x<\/span>"; }
         $x
       }/sge;
     } else {
       if (defined($global_xtoc_cache{'xref'}->{$links{$atLink}}{'href'})) {
-        $text =~ s/\@link\s+$atLink\s+(.*?)\s?\@\/link/{
+        $text =~ s/\@link\s+\Q$atLink\E\s+(.*?)\s?\@\/link/{
           my $x = $1;
           my $linkClass = defined($global_xtoc_cache{'xref'}->{$links{$atLink}}{'class'}) ? $global_xtoc_cache{'xref'}->{$links{$atLink}}{'class'} : "";
           my $classText = $linkClass ne "" ? " class=\"$linkClass\"" : "";
@@ -123,7 +125,7 @@ sub replaceLinks {
           $x = "<a href=\"$global_xtoc_cache{'xref'}->{$links{$atLink}}{'href'}\"$classText>$x<\/a>"
         }/sge;
       } else {
-        $text =~ s/\@link\s+$atLink\s+(.*?)\s?\@\/link/<span class="XXX code">$1<\/span>/sg;
+        $text =~ s/\@link\s+\Q$atLink\E\s+(.*?)\s?\@\/link/<span class="XXX code">$1<\/span>/sg;
       }
     }
   }

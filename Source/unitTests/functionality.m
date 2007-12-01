@@ -217,15 +217,15 @@ void startGC(void);
 
 - (void)testSimpleMatches
 {
-  STAssertTrue([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:0]], nil);
-  STAssertTrue([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(2, 3)], nil);
+  STAssertTrue([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)]], nil);
+  STAssertTrue([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(2, 3)], nil);
   STAssertTrue([[RKRegex regexWithRegexString:@"123" options:0] matchesCharacters:" 012345 " length:strlen(" 012345 ") inRange:NSMakeRange(2, 3) options:0], nil);
-  STAssertFalse([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(1, 2)], nil);
-  STAssertFalse([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(3, 2)], nil);
+  STAssertFalse([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(1, 2)], nil);
+  STAssertFalse([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(3, 2)], nil);
   STAssertFalse([[RKRegex regexWithRegexString:@"123" options:0] matchesCharacters:" 012345 " length:strlen(" 012345 ") inRange:NSMakeRange(1, 2) options:0], nil);
   STAssertFalse([[RKRegex regexWithRegexString:@"123" options:0] matchesCharacters:" 012345 " length:strlen(" 012345 ") inRange:NSMakeRange(3, 2) options:0], nil);
 
-  STAssertThrowsSpecificNamed([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(400, 16)], NSException, NSRangeException, nil);
+  STAssertThrowsSpecificNamed([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(400, 16)], NSException, NSRangeException, nil);
   STAssertThrowsSpecificNamed([[RKRegex regexWithRegexString:@"123" options:0] matchesCharacters:" 012345 " length:strlen(" 012345 ") inRange:NSMakeRange(400, 16) options:0], NSException, NSRangeException, nil);
   STAssertThrowsSpecificNamed([[RKRegex regexWithRegexString:@"123" options:0] matchesCharacters:" 012345 " length:0 inRange:NSMakeRange(0, 8) options:0], NSException, NSRangeException, nil);
 
@@ -236,13 +236,13 @@ void startGC(void);
 {
   NSRange matchRange = NSMakeRange(0, 0);
   
-  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:0]]), NSMakeRange(2, 3)), @"matchRange = %@", NSStringFromRange(matchRange));
-  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(2, 3) capture:0]), NSMakeRange(2, 3)), @"matchRange = %@", NSStringFromRange(matchRange));
+  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)]]), NSMakeRange(2, 3)), @"matchRange = %@", NSStringFromRange(matchRange));
+  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(2, 3) capture:0]), NSMakeRange(2, 3)), @"matchRange = %@", NSStringFromRange(matchRange));
 
-  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(1, 2) capture:0]), NSMakeRange(NSNotFound, 0)), @"matchRange = %@", NSStringFromRange(matchRange));
-  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(3, 2) capture:0]), NSMakeRange(NSNotFound, 0)), @"matchRange = %@", NSStringFromRange(matchRange));
+  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(1, 2) capture:0]), NSMakeRange(NSNotFound, 0)), @"matchRange = %@", NSStringFromRange(matchRange));
+  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(3, 2) capture:0]), NSMakeRange(NSNotFound, 0)), @"matchRange = %@", NSStringFromRange(matchRange));
 
-  STAssertThrowsSpecificNamed([@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(400, 16) capture:0], NSException, NSRangeException, nil);
+  STAssertThrowsSpecificNamed([@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(400, 16) capture:0], NSException, NSRangeException, nil);
 
   //STAssertThrowsSpecificNamed([[RKRegex regexWithRegexString:@"123" options:0] rangeForCharacters:nil length:strlen(" 012345 ") inRange:NSMakeRange(400, 16) captureIndex:23 options:RKMatchNoOptions], NSException, NSInvalidArgumentException, nil);
 }
@@ -252,12 +252,12 @@ void startGC(void);
   NSRange *matchRanges = NULL;
   
   matchRanges = NULL;
-  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:0]], nil);
+  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)]], nil);
   STAssertTrue(matchRanges != NULL, nil); if(matchRanges == NULL) { return; }
   STAssertTrue(NSEqualRanges(matchRanges[0], NSMakeRange(2, 3)), @"matchRanges[0] = %@", NSStringFromRange(matchRanges[0]));
 
   matchRanges = NULL;
-  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(2, 3)], nil);
+  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(2, 3)], nil);
   STAssertTrue(matchRanges != NULL, nil); if(matchRanges == NULL) { return; }
   STAssertTrue(NSEqualRanges(matchRanges[0], NSMakeRange(2, 3)), @"matchRanges[0] = %@", NSStringFromRange(matchRanges[0]));
 
@@ -267,11 +267,11 @@ void startGC(void);
   STAssertTrue(NSEqualRanges(matchRanges[0], NSMakeRange(2, 3)), @"matchRanges[0] = %@", NSStringFromRange(matchRanges[0]));
 
   matchRanges = NULL;
-  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(1, 2)], nil);
+  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(1, 2)], nil);
   STAssertTrue(matchRanges == NULL, nil);
 
   matchRanges = NULL;
-  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(3, 2)], nil);
+  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(3, 2)], nil);
   STAssertTrue(matchRanges == NULL, nil);
   
   matchRanges = NULL;
@@ -283,7 +283,7 @@ void startGC(void);
   STAssertTrue(matchRanges == NULL, nil);
 
   matchRanges = NULL;
-  STAssertThrowsSpecificNamed(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(400, 16)], NSException, NSRangeException, nil);
+  STAssertThrowsSpecificNamed(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(400, 16)], NSException, NSRangeException, nil);
   STAssertTrue(matchRanges == NULL, nil);
 
   matchRanges = NULL;

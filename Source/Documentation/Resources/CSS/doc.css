@@ -32,7 +32,7 @@ h5   { margin-top: 1.5em; margin-bottom: 0.5000em; font-size: 1.0834em; padding:
 
 .syntax > .specification { margin-left: 6.25ex; font: 1.1667em monaco, courier, monospace; }
 .syntax > .specification .parameter { font-style: italic; font: 1.0834em "lucida grande", geneva, helvetica, arial, sans-serif; margin: 0px; border: 0px; }
-.syntax > .specification .optional { -webkit-border-radius: 3px; -webkit-box-shadow: 2px 3px 5px #888; margin-left: 0.75ex; margin-right: 0.75ex; padding-left: 0.5ex; padding-right: 0.5ex; border: 1px solid #d1d5d9; background-color: #e8e8e8; }
+.syntax > .specification .optional { -webkit-border-radius: 3px; -webkit-box-shadow: 2px 3px 5px #888; -moz-border-radius: 3px; margin-left: 0.75ex; margin-right: 0.75ex; padding-left: 0.5ex; padding-right: 0.5ex; border: 1px solid #d1d5d9; background-color: #e8e8e8; }
 .syntax > .parameters { margin-top: 0.75em; }
 .syntax > .parameters > ul > li > .name { font-style: italic; }
 .syntax > .example { margin-top: 0.75em; margin-left: 2ex; }

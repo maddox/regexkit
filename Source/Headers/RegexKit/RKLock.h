@@ -46,9 +46,9 @@
 
 @interface RKLock : NSObject <NSLocking> {
   pthread_mutex_t lock;
-  unsigned int    busyCount;
-  unsigned int    spinCount;
-  unsigned int    spuriousErrorsCount;
+  RKUInteger      busyCount;
+  RKUInteger      spinCount;
+  RKUInteger      spuriousErrorsCount;
   BOOL            debuggingEnabled;
 }
 
@@ -56,23 +56,24 @@
 - (void)unlock;
 
 - (void)setDebug:(const BOOL)enable;
-- (unsigned int)busyCount;
-- (unsigned int)spinCount;
+- (RKUInteger)busyCount;
+- (RKUInteger)spinCount;
 - (void)clearCounters;
 
 @end
 
-BOOL RKFastLock(RKLock * const aLock)   RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
+BOOL RKFastLock(  RKLock * const aLock) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
 void RKFastUnlock(RKLock * const aLock) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
 
 @interface RKReadWriteLock : NSObject <NSLocking> {
   pthread_rwlock_t readWriteLock;
-  unsigned int     readBusyCount;
-  unsigned int     readSpinCount;
-  unsigned int     writeBusyCount;
-  unsigned int     writeSpinCount;
-  unsigned int     spuriousErrorsCount;
-  BOOL             debuggingEnabled;
+  RKUInteger       readBusyCount;
+  RKUInteger       readSpinCount;
+  RKUInteger       writeBusyCount;
+  RKUInteger       writeSpinCount;
+  RKUInteger       spuriousErrorsCount;
+  RKUInteger       writeLocked:1;
+  RKUInteger       debuggingEnabled:1;
 }
 
 - (BOOL)lock;
@@ -81,13 +82,13 @@ void RKFastUnlock(RKLock * const aLock) RK_ATTRIBUTES(nonnull(1), used, visibili
 - (void)unlock;
 
 - (void)setDebug:(const BOOL)enable;
-- (unsigned int)readBusyCount;
-- (unsigned int)readSpinCount;
-- (unsigned int)writeBusyCount;
-- (unsigned int)writeSpinCount;
+- (RKUInteger)readBusyCount;
+- (RKUInteger)readSpinCount;
+- (RKUInteger)writeBusyCount;
+- (RKUInteger)writeSpinCount;
 - (void)clearCounters;
 
 @end
 
 BOOL RKFastReadWriteLock(  RKReadWriteLock * const aLock, const BOOL forWriting) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
-void RKFastReadWriteUnlock(RKReadWriteLock * const aLock) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
+void RKFastReadWriteUnlock(RKReadWriteLock * const aLock)                        RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));

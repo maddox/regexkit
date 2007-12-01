@@ -67,19 +67,13 @@
                 RKUInteger       captureNameLength;      // The length of a capture name entry.
                 NSArray         *captureNameArray;       // An array that maps capture index values to capture names.  nil if no named captures.
    
-                int              referenceCountMinusOne; // Keep track of the reference count ourselves.
+                RKInteger        referenceCountMinusOne; // Keep track of the reference count ourselves.
                 RKUInteger       hash;                   // Hash value for this object.
 
-#ifdef REGEXKIT_DEBUGGING
-                RKUInteger       debugRetainCount:1;
-#endif
+  RK_STRONG_REF char            *compiledRegexUTF8String;
+  RK_STRONG_REF char            *compiledOptionUTF8String;
 }
 
-#ifdef REGEXKIT_DEBUGGING
-- (void)setDebugRetainCount:(BOOL)shouldDebug;
-- (BOOL)debugRetainCount;
-
-#endif
 
 /*!
  @toc   RKRegex

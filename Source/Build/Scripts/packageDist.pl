@@ -6,15 +6,17 @@ require Foundation;
 my $NSStrings;
 
 my $dictionaries =
-  { 'framework'           => NSDictionary->dictionaryWithContentsOfFile_(nsstring("$ENV{'DISTRIBUTION_TEMP_PACKAGES_DIR'}/$ENV{'DISTRIBUTION_PACKAGE_FRAMEWORK'}/Contents/Info.plist")),
-    'htmlDocumentation'   => NSDictionary->dictionaryWithContentsOfFile_(nsstring("$ENV{'DISTRIBUTION_TEMP_PACKAGES_DIR'}/$ENV{'DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION'}/Contents/Info.plist")),
-    'sourcecode'          => NSDictionary->dictionaryWithContentsOfFile_(nsstring("$ENV{'DISTRIBUTION_TEMP_PACKAGES_DIR'}/$ENV{'DISTRIBUTION_PACKAGE_SOURCECODE'}/Contents/Info.plist"))
+  { 'framework'            => NSDictionary->dictionaryWithContentsOfFile_(nsstring("$ENV{'DISTRIBUTION_TEMP_PACKAGES_DIR'}/$ENV{'DISTRIBUTION_PACKAGE_FRAMEWORK'}/Contents/Info.plist")),
+    'instrumentsAdditions' => NSDictionary->dictionaryWithContentsOfFile_(nsstring("$ENV{'DISTRIBUTION_TEMP_PACKAGES_DIR'}/$ENV{'DISTRIBUTION_PACKAGE_INSTRUMENTS_ADDITIONS'}/Contents/Info.plist")),
+    'htmlDocumentation'    => NSDictionary->dictionaryWithContentsOfFile_(nsstring("$ENV{'DISTRIBUTION_TEMP_PACKAGES_DIR'}/$ENV{'DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION'}/Contents/Info.plist")),
+    'sourcecode'           => NSDictionary->dictionaryWithContentsOfFile_(nsstring("$ENV{'DISTRIBUTION_TEMP_PACKAGES_DIR'}/$ENV{'DISTRIBUTION_PACKAGE_SOURCECODE'}/Contents/Info.plist"))
   };
 
 my $packages = 
-  { 'framework'           => getPackageInfo($dictionaries->{'framework'},           "$ENV{'DISTRIBUTION_PACKAGE_FRAMEWORK'}"),
-    'htmlDocumentation'   => getPackageInfo($dictionaries->{'htmlDocumentation'},   "$ENV{'DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION'}"),
-    'sourcecode'          => getPackageInfo($dictionaries->{'sourcecode'},          "$ENV{'DISTRIBUTION_PACKAGE_SOURCECODE'}")
+  { 'framework'            => getPackageInfo($dictionaries->{'framework'},            "$ENV{'DISTRIBUTION_PACKAGE_FRAMEWORK'}"),
+    'instrumentsAdditions' => getPackageInfo($dictionaries->{'instrumentsAdditions'}, "$ENV{'DISTRIBUTION_PACKAGE_INSTRUMENTS_ADDITIONS'}"),
+    'htmlDocumentation'    => getPackageInfo($dictionaries->{'htmlDocumentation'},    "$ENV{'DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION'}"),
+    'sourcecode'           => getPackageInfo($dictionaries->{'sourcecode'},           "$ENV{'DISTRIBUTION_PACKAGE_SOURCECODE'}")
   };
 
 if($ENV{XCODE_VERSION_MAJOR} ne "0200") {
@@ -93,13 +95,30 @@ function volumeCheckTiger() {
 </script>
 <script>
 function checkXcode3(whichChoice) {
-  return(isNotDowngrade(whichChoice) &amp;&amp; system.files.plistAtPath(my.target.mountpoint + '/Developer/Applications/Xcode.app/Contents/Info.plist').CFBundleShortVersionString >= '3.0');
+  var result = false;
+  try {
+    result = isNotDowngrade(whichChoice) &amp;&amp; system.files.plistAtPath(my.target.mountpoint + '/Developer/Applications/Xcode.app/Contents/Info.plist').CFBundleShortVersionString >= '3.0';
+  } catch (e) {}
+  return(result);
+}
+</script>
+<script>
+function checkInstrumentsApp(whichChoice) {
+  var result = false;
+  try {
+    result = isNotDowngrade(whichChoice) &amp;&amp; system.files.plistAtPath(my.target.mountpoint + '/Developer/Applications/Instruments.app/Contents/Info.plist').CFBundleShortVersionString >= '1.0';
+  } catch (e) {}
+  return(result);
 }
 </script>
 <script>
 function checkSourcecode() {
-  var action = choices.sourcecodeChoice.packageUpgradeAction;
-  if((action == "clean") || (action == 'downgrade') || (action == 'mixed')) { return(false); } else { return(true); }
+  var result = false;
+  try {
+    var action = choices.sourcecodeChoice.packageUpgradeAction;
+    if((action == 'clean') || (action == 'downgrade') || (action == 'mixed')) { result = false; } else { result = true; }
+  } catch (e) {}
+  return(result);
 }
 </script>
     <script>
@@ -129,6 +148,7 @@ function isNotDowngradeEnabled(whichChoice, okTooltip) {
 $pcreScripts
 <choices-outline>
         <line choice="frameworkChoice"></line>
+        <line choice="instrumentsAdditionsChoice"></line>
         <line choice="htmlDocumentationChoice"></line>
 END_OF_DIST
 if($ENV{XCODE_VERSION_MAJOR} ne "0200") {
@@ -142,6 +162,9 @@ print <<END_OF_DIST;
     </choices-outline>
     <choice id="frameworkChoice" title="RegexKit Framework" description="Contains the Mac OS X Universal Binary RegexKit.framework bundle for ppc, ppc64, i386, and x86_64. This is what your application will link to and copy in to its .App application bundle as a private embedded framework." tooltip="RegexKit.framework" start_selected="isNotDowngrade(choices.frameworkChoice)" start_enabled="isNotDowngradeEnabled(choices.frameworkChoice, 'RegexKit.framework')" start_visible="true">
         <pkg-ref id="$packages->{'framework'}->{'CFBundleIdentifier'}"></pkg-ref>
+    </choice>
+    <choice id="instrumentsAdditionsChoice" title="Instruments.app Additions" description="Suite of RegexKit instruments for Instruments.app." tooltip="Suite of RegexKit instruments for Instruments.app" start_selected="checkInstrumentsApp(choices.instrumentsAdditionsChoice)" start_enabled="isNotDowngradeEnabled(choices.instrumentsAdditionsChoice, 'Suite of RegexKit instruments for Instruments.app')" start_visible="true">
+        <pkg-ref id="$packages->{'instrumentsAdditions'}->{'CFBundleIdentifier'}"></pkg-ref>
     </choice>
     <choice id="htmlDocumentationChoice" title="HTML Documentation" description="RegexKit Framework HTML Documentation." tooltip="RegexKit HTML Documentation" start_selected="isNotDowngrade(choices.htmlDocumentationChoice)" start_enabled="isNotDowngradeEnabled(choices.htmlDocumentationChoice, 'RegexKit HTML Documentation')" start_visible="true">
         <pkg-ref id="$packages->{'htmlDocumentation'}->{'CFBundleIdentifier'}"></pkg-ref>
@@ -160,6 +183,7 @@ print <<END_OF_DIST;
     </choice>
     $pcreChoice
     $packages->{'framework'}->{'pkgRef'}
+    $packages->{'instrumentsAdditions'}->{'pkgRef'}
     $packages->{'htmlDocumentation'}->{'pkgRef'}
 END_OF_DIST
 if($ENV{XCODE_VERSION_MAJOR} ne "0200") {

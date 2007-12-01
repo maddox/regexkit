@@ -68,6 +68,7 @@
 #import <RegexKit/RKEnumerator.h>
 #import <RegexKit/RKUtility.h>
 #import <RegexKit/NSArray.h>
+#import <RegexKit/NSData.h>
 #import <RegexKit/NSDictionary.h>
 #import <RegexKit/NSObject.h>
 #import <RegexKit/NSSet.h>

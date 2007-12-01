@@ -62,20 +62,93 @@
 #import <RegexKit/RegexKitTypes.h>
 #import <RegexKit/RKRegex.h>
 
+// Used to inform the compiler / cpu to prefetch data in to the caches.
+#if       defined (__GNUC__) && (__GNUC__ >= 4)
+#define RK_PREFETCH(addr)         __builtin_prefetch(addr, 0);
+#define RK_PREFETCH_RD(addr)      __builtin_prefetch(addr, 0);
+#define RK_PREFETCH_WR(addr)      __builtin_prefetch(addr, 1);
+#define RK_PREFETCH_ONCE(addr)    __builtin_prefetch(addr, 0, 0);
+#define RK_PREFETCH_RD_ONCE(addr) __builtin_prefetch(addr, 0, 0);
+#define RK_PREFETCH_WR_ONCE(addr) __builtin_prefetch(addr, 1, 0);
+#else  // __GNUC__ is not defined || __GNUC__ < 4
+#define RK_PREFETCH(addr)
+#define RK_PREFETCH_RD(addr)
+#define RK_PREFETCH_WR(addr)
+#define RK_PREFETCH_ONCE(addr)
+#define RK_PREFETCH_RD_ONCE(addr)
+#define RK_PREFETCH_WR_ONCE(addr)
+#endif // defined (__GNUC__) && (__GNUC__ >= 4)
+
+// Used by Begin/End Match probes to squeeze additional information in to the probe firing.
+typedef struct {
+  void *object;
+  const char *regex;
+  int options;
+} regexProbeObject;
+
+#if defined(ENABLE_DTRACE_INSTRUMENTATION) && defined(__MACOSX_RUNTIME__)
+
+#import "RegexKitProbes.h"
+
+#define RK_PROBE_FIRE(probeName, ...) REGEXKIT_ ## probeName(__VA_ARGS__)
+#define RK_PROBE_ENABLED(probeName)   RK_EXPECTED(REGEXKIT_ ## probeName ## _ENABLED(), 0)
+#define RK_PROBE(probeName, ...)                        if(RK_PROBE_ENABLED(probeName)) { RK_PROBE_FIRE(probeName, __VA_ARGS__); }
+#define RK_PROBE_CONDITIONAL(probeName, condition, ...) if(RK_EXPECTED(condition, 0))   { RK_PROBE_FIRE(probeName, __VA_ARGS__); }
+
+#else // ENABLE_DTRACE_INSTRUMENTATION && __MACOSX_RUNTIME__ are not defined
+
+#ifdef ENABLE_DTRACE_INSTRUMENTATION
+#warning DTrace is currently only supported under Mac OS X 10.5 and later.
+#endif
+
+#define RK_PROBE_FIRE(probeName, ...)
+#define RK_PROBE_ENABLED(probeName)                      0  // Always false
+#define RK_PROBE(probeName, ...)
+#define RK_PROBE_CONDITIONAL(probeName, condition, ...)
+
+#endif // ENABLE_DTRACE_INSTRUMENTATION
+
+
+#ifdef    ENABLE_MACOSX_GARBAGE_COLLECTION
+
+extern int32_t RKRegexGarbageCollect; // Set in the RKRegex +load method, used by all.
+
+#define RK_AUTORELEASED_MALLOC_NO_GC(size)            (RKAutoreleasedMalloc(size))
+#define RK_AUTORELEASED_MALLOC_SCANNED(size)          (RK_EXPECTED(RKRegexGarbageCollect == 0, 1) ? RKAutoreleasedMalloc(size) : NSAllocateCollectable(size, 0))
+#define RK_AUTORELEASED_MALLOC_NOT_SCANNED(size)      (RK_EXPECTED(RKRegexGarbageCollect == 0, 1) ? RKAutoreleasedMalloc(size) : NSAllocateCollectable(size, NSScannedOption))
+#define RK_MALLOC_NO_GC(size)                         (malloc(size))
+#define RK_MALLOC_SCANNED(size)                       (RK_EXPECTED(RKRegexGarbageCollect == 0, 1) ? malloc(size) : NSAllocateCollectable(size, 0))
+#define RK_MALLOC_NOT_SCANNED(size)                   (RK_EXPECTED(RKRegexGarbageCollect == 0, 1) ? malloc(size) : NSAllocateCollectable(size, NSScannedOption))
+#define RK_FREE_AND_NULL(ptr)                     { if(RK_EXPECTED(RKRegexGarbageCollect == 0, 1)) { free(ptr); } ptr = NULL; }
+#define RK_FREE_AND_NULL_NO_GC(ptr)                                                                { free(ptr);   ptr = NULL; }
+#define RK_MEMMOVE_GC(dst, src, size)                 (RK_EXPECTED(RKRegexGarbageCollect == 0, 1) ? memmove(dst, src, size) : objc_memmove_collectable(dst, src, size))
+
+#else  // ENABLE_MACOSX_GARBAGE_COLLECTION not defined
+
+#define RKRegexGarbageCollect 0
+
+#define RK_AUTORELEASED_MALLOC_NO_GC(size)         (RKAutoreleasedMalloc(size))
+#define RK_AUTORELEASED_MALLOC_SCANNED(size)       (RKAutoreleasedMalloc(size))
+#define RK_AUTORELEASED_MALLOC_NOT_SCANNED(size)   (RKAutoreleasedMalloc(size))
+#define RK_MALLOC_NO_GC(size)                      (malloc(size))
+#define RK_MALLOC_SCANNED(size)                    (malloc(size))
+#define RK_MALLOC_NOT_SCANNED(size)                (malloc(size))
+#define RK_FREE_AND_NULL(ptr)                      { free(ptr); ptr = NULL; }
+#define RK_FREE_AND_NULL_NO_GC(ptr)                { free(ptr); ptr = NULL; }
+#define RK_MEMMOVE_GC(dst, src, size)              (memmove(dst, src, size))
+
+#endif // ENABLE_MACOSX_GARBAGE_COLLECTION
+
 #ifdef __MACOSX_RUNTIME__
 #import <objc/objc-runtime.h>
 #endif
 
-#ifdef    ENABLE_MACOSX_GARBAGE_COLLECTION
-extern int32_t RKRegexGarbageCollect; // Set in the RKRegex +load method, used by all.
-#else  // ENABLE_MACOSX_GARBAGE_COLLECTION not defined
-#define RKRegexGarbageCollect 0
-#endif // ENABLE_MACOSX_GARBAGE_COLLECTION
-
 #ifdef    USE_CORE_FOUNDATION
 #define RKStringBufferEncoding CFStringEncoding
+#define RKUTF8StringEncoding   kCFStringEncodingUTF8
 #else  // USE_CORE_FOUNDATION not defined
 #define RKStringBufferEncoding NSStringEncoding
+#define RKUTF8StringEncoding   NSUTF8StringEncoding
 #endif // USE_CORE_FOUNDATION
 
 // These macros provide transparent support for Mac OS X Leopard Garbage Collection and non-Leopard systems.
@@ -111,6 +184,8 @@ typedef struct _RKStringBuffer {
                 RKStringBufferEncoding  encoding;
 } RKStringBuffer;
 
+const char *RKCharactersFromCompileErrorCode(const RKCompileErrorCode decodeErrorCode);
+const char *RKCharactersFromMatchErrorCode(const RKMatchErrorCode decodeErrorCode);
 
 // Switches between #defines vs. RKREGEX_STATIC_INLINE functions for some things
 #define _USE_DEFINES
@@ -141,14 +216,20 @@ RKREGEX_STATIC_INLINE BOOL RKIsMainThread(void) { return((BOOL)pthread_main_np()
 #define HAVE_RKREGEX_ATOMIC_OPS
 
 #define RKAtomicMemoryBarrier(...) OSMemoryBarrier()
+#define RKAtomicCompareAndSwapInt(oldValue, newValue, ptr) OSAtomicCompareAndSwap32Barrier(oldValue, newValue, ptr)
 #define RKAtomicIncrementInt(ptr) OSAtomicIncrement32(ptr)
 #define RKAtomicDecrementInt(ptr) OSAtomicDecrement32(ptr)
-#define RKAtomicCompareAndSwapInt(oldValue, newValue, ptr) OSAtomicCompareAndSwap32Barrier(oldValue, newValue, ptr)
 
 #ifdef __LP64__
 #define RKAtomicCompareAndSwapPtr(oldp, newp, ptr) OSAtomicCompareAndSwap64Barrier((int64_t)oldp, (int64_t)newp, (int64_t *)ptr)
+#define RKAtomicCompareAndSwapInteger(oldValue, newValue, ptr) OSAtomicCompareAndSwap64Barrier(oldValue, newValue, ptr)
+#define RKAtomicIncrementInteger(ptr) OSAtomicIncrement64((int64_t *)ptr)
+#define RKAtomicDecrementInteger(ptr) OSAtomicDecrement64((int64_t *)ptr)
 #else
 #define RKAtomicCompareAndSwapPtr(oldp, newp, ptr) OSAtomicCompareAndSwap32Barrier((int32_t)oldp, (int32_t)newp, (int32_t *)ptr)
+#define RKAtomicCompareAndSwapInteger(oldValue, newValue, ptr) OSAtomicCompareAndSwap32Barrier(oldValue, newValue, ptr)
+#define RKAtomicIncrementInteger(ptr) OSAtomicIncrement32((int32_t *)ptr)
+#define RKAtomicDecrementInteger(ptr) OSAtomicDecrement32((int32_t *)ptr)
 #endif
 
 #endif //__MACOSX_RUNTIME__
@@ -172,6 +253,16 @@ RKREGEX_STATIC_INLINE int32_t RKAtomicDecrementInt(int32_t *ptr) { atomic_subtra
 RKREGEX_STATIC_INLINE BOOL RKAtomicCompareAndSwapInt(int32_t oldValue, int32_t newValue, volatile int32_t *ptr) { return(atomic_cmpset_rel_int(ptr, oldValue, newValue)); }
 RKREGEX_STATIC_INLINE BOOL RKAtomicCompareAndSwapPtr(void *oldp, void *newp, volatile void *ptr) { return(atomic_cmpset_rel_ptr(ptr, oldp, newp)); }
 
+#if defined(__LP64__) && (RKInteger != int)
+RKREGEX_STATIC_INLINE int64_t RKAtomicIncrementInteger(int64_t *ptr) { atomic_add_long(ptr, 1); return(atomic_load_acq_64(ptr)); /* XXX not 100% correct, but close enough */ }
+RKREGEX_STATIC_INLINE int64_t RKAtomicDecrementInteger(int64_t *ptr) { atomic_subtract_long(ptr, 1); return(atomic_load_acq_64(ptr)); /* XXX not 100% correct, but close enough */ }
+RKREGEX_STATIC_INLINE BOOL RKAtomicCompareAndSwapInteger(int64_t oldValue, int64_t newValue, volatile int64_t *ptr) { return(atomic_cmpset_rel_long(ptr, oldValue, newValue)); }
+#else
+RKREGEX_STATIC_INLINE int32_t RKAtomicIncrementInteger(int32_t *ptr) { atomic_add_int(ptr, 1); return(atomic_load_acq_32(ptr)); /* XXX not 100% correct, but close enough */ }
+RKREGEX_STATIC_INLINE int32_t RKAtomicDecrementInteger(int32_t *ptr) { atomic_subtract_int(ptr, 1); return(atomic_load_acq_32(ptr)); /* XXX not 100% correct, but close enough */ }
+RKREGEX_STATIC_INLINE BOOL RKAtomicCompareAndSwapInteger(int32_t oldValue, int32_t newValue, volatile int32_t *ptr) { return(atomic_cmpset_rel_int(ptr, oldValue, newValue)); }
+#endif // __LP64__ && (RKInteger != int)
+
 #endif //__FreeBSD__
 
 // Solaris
@@ -190,6 +281,17 @@ RKREGEX_STATIC_INLINE int32_t RKAtomicDecrementInt(int32_t *ptr) { return(atomic
 RKREGEX_STATIC_INLINE BOOL RKAtomicCompareAndSwapInt(int32_t oldValue, int32_t newValue, volatile int32_t *ptr) { return(atomic_cas_uint(ptr, (uint_t)oldValue, (uint_t)newValue) == oldValue ? YES : NO); }
 RKREGEX_STATIC_INLINE BOOL RKAtomicCompareAndSwapPtr(void *oldp, void *newp, volatile void *ptr) { return(atomic_cas_ptr(ptr, oldp, newp) == oldp ? YES : NO); }
 
+#if defined(__LP64__) && (sizeof(RKInteger) == 8)
+RKREGEX_STATIC_INLINE int64_t RKAtomicIncrementInteger(int64_t *ptr) { return(atomic_inc_ulong_nv((uint64_t *)ptr)); }
+RKREGEX_STATIC_INLINE int64_t RKAtomicDecrementInteger(int64_t *ptr) { return(atomic_dec_ulong_nv((uint64_t *)ptr)); }
+RKREGEX_STATIC_INLINE BOOL RKAtomicCompareAndSwapInteger(int64_t oldValue, int64_t newValue, volatile int64_t *ptr) { return(atomic_cas_ulong(ptr, (uint64_t)oldValue, (uint64_t)newValue) == oldValue ? YES : NO); }
+#else
+RKREGEX_STATIC_INLINE int32_t RKAtomicIncrementInteger(int32_t *ptr) { return(atomic_inc_uint_nv((uint_t *)ptr)); }
+RKREGEX_STATIC_INLINE int32_t RKAtomicDecrementInteger(int32_t *ptr) { return(atomic_dec_uint_nv((uint_t *)ptr)); }
+RKREGEX_STATIC_INLINE BOOL RKAtomicCompareAndSwapInteger(int32_t oldValue, int32_t newValue, volatile int32_t *ptr) { return(atomic_cas_uint(ptr, (uint_t)oldValue, (uint_t)newValue) == oldValue ? YES : NO); }
+#endif // __LP64__ && (sizeof(RKInteger) == 8)
+
+
 #endif // Solaris __sun__ _svr4__
 
 // Try for GCC 4.1+ built in atomic ops and pthreads?
@@ -206,6 +308,10 @@ RKREGEX_STATIC_INLINE BOOL RKIsMainThread(void) { return((BOOL)pthread_main_np()
 #define RKAtomicDecrementInt(ptr) __sync_sub_and_fetch(ptr, 1)
 #define RKAtomicCompareAndSwapInt(oldValue, newValue, ptr) __sync_bool_compare_and_swap(ptr, oldValue, newValue)
 #define RKAtomicCompareAndSwapPtr(oldp, newp, ptr) __sync_bool_compare_and_swap(ptr, oldValue, newValue)
+
+#define RKAtomicIncrementInteger(ptr) __sync_add_and_fetch(ptr, 1)
+#define RKAtomicDecrementInteger(ptr) __sync_sub_and_fetch(ptr, 1)
+#define RKAtomicCompareAndSwapInteger(oldValue, newValue, ptr) __sync_bool_compare_and_swap(ptr, oldValue, newValue)
 
 #endif // HAVE_RKREGEX_ATOMIC_OPS == NO and gcc 4.1 or greater
 
@@ -251,7 +357,7 @@ RKREGEX_STATIC_INLINE BOOL RKIsMainThread(void) { return((BOOL)pthread_main_np()
 // In RKRegex.c
 RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCompileOption compileOptions, const BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3), pure, used, visibility("hidden"));
 // In RKCache.c
-id RKFastCacheLookup(RKCache * const aCache, const SEL _cmd RK_ATTRIBUTES(unused), const RKUInteger objectHash, const BOOL shouldAutorelease) RK_ATTRIBUTES(used, visibility("hidden"));
+id RKFastCacheLookup(RKCache * const self, const SEL _cmd RK_ATTRIBUTES(unused), const RKUInteger objectHash, NSString * const objectDescription, const BOOL shouldAutorelease) RK_ATTRIBUTES(used, visibility("hidden"));
 // In RKPrivate.c
 void nsprintf(NSString * const formatString, ...) RK_ATTRIBUTES(visibility("hidden"));
 void vnsprintf(NSString * const formatString, va_list ap) RK_ATTRIBUTES(visibility("hidden"));
@@ -312,44 +418,81 @@ RKREGEX_STATIC_INLINE RKUInteger RKHashForStringAndCompileOption(NSString * cons
 
 #endif //_USE_DEFINES
 
+RKREGEX_STATIC_INLINE char *RKGetUTF8String(NSString *string, char *temporaryBuffer, RKUInteger length) RK_ATTRIBUTES(nonnull(1, 2), pure);
+
+#ifdef    USE_CORE_FOUNDATION
+RKREGEX_STATIC_INLINE char *RKGetUTF8String(NSString *string, char *temporaryBuffer, RKUInteger length) {
+  NSCParameterAssert(string != NULL); NSCParameterAssert(temporaryBuffer != NULL); NSCParameterAssert(length > 0);
+  CFIndex copiedLength = 0;
+  
+  if(RK_EXPECTED(string != NULL, 1)) {
+    char *fastBuffer = (char *)CFStringGetCStringPtr((CFStringRef)string, kCFStringEncodingUTF8);
+    if(fastBuffer != NULL) { return(fastBuffer); }
+
+    copiedLength = CFStringGetBytes((CFStringRef)string, (CFRange){0, CFStringGetLength((CFStringRef)string)}, kCFStringEncodingUTF8, '?', 0, (UInt8 *)temporaryBuffer, (CFIndex)length - 1, NULL);
+  }
+  temporaryBuffer[copiedLength] = 0;
+
+  return(temporaryBuffer);
+}
+#else
+RKREGEX_STATIC_INLINE char *RKGetUTF8String(NSString *string, char *temporaryBuffer, RKUInteger length) {
+  NSCParameterAssert(string != NULL); NSCParameterAssert(temporaryBuffer != NULL); NSCParameterAssert(length > 0);
+  temporaryBuffer[0] = 0;
+  [string getCString:temporaryBuffer maxLength:length encoding:NSUTF8StringEncoding];
+  
+  return(temporaryBuffer);
+}
+#endif // USE_CORE_FOUNDATION
+
 RKREGEX_STATIC_INLINE RKStringBuffer RKStringBufferWithString(NSString * const RK_C99(restrict) string) {
   RKStringBuffer stringBuffer = RKMakeStringBuffer(string, NULL, 0, 0);
 
-#ifdef USE_CORE_FOUNDATION
+#ifdef    USE_CORE_FOUNDATION
   if(RK_EXPECTED(string != NULL, 1)) {
     stringBuffer.encoding = CFStringGetFastestEncoding((CFStringRef)string);
 
     if((stringBuffer.encoding == kCFStringEncodingMacRoman) || (stringBuffer.encoding == kCFStringEncodingASCII) || (stringBuffer.encoding == kCFStringEncodingUTF8)) {
       stringBuffer.characters = CFStringGetCStringPtr((CFStringRef)string, stringBuffer.encoding);
-      if((stringBuffer.encoding == kCFStringEncodingMacRoman) || (stringBuffer.encoding == kCFStringEncodingASCII)) {
-        stringBuffer.length = (RKUInteger)CFStringGetLength((CFStringRef)string);
-      } else {
-        stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters);
+      RK_PREFETCH(stringBuffer.characters);
+      if(RK_EXPECTED(stringBuffer.characters != NULL, 1)) {
+        if((stringBuffer.encoding == kCFStringEncodingMacRoman) || (stringBuffer.encoding == kCFStringEncodingASCII)) {
+          stringBuffer.length = (RKUInteger)CFStringGetLength((CFStringRef)string);
+        } else {
+          stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters);
+        }
       }
     }
     if(RK_EXPECTED(stringBuffer.characters == NULL, 0)) {
+      RK_PROBE(PERFORMANCENOTE, NULL, 0, NULL, 0, -1, 1, "NSString encoding requires expensive UTF8 conversion.");
       stringBuffer.characters = [string UTF8String];
       stringBuffer.encoding = kCFStringEncodingUTF8;
       if(RK_EXPECTED(stringBuffer.characters != NULL, 1)) { stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters); }
+      RK_PROBE(PERFORMANCENOTE, NULL, 0, NULL, stringBuffer.length, -1, 2, "NSString encoding requires expensive UTF8 conversion.");
       //NSLog(@"CF UTF8String conversion path. string = %p '%.40s' UTF8length = %u, original encoding: %d %@ length: %u", stringBuffer.characters, stringBuffer.characters, stringBuffer.length, stringBuffer.encoding, CFStringGetNameOfEncoding(stringBuffer.encoding), CFStringGetLength((CFStringRef)string));
     }
   }
-#else // No Core Foundation, NextStep Foundation instead
+#else  // USE_CORE_FOUNDATION is not defined
   if(RK_EXPECTED(string != NULL, 1)) {
     stringBuffer.encoding = [string fastestEncoding];
     
     if((stringBuffer.encoding == NSMacOSRomanStringEncoding) || (stringBuffer.encoding == NSASCIIStringEncoding) || (stringBuffer.encoding == NSUTF8StringEncoding)) {
       stringBuffer.characters = [string cStringUsingEncoding:stringBuffer.encoding];
-      if((stringBuffer.encoding == NSMacOSRomanStringEncoding) || (stringBuffer.encoding == NSASCIIStringEncoding)) {
-        stringBuffer.length = [string length];
-      } else {
-        stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters);
+      RK_PREFETCH(stringBuffer.characters);
+      if(RK_EXPECTED(stringBuffer.characters != NULL, 1)) {
+        if((stringBuffer.encoding == NSMacOSRomanStringEncoding) || (stringBuffer.encoding == NSASCIIStringEncoding)) {
+          stringBuffer.length = [string length];
+        } else {
+          stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters);
+        }
       }
     }
     if(RK_EXPECTED(stringBuffer.characters == NULL, 0)) {
+      RK_PROBE(PERFORMANCENOTE, NULL, 0, NULL, 0, -1, 1, "NSString encoding requires expensive UTF8 conversion.");
       stringBuffer.characters = [string UTF8String];
       stringBuffer.encoding = NSUTF8StringEncoding;
       if(RK_EXPECTED(stringBuffer.characters != NULL, 1)) { stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters); }
+      RK_PROBE(PERFORMANCENOTE, NULL, 0, NULL, stringBuffer.length, -1, 2, "NSString encoding requires expensive UTF8 conversion.");
       //NSLog(@"NS UTF8String conversion path. string = %p, '%.40s' UTF8length = %u, original encoding: %@ length: %u", stringBuffer.characters, stringBuffer.characters, stringBuffer.length, [NSString localizedNameOfStringEncoding:[string fastestEncoding]], [string length]);
     }
   }
@@ -366,6 +509,8 @@ typedef enum {
 NSString *RKStringFromReferenceString(id self, const SEL _cmd, RKRegex * const RK_C99(restrict) regex, RK_STRONG_REF const NSRange * const RK_C99(restrict) matchRanges, RK_STRONG_REF const RKStringBuffer * const RK_C99(restrict) matchStringBuffer, RK_STRONG_REF const RKStringBuffer * const RK_C99(restrict) referenceStringBuffer) RK_ATTRIBUTES(malloc, used, visibility("hidden"));
 BOOL RKExtractCapturesFromMatchesWithKeyArguments(id self, const SEL _cmd, RK_STRONG_REF const RKStringBuffer * const RK_C99(restrict) stringBuffer, RKRegex * const RK_C99(restrict) regex, RK_STRONG_REF const NSRange * const RK_C99(restrict) matchRanges, const RKCaptureExtractOptions captureExtractOptions, NSString * const firstKey, va_list useVarArgsList) RK_ATTRIBUTES(used, visibility("hidden"));
 
+const char *cacheUTF8String(RKCache *self) RK_ATTRIBUTES(used, visibility("hidden"), nonnull(1));
+const char *regexUTF8String(RKRegex *self) RK_ATTRIBUTES(used, visibility("hidden"), nonnull(1));
 RKUInteger RKCaptureIndexForCaptureNameCharacters(RKRegex * const aRegex, const SEL _cmd, const char * const RK_C99(restrict) captureNameCharacters, const RKUInteger length, const NSRange * const RK_C99(restrict) matchedRanges, const BOOL raiseExceptionOnDoesNotExist) RK_ATTRIBUTES(pure, used, visibility("hidden"));
 
 

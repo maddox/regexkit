@@ -70,15 +70,15 @@ static void __RKThreadIsExiting(void *arg) {
   RK_STRONG_REF struct __RKThreadLocalData *tld = (struct __RKThreadLocalData *)arg;
   if (tld == NULL) { return; }
   if(tld->_numberFormatter != NULL) { RKEnableCollectorForPointer(tld->_numberFormatter); RKRelease(tld->_numberFormatter); tld->_numberFormatter = NULL; }
-  free(tld);
+  RK_FREE_AND_NULL_NO_GC(tld);
   tld = NULL;
 }
 
 struct __RKThreadLocalData *__RKGetThreadLocalData(void) {
   RK_STRONG_REF struct __RKThreadLocalData *tld = pthread_getspecific(__RKRegexThreadLocalDataKey);
-  if(tld != NULL) { return(tld); }
+  if(RK_EXPECTED(tld != NULL, 1)) { return(tld); }
   
-  if((tld = malloc(sizeof(struct __RKThreadLocalData))) == NULL) { return(NULL); }
+  if((tld = RK_MALLOC_NO_GC(sizeof(struct __RKThreadLocalData))) == NULL) { return(NULL); }
   memset(tld, 0, sizeof(struct __RKThreadLocalData));
   pthread_setspecific(__RKRegexThreadLocalDataKey, tld);
   
@@ -90,8 +90,8 @@ struct __RKThreadLocalData *__RKGetThreadLocalData(void) {
 NSNumberFormatter *__RKGetThreadLocalNumberFormatter(void) {
   RK_STRONG_REF struct __RKThreadLocalData *tld = NULL;
   
-  if((tld = __RKGetThreadLocalData()) == NULL) { return(NULL); }
-  if(tld->_numberFormatter != NULL) { return (tld->_numberFormatter); }
+  if(RK_EXPECTED((tld = __RKGetThreadLocalData()) == NULL, 0)) { return(NULL);                   }
+  if(RK_EXPECTED(tld->_numberFormatter            != NULL, 1)) { return (tld->_numberFormatter); }
   
   tld->_numberFormatter = [[NSNumberFormatter alloc] init];
   RKDisableCollectorForPointer(tld->_numberFormatter);
@@ -119,12 +119,7 @@ NSNumberFormatter *__RKGetThreadLocalNumberFormatter(void) {
     pcre_callout = RKRegexPCRECallout;
 
 #ifdef    ENABLE_MACOSX_GARBAGE_COLLECTION
-    if([objc_getClass("NSGarbageCollector") defaultCollector] != NULL) {
-      RKRegexGarbageCollect = 1;
-#ifdef    USE_CORE_FOUNDATION
-      noRetainArrayCallBacks.release = NULL;
-#endif // USE_CORE_FOUNDATION
-    }
+    if([objc_getClass("NSGarbageCollector") defaultCollector] != NULL) { RKRegexGarbageCollect = 1; }
 #endif // ENABLE_MACOSX_GARBAGE_COLLECTION
     
 #ifdef    RK_ENABLE_THREAD_LOCAL_STORAGE
@@ -166,7 +161,7 @@ NSNumberFormatter *__RKGetThreadLocalNumberFormatter(void) {
     } else { NSLog(@"%@", RKPrettyObjectMethodString(@"Unable to determine the major and minor version of the pcre library.")); }
 
     int tempConfigInt = 0;
-    if(pcre_config(PCRE_CONFIG_UTF8, &tempConfigInt) != RKMatchErrorNoError) { goto errorExit; } else if(tempConfigInt == 1) { RKRegexPCREBuildConfig |= RKBuildConfigUTF8; }
+    if(pcre_config(PCRE_CONFIG_UTF8,               &tempConfigInt) != RKMatchErrorNoError) { goto errorExit; } else if(tempConfigInt == 1) { RKRegexPCREBuildConfig |= RKBuildConfigUTF8; }
     if(pcre_config(PCRE_CONFIG_UNICODE_PROPERTIES, &tempConfigInt) != RKMatchErrorNoError) { goto errorExit; } else if(tempConfigInt == 1) { RKRegexPCREBuildConfig |= RKBuildConfigUnicodeProperties; }
     
     if(pcre_config(PCRE_CONFIG_NEWLINE, &tempConfigInt) != RKMatchErrorNoError) { goto errorExit; }
@@ -295,14 +290,17 @@ RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCo
   
   if(RK_EXPECTED([aRegex isKindOfClass:stringClass], 1)) {
     id cachedRegex;
-    if(RK_EXPECTED((cachedRegex = RKFastCacheLookup(RKRegexCache, _cmd, RKHashForStringAndCompileOption(aRegex, compileOptions), shouldAutorelease)) != NULL, 1)) { return(cachedRegex); }
+    if(RK_EXPECTED((cachedRegex = RKFastCacheLookup(RKRegexCache, _cmd, RKHashForStringAndCompileOption(aRegex, compileOptions), aRegex, shouldAutorelease)) != NULL, 1)) { return(cachedRegex); }
     cachedRegex = [(id)NSAllocateObject([RKRegex class], 0, NULL) initWithRegexString:aRegex options:compileOptions];
     if(RK_EXPECTED(shouldAutorelease == YES, 1)) { RKAutorelease(cachedRegex); }
     return(cachedRegex);
   }
   else if(RK_EXPECTED([aRegex isKindOfClass:regexClass], 1)) {
     RKRegex *returnRegex = aRegex;
-    if(([aRegex compileOption] & compileOptions) != compileOptions) { returnRegex = [RKRegex regexWithRegexString:[aRegex regexString] options:([aRegex compileOption] | compileOptions)]; }
+    if(([aRegex compileOption] & compileOptions) != compileOptions) {
+      RK_PROBE(PERFORMANCENOTE, NULL, 0, NULL, 0, -1, 0, "RKRegex argument did not have the require compile flags present, recreating with the correct flags.");
+      returnRegex = [RKRegex regexWithRegexString:[aRegex regexString] options:([aRegex compileOption] | compileOptions)];
+    }
     if(shouldAutorelease == NO) { RKRetain(returnRegex); }
     return(returnRegex);
   }
@@ -353,7 +351,7 @@ RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCo
 
 #ifndef   USE_PLACEHOLDER
   id cachedRegex = NULL;
-  if(RK_EXPECTED((cachedRegex = [RKRegexCache objectForHash:RKHashForStringAndCompileOption(regexString, options) autorelease:NO]) != NULL, 0)) { return(cachedRegex); }
+  if(RK_EXPECTED((cachedRegex = [RKRegexCache objectForHash:RKHashForStringAndCompileOption(regexString, options) description:regexString autorelease:NO]) != NULL, 0)) { return(cachedRegex); }
 #endif // USE_PLACEHOLDER
 
   if(RK_EXPECTED((self = [self init]) == NULL, 0)) { goto errorExit; }
@@ -364,6 +362,8 @@ RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCo
   if(RK_EXPECTED((compiledRegexString = [regexString copy]) == NULL, 0)) { goto errorExit; }
 #endif // USE_CORE_FOUNDATION
   compileOption = options;
+
+  hash = RKHashForStringAndCompileOption(compiledRegexString, compileOption);
   
   int compileErrorOffset = 0;
   const char *errorCharPtr = NULL;
@@ -372,13 +372,15 @@ RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCo
 
   if(RK_EXPECTED(compiledRegexStringBuffer.characters == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"Unable to get string buffer from object '%@', which is a copy of the passed object '%@'.", RKPrettyObjectDescription(compiledRegexString), RKPrettyObjectDescription(regexString)) userInfo:NULL] raise]; }
 
-
+  RK_PROBE(BEGINREGEXCOMPILE, self, (unsigned long)hash, (char *)compiledRegexStringBuffer.characters, (int)compileOption);
   _compiledPCRE = pcre_compile2(compiledRegexStringBuffer.characters, (int)compileOption, (int *)&initErrorCode, &errorCharPtr, &compileErrorOffset, NULL);
+  RK_PROBE(ENDREGEXCOMPILE,   self, (unsigned long)hash, (char *)compiledRegexStringBuffer.characters, (int)compileOption, (int)initErrorCode, (char *)RKCharactersFromCompileErrorCode(initErrorCode), (initErrorCode == RKCompileErrorNoError) ? "" : (char *)errorCharPtr, (initErrorCode == RKCompileErrorNoError) ? 0 : (int)compileErrorOffset);
+
   if(RK_EXPECTED(RK_EXPECTED((initErrorCode != RKCompileErrorNoError), 0) || RK_EXPECTED((_compiledPCRE == NULL), 0), 0)) {
     NSString *errorString = [NSString stringWithCString:(RK_EXPECTED((errorCharPtr == NULL), 0) ? "Internal error":errorCharPtr) encoding:NSUTF8StringEncoding];
     NSString *initErrorCodeString = RKStringFromCompileErrorCode(initErrorCode);
     NSArray  *compileOptionArray = RKArrayFromCompileOption(compileOption);
-
+    
 #ifdef    __MACOSX_RUNTIME__
     NSMutableAttributedString *regexAttributedString = [[[NSMutableAttributedString alloc] initWithString:regexString attributes:[NSDictionary dictionaryWithObject:[NSString stringWithFormat:@"%@ at character %d", errorString, compileErrorOffset] forKey:NSToolTipAttributeName]] autorelease];
 #else  // __MACOSX_RUNTIME__ GNUstep doesn't have NSToolTipAttributeName right now.
@@ -439,9 +441,8 @@ RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCo
     }
 
     if(RK_EXPECTED(objectsReady == YES, 1)) {
-      // CFArray has weak references to objects, NSArray has strong references, which we need when GC is enabled.
-      if(RKRegexGarbageCollect == 0) { captureNameArray = (id)CFMakeCollectable(CFArrayCreate(NULL, &arrayObjectPointers[0], (CFIndex)captureCount, &noRetainArrayCallBacks)); }
-      else { captureNameArray = [[NSArray alloc] initWithObjects:(const id *)(&arrayObjectPointers[0]) count:captureCount]; }
+      if(RKRegexGarbageCollect == 0) { captureNameArray = (id)CFArrayCreate(NULL, &arrayObjectPointers[0], (CFIndex)captureCount, &noRetainArrayCallBacks); }
+      else { captureNameArray = (id)CFMakeCollectable(CFArrayCreate(NULL, &arrayObjectPointers[0], (CFIndex)captureCount, &kCFTypeArrayCallBacks)); }
     }
     else { // Only release when objectsReady == NO
       if(RKRegexGarbageCollect == 0) {  for(x = 0; x < captureCount; x++) { if(arrayObjectPointers[x] != kCFNull) { RKCFRelease(arrayObjectPointers[x]); arrayObjectPointers[x] = NULL; } } }
@@ -479,7 +480,6 @@ RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCo
 
   }
   
-  hash = RKHashForStringAndCompileOption(compiledRegexString, compileOption);
   [RKRegexCache addObjectToCache:self withHash:hash];
 
   return(RKRetain(self)); // We have successfully initialized, so rescue ourselves from the autorelease pool.
@@ -489,17 +489,28 @@ errorExit: // Catch point in case any clean up needs to be done.  Currently, non
   return(NULL);
 }
 
+const char *regexUTF8String(RKRegex *self) {
+  if(RK_EXPECTED(self == NULL, 0)) { return("self == NULL"); }
+  if(RK_EXPECTED(self->compiledRegexUTF8String == NULL, 0)) {
+    RKStringBuffer compiledRegexStringBuffer = RKStringBufferWithString(self->compiledRegexString);
+    if(RK_EXPECTED((self->compiledRegexUTF8String = RK_MALLOC_NOT_SCANNED(compiledRegexStringBuffer.length + 1)) == NULL, 0)) { return("Unable to malloc memory for UTF8 string."); }
+    memcpy(self->compiledRegexUTF8String, compiledRegexStringBuffer.characters, compiledRegexStringBuffer.length + 1);
+  }
+  
+  return((char *)self->compiledRegexUTF8String);
+}
+
 - (id)retain
 {
-  if(RKRegexGarbageCollect == 0) { RKAtomicIncrementInt(&referenceCountMinusOne); }
+  if(RKRegexGarbageCollect == 0) { RKAtomicIncrementInteger(&referenceCountMinusOne); }
   return(self);
 }
 
 - (void)release
 {
   if(RKRegexGarbageCollect == 0) {
-    RKAtomicDecrementInt(&referenceCountMinusOne);
-    if(RK_EXPECTED(referenceCountMinusOne == -1, 0)) { [self dealloc]; }
+    RKInteger decrementedCount = RKAtomicDecrementInteger((RKInteger *)&referenceCountMinusOne);
+    if(RK_EXPECTED(decrementedCount == -1, 0)) { [self dealloc]; }
   }
 }
 
@@ -510,10 +521,12 @@ errorExit: // Catch point in case any clean up needs to be done.  Currently, non
 
 - (void)dealloc
 {
-  if(compiledRegexString != NULL) { RKAutorelease(compiledRegexString); compiledRegexString = NULL; }
-  if(captureNameArray    != NULL) { RKAutorelease(captureNameArray);    captureNameArray    = NULL; }
-  if(_compiledPCRE       != NULL) { pcre_free(_compiledPCRE);          _compiledPCRE        = NULL; }
-  if(_extraPCRE          != NULL) { pcre_free(_extraPCRE);             _extraPCRE           = NULL; }
+  if(compiledRegexString      != NULL) { RKAutorelease(compiledRegexString);          compiledRegexString = NULL; }
+  if(captureNameArray         != NULL) { RKAutorelease(captureNameArray);             captureNameArray    = NULL; }
+  if(_compiledPCRE            != NULL) { pcre_free(_compiledPCRE);                   _compiledPCRE        = NULL; }
+  if(_extraPCRE               != NULL) { pcre_free(_extraPCRE);                      _extraPCRE           = NULL; }
+  if(compiledRegexUTF8String  != NULL) { RK_FREE_AND_NULL(compiledRegexUTF8String);                               }
+  if(compiledOptionUTF8String != NULL) { RK_FREE_AND_NULL(compiledOptionUTF8String);                              }
 
   [super dealloc];
 }
@@ -521,8 +534,10 @@ errorExit: // Catch point in case any clean up needs to be done.  Currently, non
 #ifdef    ENABLE_MACOSX_GARBAGE_COLLECTION
 - (void)finalize
 {
-  if(_compiledPCRE       != NULL) { pcre_free(_compiledPCRE);          _compiledPCRE        = NULL; }
-  if(_extraPCRE          != NULL) { pcre_free(_extraPCRE);             _extraPCRE           = NULL; }
+  if(_compiledPCRE            != NULL) { pcre_free(_compiledPCRE);                   _compiledPCRE        = NULL; }
+  if(_extraPCRE               != NULL) { pcre_free(_extraPCRE);                      _extraPCRE           = NULL; }
+  if(compiledRegexUTF8String  != NULL) { RK_FREE_AND_NULL(compiledRegexUTF8String);                               }
+  if(compiledOptionUTF8String != NULL) { RK_FREE_AND_NULL(compiledOptionUTF8String);                              }
   
   [super finalize];
 }
@@ -656,16 +671,8 @@ exitNow:
   matchErrorCode = [self getRanges:matchRanges count:RK_PRESIZE_CAPTURE_COUNT(captureCount) withCharacters:matchCharacters length:length inRange:searchRange options:options];
   if((matchErrorCode <= 0)) { return(NULL); }
 
-#ifdef    ENABLE_MACOSX_GARBAGE_COLLECTION
-  if(RKRegexGarbageCollect == 1) {
-    if(RK_EXPECTED((returnRanges = NSAllocateCollectable(captureCount * sizeof(NSRange), 0)) == NULL, 0)) { return(NULL); }
-    memcpy(returnRanges, matchRanges, (captureCount * sizeof(NSRange)));
-  } else
-#endif // ENABLE_MACOSX_GARBAGE_COLLECTION
-  {
-    if(RK_EXPECTED((returnRanges = RKAutoreleasedMalloc(captureCount * sizeof(NSRange))) == NULL, 0)) { return(NULL); }
-    memcpy(returnRanges, matchRanges, (captureCount * sizeof(NSRange)));
-  }
+  if(RK_EXPECTED((returnRanges = RK_AUTORELEASED_MALLOC_NOT_SCANNED(captureCount * sizeof(NSRange))) == NULL, 0)) { return(NULL); }
+  memcpy(returnRanges, matchRanges, (captureCount * sizeof(NSRange)));
   return(returnRanges);
 }
 
@@ -701,6 +708,7 @@ RKUInteger RKCaptureIndexForCaptureNameCharacters(RKRegex * const aRegex, const 
   
   NSCParameterAssert(RK_EXPECTED(captureNameCharacters != NULL, 1));
   
+  RK_PREFETCH(captureNameCharacters);
   if(RK_EXPECTED(self->captureNameTableLength == 0, 0)) { goto doesNotExist; }
   if(RK_EXPECTED((length > self->captureNameLength), 0)) { goto doesNotExist; }
 
@@ -723,15 +731,11 @@ validName:
 
   int optionJChanged = 0;
 
-#ifdef    PCRE_INFO_JCHANGED
-  // Only checked if defined, which is pcre >= 7.2
+#ifdef    PCRE_INFO_JCHANGED // Only checked if defined, which is pcre >= 7.2
   if(RK_EXPECTED(pcre_fullinfo(self->_compiledPCRE, self->_extraPCRE, PCRE_INFO_JCHANGED, &optionJChanged) != RKMatchErrorNoError, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"pcre_fullinfo for PCRE_INFO_JCHANGED failed.") userInfo:NULL] raise]; }
 #endif // PCRE_INFO_JCHANGED
 
-  if((optionJChanged == 0) && ((self->compileOption & RKCompileDupNames) == 0)) {
-    if(matchedRanges[captureIndex].location == NSNotFound) { captureIndex = NSNotFound; }
-    goto successExit;
-  }
+  if((optionJChanged == 0) && ((self->compileOption & RKCompileDupNames) == 0)) { if(matchedRanges[captureIndex].location == NSNotFound) { captureIndex = NSNotFound; } goto successExit; }
 
   char *topCaptureName = self->captureNameTable + self->captureNameLength * (self->captureNameTableLength - 1), *startingCaptureName = atCaptureName;
   RKUInteger lowestCaptureIndex = (matchedRanges[captureIndex].location != NSNotFound) ? captureIndex : NSNotFound;
@@ -776,20 +780,35 @@ successExit:
 {
   RKMatchErrorCode errorCode = RKMatchErrorNoError;
   RKUInteger x = 0, numberOfVectors = rangeCount;
+  NSString *exceptionNameString = NULL;
   int *vectors = (int *)ranges;
-  
+  char reasonCharacters[1024];
+
   NSAssert1(rangeCount >= RK_MINIMUM_CAPTURE_COUNT(captureCount), @"rangeCount < minimum required: %d", (int)RK_MINIMUM_CAPTURE_COUNT(captureCount));
+
+  RK_PREFETCH(charactersBuffer + searchRange.location);
+  RK_PREFETCH_WR(ranges);
   
-  if(RK_EXPECTED(ranges == NULL, 0)) { [[NSException exceptionWithName:NSInvalidArgumentException reason:RKPrettyObjectMethodString(@"ranges == NULL") userInfo:NULL] raise]; }
-  if(RK_EXPECTED(charactersBuffer == NULL, 0)) { [[NSException exceptionWithName:NSInvalidArgumentException reason:RKPrettyObjectMethodString(@"charactersBuffer == NULL.") userInfo:NULL] raise]; }
-  if(RK_EXPECTED(length < searchRange.location, 0)) { [[NSException exceptionWithName:NSRangeException reason:RKPrettyObjectMethodString(@"length %lu < start location %lu for range %@.", (unsigned long)length, (unsigned long)searchRange.location, NSStringFromRange(searchRange)) userInfo:NULL] raise]; }  
-  if(RK_EXPECTED(length < (searchRange.location + searchRange.length), 0)) { [[NSException exceptionWithName:NSRangeException reason:RKPrettyObjectMethodString(@"length %lu < end location %lu for range %@.", (unsigned long)length, (unsigned long)NSMaxRange(searchRange), NSStringFromRange(searchRange)) userInfo:NULL] raise]; }  
+  if(RK_EXPECTED(ranges == NULL, 0)) { exceptionNameString = NSInvalidArgumentException; snprintf(reasonCharacters, 1020, "ranges == NULL"); goto throwException; }
+  if(RK_EXPECTED(charactersBuffer == NULL, 0)) { exceptionNameString = NSInvalidArgumentException; snprintf(reasonCharacters, 1020, "charactersBuffer == NULL."); goto throwException; }
+  if(RK_EXPECTED(length < searchRange.location, 0)) { exceptionNameString = NSRangeException; snprintf(reasonCharacters, 1020, "The match buffer size of %lu is less than the start location %lu for range %s.", (unsigned long)length, (unsigned long)searchRange.location, [NSStringFromRange(searchRange) UTF8String]); goto throwException;; }
+  if(RK_EXPECTED(length < (searchRange.location + searchRange.length), 0)) { exceptionNameString = NSRangeException; snprintf(reasonCharacters, 1020, "The match buffer size of %lu is less than the end location %lu for range %s.", (unsigned long)length, (unsigned long)NSMaxRange(searchRange), [NSStringFromRange(searchRange) UTF8String]); goto throwException;; }  
 
   // The following lines ensure proper 64 bit behavior by guarding against PCRE's 32 bit ints.
-  if(RK_EXPECTED(searchRange.location > INT_MAX, 0)) { [[NSException exceptionWithName:NSRangeException reason:RKPrettyObjectMethodString(@"searchRange.location %lu > 32 bit signed int.", (unsigned long)searchRange.location) userInfo:NULL] raise]; }
-  if(RK_EXPECTED(searchRange.length > INT_MAX, 0))   { [[NSException exceptionWithName:NSRangeException reason:RKPrettyObjectMethodString(@"searchRange.length %lu > 32 bit signed int.", (unsigned long)searchRange.length) userInfo:NULL] raise]; }
-  if(RK_EXPECTED(length > INT_MAX, 0))               { [[NSException exceptionWithName:NSRangeException reason:RKPrettyObjectMethodString(@"length %lu > 32 bit signed int.", (unsigned long)length) userInfo:NULL] raise]; }
+
+  if(RK_EXPECTED(searchRange.location > INT_MAX, 0)) { exceptionNameString = NSRangeException; snprintf(reasonCharacters, 1020, "searchRange.location %lu > 32 bit signed int.", (unsigned long)searchRange.location); goto throwException;; }
+  if(RK_EXPECTED(searchRange.length > INT_MAX, 0))   { exceptionNameString = NSRangeException; snprintf(reasonCharacters, 1020, "searchRange.length %lu > 32 bit signed int.", (unsigned long)searchRange.length); goto throwException;; }
+  if(RK_EXPECTED(length > INT_MAX, 0))               { exceptionNameString = NSRangeException; snprintf(reasonCharacters, 1020, "The match buffer size of %lu is greater than a maximum 32 bit signed int.", (unsigned long)length); goto throwException;; }
   
+throwException:
+  
+  if(exceptionNameString != NULL) {
+    RK_PROBE(MATCHEXCEPTION, &((regexProbeObject){self, regexUTF8String(self), compileOption}), hash, ranges, rangeCount, (char *)charactersBuffer, length, (NSRange *)&searchRange, options, (exceptionNameString == NSRangeException) ? "NSRangeException" : (exceptionNameString == NSInvalidArgumentException) ? "NSInvalidArgumentException" : "Unknown", reasonCharacters);
+    [[NSException exceptionWithName:exceptionNameString reason:RKPrettyObjectMethodString(@"%s", reasonCharacters) userInfo:NULL] raise];
+  }
+  
+  RK_PROBE(BEGINMATCH, &((regexProbeObject){self, regexUTF8String(self), compileOption}), hash, ranges, rangeCount, (void *)charactersBuffer, length, (NSRange *)&searchRange, options);
+
   errorCode = (RKMatchErrorCode)pcre_exec(_compiledPCRE, _extraPCRE, (const char *)charactersBuffer, (int)length, (int)searchRange.location, (int)options, (int *)vectors, (int)numberOfVectors);
   
   // Convert PCRE vector format (start, end location) to NSRange format (start, length) on success
@@ -819,6 +838,8 @@ successExit:
       for(x = (size_t)errorCode; x < captureCount; x++) { ranges[x] = NSMakeRange(NSNotFound, 0); }
     }
   }
+
+  RK_PROBE(ENDMATCH, &((regexProbeObject){self, regexUTF8String(self), compileOption}), hash, ranges, rangeCount, (void *)charactersBuffer, length, (NSRange *)&searchRange, options, errorCode, (errorCode > 0) ? "Successful Match" : (char *)RKCharactersFromMatchErrorCode(errorCode))
     
   return(errorCode);
 }

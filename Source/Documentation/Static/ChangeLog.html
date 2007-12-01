@@ -17,6 +17,7 @@
 <h4><a name="Contents">Contents:</a></h4>
 
 <ul class="contents">
+<li><a href="#Release_0_5_0">Release 0.5.0 Beta</a></li>
 <li><a href="#Release_0_4_0">Release 0.4.0 Beta</a></li>
 <li><a href="#Release_0_3_1">Release 0.3.1 Beta</a></li>
 <li><a href="#Release_0_3_0">Release 0.3.0 Beta</a></li>
@@ -32,6 +33,85 @@
 </div>
 
 </div> <!-- changeLogContents -->
+
+<div class="Release_0_5_0_Beta">
+<h2><a name="Release_0_5_0">Change Log for 0.5.0 Beta</a></h2>
+
+<h4>DTrace Instrumentation</h4>
+
+<p>Created several macro wrappers for DTrace probe insertion in <span class="file">RKRegexPrivate.h</span>.  This allows a simple macro, @link RK_PROBE RK_PROBE()@/link, to be placed in the code where a probe point is desired.  The macro will rewrite to nothing if @link ENABLE_DTRACE_INSTRUMENTATION ENABLE_DTRACE_INSTRUMENTATION @/link is not defined.  If it is defined, then it re-writes to an <span class="code">if() {}</span> statement that first calls the 'Is Enabled' probe function, and only if the probe is enabled does it go through the work of assembling the arguments and calling the actual probe firing function.</p>
+
+<p>A few modifications here and there to assist in passing information via the probe efficiently.  For example, @link RKRegex RKRegex @/link has a new private function, @link regexUTF8String regexUTF8String()@/link, which will create a copy of the regex string in @link UTF8 UTF8 @/link form and stores the pointer in an ivar.  This allows for lazy evaluation, it's only created if the function is called, and right now the function is only called when a probe requires it.  Once created, the function obviously returns the pointer to the already created @link UTF8 UTF8 @/link string.</p>
+
+<p>The majority of probes inserted at this time have to do with extracting timing information.  @link RKRegex RKRegex @/link had the PCRE compile and match functions instrumented, and @link RKCache RKCache @/link had the add, insert, lookup, and clear methods instrumented.  A probe named 'PerformanceNote' was created and sprinkled in a few places.  This is for passing text strings to a dtrace listener at certain spots in the code which have a negative performance impact.  For example, if we're unable to get direct access to the backing store of a string, and are required to call <span class="code">[string UTF8String]</span> as a result, a PerformanceNote is generated.</p>
+
+<h4>Instruments.app Instruments</h4>
+
+<p>To make use of the new dtrace probe points, several <span class="file">.instruments</span> were created for <span class="file">Instruments.app</span>.  This tool shows a hell of a lot of potential.  It's got some nasty bugs when creating your own <span class="file">.instruments</span>, but it's a 1.0 product, on top of a whole new kernel facility (dtrace), so it's a bit understandable.  While there's documentation for using the application proper, there's just a token mention of creating your own probes.  From digging through the guts to create the RegexKit functionality, I'd say that a third-party plugin architecture is on the way.  Not just beatified dtrace <span class="file">.d</span> scripts, but the ability to write objective-c plugins with custom interfaces.  The ObjectAlloc tool is a good example of this.</p>
+
+<p>I hope Apple hurries up with the third party plug in support.  While you can get a hell of a lot done with the few probes and <span class="file">.instrument</span> scripts I put together, I can see creating some incredibly powerful performance tools with a custom interface.  It would almost be like <span class="file">Shark</span>, but for regular expressions.  There's only so much you can do with dtrace scripts, but you can do so much more if you can post process the raw data and make changes on the fly.  Say you're having performance problems with your regex, and you want to know why.  And you have a lot of regex, and you're note sure which one is causing the problem.  Enabling the matching probes would give you a stream of raw data, and you could post process it to aggregate timing information on a per regex basis.  Regexes that take a long time to perform a match would bubble right to the top, and the great thing is you can even get snapshots of the buffers involved.  And once you start to narrow things down, and you're only interested in a single regex out of all of them, because each regex has a unique hash, this can be easily placed in the dtrace predicate which means you're only collecting data on the ones you're interested in, the others will have just a minor performance impact since the dtrace kernel module has a constant, cacheable predicate that comes down to a simple integer compare.</p>
+
+<p>These instruments, and the probe points, should be considered expiremental.  The specifics are very likely to change as I gain more experience with both DTrace and <span class="file">Instruments.app</span>.  I've marked the DTrace probe points 'Unstable', which is an advisory to users of the probe points that things are likely to change from release to release.  DTrace has a versioning scheme for the various parts of the DTrace interfaces to help DTrace users gauge how likely it is their scripts and what not are to break between patches, releases, etc.</p>
+
+<h4>NSArray Additions</h4>
+
+<p>Added @link indexSetOfObjectsMatchingRegex: indexSetOfObjectsMatchingRegex: @/link and @link indexSetOfObjectsMatchingRegex:inRange: indexSetOfObjectsMatchingRegex:inRange: @/link to the @link NSArray NSArray @/link category additions.</p>
+
+<h4>NSData Class Category Additions</h4>
+
+<p>Added the following category method additions to the @link NSData NSData @/link class:</p>
+
+<ul class="square">
+  <li>@link isMatchedByRegex: - isMatchedByRegex: @/link</li>
+  <li>@link isMatchedByRegex:inRange: - isMatchedByRegex:inRange: @/link</li>
+  <li>@link rangeOfRegex: - rangeOfRegex: @/link</li>
+  <li>@link rangeOfRegex:inRange:capture: - rangeOfRegex:inRange:capture: @/link</li>
+  <li>@link rangesOfRegex: - rangesOfRegex: @/link</li>
+  <li>@link rangesOfRegex:inRange: - rangesOfRegex:inRange: @/link</li>
+  <li>@link subdataByMatching: - subdataByMatching: @/link</li>
+  <li>@link subdataByMatching:inRange: - subdataByMatching:inRange: @/link</li>
+</ul>
+
+<p>See <a href="NSData.html" class="section-link">NSData RegexKit Additions Reference</a> for additional information.</p>
+
+<h4>Other changes</h4>
+
+<ul class="square">
+
+  <li>Altered <span class="code">RKAppendInstruction()</span> and <span class="code">RKAppendCopyInstruction()</span> to grow heap allocated instruction buffers by <span class="code">RK_DEFAULT_STACK_INSTRUCTIONS</span> number of instructions instead of 16.</li>
+
+  <li>Created some memory allocation macros to pick the appropriate allocation, free, and other potentially GC related / impacting functions dynamically.  Keeps the code considerably cleaner.</li>
+
+  <li>Using the above new allocation macros, moved several memory allocations over to the new macros.  Examples include: @link RKEnumerator RKEnumerator @/link range buffers, @link NSString NSString @/link temporary string buffers, @link RKRegex RKRegex @/link and @link RKCache RKCache @/link UTF8 strings of the objects description.  Updated various dealloc / finalize methods to account for differences.</li>
+  
+  <li>For @link RKRegex RKRegex @/link and @link RKCache RKCache@/link, created private functions to on demand create a long lasting UTF8 string of the objects description.  This is demand created by various DTrace probes to provide access to a string that can be easily copied when required.</li>
+  
+  <li>Created various RKAtomic primitives of 'Integer' size.  Previous atomic operations were only of 'int' size.  This is in keeping with the @link NSInteger NSInteger @/link 32 / 64 bit dynamic sizing.</li>
+  
+  <li>Altered the order of some comparison operators in <span class="code">RKParseReference</span> to be slightly more optimal.  This can cause the conditional part of an <span class="code">if</span> statement to be executed slightly faster.</li>
+</ul>
+
+<h4>Bug fixes</h4>
+
+<ul class="square">
+
+  <li>Fixed a "search and replace" family of methods bug which would cause a crash if there were a lot (~1000) of replacements made on a string.  This was the result of an incorrect <span class="code">sizeof()</span> which resulted in copying too much data.  The bug itself was harmless and didn't damage the stack, but if there wasn't enough 'buffer space' on the stack to absorb the over-run, then you'd walk past the start of the stack at <span class="code">0xc0000000</span>.  This would be most likely to happen when a search and replace method was called from <span class="code">main()</span>.</li>
+
+  <li>Switched to using <span class="cpp_definition">NSINTEGER_DEFINED</span> to determine if <span class="code">NSInteger</span> and friends are typedef'd.  Previously tried to infer whether or not the type existed from checking if <span class="cpp_definition">MAC_OS_X_VERSION_10_5</span> existed.</li>
+
+  <li>Fixed potential race condition in non-Garbage Collection mode where the @link RKRegex RKRegex @/link self maintained reference count was not atomically checked correctly to determine if the reference count became zero.</li>
+  
+  <li>Under garbage collection, @link addObjectToCache:withHash: addObjectToCache:withHash: @/link would always return <span class="code">NO</span>, even though the object was added to the cache.</li>
+
+</ul>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+      <li><a href="ReleaseNotes.html#Release_0_5_0" class="section-link">Release Information - Release Notes for 0.5.0 Beta</a></li>
+  </ul>
+</div>
+
+</div> <!-- Release_0_5_0_Beta -->
 
 <div class="Release_0_4_0_Beta">
 <h2><a name="Release_0_4_0">Change Log for 0.4.0 Beta</a></h2>

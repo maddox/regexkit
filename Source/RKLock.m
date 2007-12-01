@@ -46,8 +46,8 @@
 
 static int globalIsMultiThreaded = 0;
 
-static void releaseRKLockResources(RKLock *self, SEL _cmd);
-static void releaseRKReadWriteResources(RKReadWriteLock *self, SEL _cmd);
+static void releaseRKLockResources(     RKLock          * const self, SEL _cmd) RK_ATTRIBUTES(nonnull(1), used);
+static void releaseRKReadWriteResources(RKReadWriteLock * const self, SEL _cmd) RK_ATTRIBUTES(nonnull(1), used);
 
 @implementation RKLock
 
@@ -73,7 +73,7 @@ static void releaseRKReadWriteResources(RKReadWriteLock *self, SEL _cmd);
     
     if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
       spuriousErrors++;
-      RKAtomicIncrementInt((int *)&spuriousErrorsCount);
+      RKAtomicIncrementInteger(&spuriousErrorsCount);
       NSLog(@"pthread_mutex_init returned an unknown error code %d. This may be a spurious error, retry %d of %d.", pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
     } else {
       NSLog(@"pthread_mutex_init returned an unknown error code %d. Giving up after %d attempts.", pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
@@ -101,7 +101,7 @@ errorExit:
 }
 #endif // ENABLE_MACOSX_GARBAGE_COLLECTION
 
-static void releaseRKLockResources(RKLock *self, SEL _cmd RK_ATTRIBUTES(unused)) {
+static void releaseRKLockResources(RKLock * const self, SEL _cmd RK_ATTRIBUTES(unused)) {
   int pthreadError = 0, destroyTryCount = 0;
 
   while((pthreadError = pthread_mutex_destroy(&self->lock)) != 0) {
@@ -144,12 +144,12 @@ errorExit:
   debuggingEnabled = enable;
 }
 
-- (unsigned int)busyCount
+- (RKUInteger)busyCount
 {
   return(busyCount);
 }
 
-- (unsigned int)spinCount
+- (RKUInteger)spinCount
 {
   return(spinCount);
 }
@@ -161,25 +161,27 @@ errorExit:
 }
 
 BOOL RKFastLock(RKLock * const self) {
-  int pthreadError = 0, spuriousErrors = 0;
+  int pthreadError = 0, spuriousErrors = 0, spinCount = 0;
   NSString * RK_C99(restrict) functionString = @"pthread_mutex_trylock";
   BOOL didLock = NO;
 
+  RK_PROBE(BEGINLOCK, self, 0, globalIsMultiThreaded);
+
   if(globalIsMultiThreaded == 0) {
-    if(RK_EXPECTED([NSThread isMultiThreaded] == NO, 1)) { return(YES); }
+    if(RK_EXPECTED([NSThread isMultiThreaded] == NO, 1)) { RK_PROBE(ENDLOCK, self, 0, globalIsMultiThreaded, 1, 0); return(YES); }
     RKAtomicCompareAndSwapInt(0, 1, &globalIsMultiThreaded);
   }
 
   if(RK_EXPECTED((pthreadError = pthread_mutex_trylock(&self->lock)) == 0, 1)) { return(YES); } // Fast exit on the common acquired lock case.
   
   switch(pthreadError) {
-    case 0:                                     didLock = YES; goto exitNow;  break; // Lock was acquired
-    case EBUSY:  if(self->debuggingEnabled == YES) { self->busyCount++; }     break; // Do nothing, we need to wait on the lock, which we do after the switch
-    case EINVAL: NSLog(@"%@ returned EINVAL.", functionString); goto exitNow; break; // XXX Hopeless?
+    case 0:                                               didLock = YES; goto exitNow; break; // Lock was acquired
+    case EBUSY:  spinCount++; if(self->debuggingEnabled == YES) { self->busyCount++; } break; // Do nothing, we need to wait on the lock, which we do after the switch
+    case EINVAL: NSLog(@"%@ returned EINVAL.", functionString);          goto exitNow; break; // XXX Hopeless?
     default:
       if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
         spuriousErrors++;
-        RKAtomicIncrementInt((int *)&self->spuriousErrorsCount);
+        RKAtomicIncrementInteger(&self->spuriousErrorsCount);
         NSLog(@"%@ returned an unknown error code %d. This may be a spurious error, retry %d of %d.", functionString, pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
       } else { NSLog(@"%@ returned an unknown error code %d. Giving up after %d attempts.", functionString, pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS); goto exitNow; }
       break;
@@ -192,13 +194,13 @@ BOOL RKFastLock(RKLock * const self) {
       
     switch(pthreadError) {
       case 0:                                                                                    didLock = YES; goto exitNow; break; // Lock was acquired
-      case EBUSY:   if(self->debuggingEnabled == YES) { self->spinCount++; }                                 RKThreadYield(); break; // Yield and then try again
+      case EBUSY:   spinCount++; if(self->debuggingEnabled == YES) { self->spinCount++; }                    RKThreadYield(); break; // Yield and then try again
       case EINVAL:  NSLog(@"%@ returned EINVAL after a trylock succeeded without any error.", functionString);  goto exitNow; break; // XXX Hopeless?
       case EDEADLK: NSLog(@"%@ returned EDEADLK after a trylock succeeded without any error.", functionString); goto exitNow; break; // XXX Hopeless?
       default:
         if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
           spuriousErrors++;
-          RKAtomicIncrementInt((int *)&self->spuriousErrorsCount);
+          RKAtomicIncrementInteger(&self->spuriousErrorsCount);
           NSLog(@"%@ returned an unknown error code %d. This may be a spurious error, retry %d of %d.", functionString, pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
         } else { NSLog(@"%@ returned an unknown error code %d. Giving up after %d attempts.", functionString, pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS); goto exitNow; }
         break;
@@ -206,14 +208,15 @@ BOOL RKFastLock(RKLock * const self) {
   } while(pthreadError != 0);
 
 exitNow:
+  RK_PROBE(ENDLOCK, self, 0, globalIsMultiThreaded, didLock, spinCount); 
   return(didLock);
 }
 
-void RKFastUnlock(RKLock * const aLock) {
-  if(RK_EXPECTED(aLock == NULL, 0)) { return; }
-  RKLock *self = aLock;
+void RKFastUnlock(RKLock * const self) {
   int pthreadError = 0;
   
+  RK_PROBE(UNLOCK, self, 0, globalIsMultiThreaded); 
+
   if(globalIsMultiThreaded == 0) { return; }
   if(RK_EXPECTED((pthreadError = pthread_mutex_unlock(&self->lock)) != 0, 0)) {
     if(pthreadError == EINVAL) { NSLog(@"pthread_mutex_unlock returned EINVAL.");           return; }
@@ -247,7 +250,7 @@ void RKFastUnlock(RKLock * const aLock) {
     
     if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
       spuriousErrors++;
-      RKAtomicIncrementInt((int *)&spuriousErrorsCount);
+      RKAtomicIncrementInteger(&spuriousErrorsCount);
       NSLog(@"pthread_rwlock_init returned an unknown error code %d. This may be a spurious error, retry %d of %d.", pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
     } else {
       NSLog(@"pthread_rwlock_init returned an unknown error code %d. Giving up after %d attempts.", pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
@@ -275,7 +278,7 @@ errorExit:
 }
 #endif // ENABLE_MACOSX_GARBAGE_COLLECTION
 
-static void releaseRKReadWriteResources(RKReadWriteLock *self, SEL _cmd RK_ATTRIBUTES(unused)) {
+static void releaseRKReadWriteResources(RKReadWriteLock * const self, SEL _cmd RK_ATTRIBUTES(unused)) {
   int pthreadError = 0, destroyTryCount = 0;
   
   while((pthreadError = pthread_rwlock_destroy(&self->readWriteLock)) != 0) {
@@ -329,22 +332,22 @@ errorExit:
   debuggingEnabled = enable;
 }
 
-- (unsigned int)readBusyCount
+- (RKUInteger)readBusyCount
 {
   return(readBusyCount);
 }
 
-- (unsigned int)readSpinCount
+- (RKUInteger)readSpinCount
 {
   return(readSpinCount);
 }
 
-- (unsigned int)writeBusyCount
+- (RKUInteger)writeBusyCount
 {
   return(writeBusyCount);
 }
 
-- (unsigned int)writeSpinCount
+- (RKUInteger)writeSpinCount
 {
   return(writeSpinCount);
 }
@@ -358,36 +361,38 @@ errorExit:
 }
 
 BOOL RKFastReadWriteLock(RKReadWriteLock * const self, const BOOL forWriting) {
-  int pthreadError = 0, spuriousErrors = 0;
+  int pthreadError = 0, spuriousErrors = 0, spinCount = 0;
   NSString * RK_C99(restrict) functionString = NULL;
   BOOL didLock = NO;
 
+  RK_PROBE(BEGINLOCK, self, forWriting, globalIsMultiThreaded); 
+
   if(globalIsMultiThreaded == 0) {
-    if(RK_EXPECTED([NSThread isMultiThreaded] == NO, 1)) { return(YES); }
+    if(RK_EXPECTED([NSThread isMultiThreaded] == NO, 1)) { self->writeLocked = forWriting; RK_PROBE(ENDLOCK, self, forWriting, 0, 1, 0); return(YES); }
     RKAtomicCompareAndSwapInt(0, 1, &globalIsMultiThreaded);
   }
   
   if(RK_EXPECTED(forWriting == YES, 0)) {
     functionString = @"pthread_rwlock_trywrlock";
-    pthreadError = pthread_rwlock_trywrlock(&self->readWriteLock);
+    if(RK_EXPECTED((pthreadError = pthread_rwlock_trywrlock(&self->readWriteLock)) == 0, 1)) { self->writeLocked = forWriting; RK_PROBE(ENDLOCK, self, forWriting, globalIsMultiThreaded, 1, spinCount); return(YES); } // Fast exit on the common acquired lock case.
     
     switch(pthreadError) {
-      case 0:                                        didLock = YES; goto exitNow; break; // Lock was acquired
-      case EAGAIN:                                                                       // drop through
-      case EBUSY:   if(self->debuggingEnabled == YES) { self->writeBusyCount++; } break; // Do nothing, we need to wait on the lock, which we do after the switch
-      case EDEADLK: NSLog(@"%@ returned EDEADLK.", functionString); goto exitNow; break; // XXX Hopeless?
-      case ENOMEM:  NSLog(@"%@ returned ENOMEM.", functionString);  goto exitNow; break; // XXX Hopeless?
-      case EINVAL:  NSLog(@"%@ returned EINVAL.", functionString);  goto exitNow; break; // XXX Hopeless?
+      case 0:                                                      didLock = YES; goto exitNow; break; // Lock was acquired
+      case EAGAIN:                                                                                     // drop through
+      case EBUSY:   spinCount++; if(self->debuggingEnabled == YES) { self->writeBusyCount++; }  break; // Do nothing, we need to wait on the lock, which we do after the switch
+      case EDEADLK: NSLog(@"%@ returned EDEADLK.", functionString);               goto exitNow; break; // XXX Hopeless?
+      case ENOMEM:  NSLog(@"%@ returned ENOMEM.", functionString);                goto exitNow; break; // XXX Hopeless?
+      case EINVAL:  NSLog(@"%@ returned EINVAL.", functionString);                goto exitNow; break; // XXX Hopeless?
       default:
         if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
           spuriousErrors++;
-          RKAtomicIncrementInt((int *)&self->spuriousErrorsCount);
+          RKAtomicIncrementInteger(&self->spuriousErrorsCount);
           NSLog(@"%@ returned an unknown error code %d. This may be a spurious error, retry %d of %d.", functionString, pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
         } else { NSLog(@"%@ returned an unknown error code %d. Giving up after %d attempts.", functionString, pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS); goto exitNow; }
         break;
     }
 
-    if(self->debuggingEnabled == YES) { RKAtomicIncrementInt((int *)&self->writeBusyCount); }
+    if(self->debuggingEnabled == YES) { RKAtomicIncrementInteger(&self->writeBusyCount); }
     functionString = @"pthread_rwlock_wrlock";
     
     do {
@@ -396,14 +401,14 @@ BOOL RKFastReadWriteLock(RKReadWriteLock * const self, const BOOL forWriting) {
       switch(pthreadError) {
         case 0:                                                                                    didLock = YES; goto exitNow; break; // Lock was acquired
         case EAGAIN:                                                                                                                   // drop through
-        case EBUSY:   if(self->debuggingEnabled == YES) { self->writeSpinCount++; }                            RKThreadYield(); break; // This normally shouldn't happen.
-        case EINVAL:  NSLog(@"%@ returned EINVAL after a trylock succeeded without any error.", functionString);  goto exitNow; break; // XXX Hopeless?
+        case EBUSY:   spinCount++; if(self->debuggingEnabled == YES) { self->writeSpinCount++; }               RKThreadYield(); break; // This normally shouldn't happen.
+        case EINVAL:  NSLog(@"%@ returned EINVAL after a trylock succeeded without any error.",  functionString); goto exitNow; break; // XXX Hopeless?
         case EDEADLK: NSLog(@"%@ returned EDEADLK after a trylock succeeded without any error.", functionString); goto exitNow; break; // XXX Hopeless?
-        case ENOMEM:  NSLog(@"%@ returned ENOMEM after a trylock succeeded without any error.", functionString);  goto exitNow; break; // XXX Hopeless?
+        case ENOMEM:  NSLog(@"%@ returned ENOMEM after a trylock succeeded without any error.",  functionString); goto exitNow; break; // XXX Hopeless?
         default:
           if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
             spuriousErrors++;
-            RKAtomicIncrementInt((int *)&self->spuriousErrorsCount);
+            RKAtomicIncrementInteger(&self->spuriousErrorsCount);
             NSLog(@"%@ returned an unknown error code %d. This may be a spurious error, retry %d of %d.", functionString, pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
           } else { NSLog(@"%@ returned an unknown error code %d. Giving up after %d attempts.", functionString, pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS); goto exitNow; }
           break;
@@ -411,20 +416,20 @@ BOOL RKFastReadWriteLock(RKReadWriteLock * const self, const BOOL forWriting) {
     } while(pthreadError != 0);
     
   } else { // forWriting == NO
-    if(RK_EXPECTED((pthreadError = pthread_rwlock_tryrdlock(&self->readWriteLock)) == 0, 1)) { return(YES); } // Fast exit on the common acquired lock case.
+    if(RK_EXPECTED((pthreadError = pthread_rwlock_tryrdlock(&self->readWriteLock)) == 0, 1)) { self->writeLocked = forWriting; RK_PROBE(ENDLOCK, self, forWriting, globalIsMultiThreaded, 1, spinCount); return(YES); } // Fast exit on the common acquired lock case.
     functionString = @"pthread_rwlock_tryrdlock";
     
     switch(pthreadError) {
-      case 0:                                       didLock = YES; goto exitNow; break;  // Lock was acquired
-      case EAGAIN:                                                                       // drop through
-      case EBUSY:   if(self->debuggingEnabled == YES) { self->readBusyCount++; } break;  // Do nothing, we need to wait on the lock, which we do after the switch
-      case EDEADLK: NSLog(@"%@ returned EDEADLK.", functionString); goto exitNow; break; // XXX Hopeless?
-      case ENOMEM:  NSLog(@"%@ returned ENOMEM.", functionString);  goto exitNow; break; // XXX Hopeless?
-      case EINVAL:  NSLog(@"%@ returned EINVAL.", functionString);  goto exitNow; break; // XXX Hopeless?
+      case 0:                                                    didLock = YES; goto exitNow; break; // Lock was acquired
+      case EAGAIN:                                                                                   // drop through
+      case EBUSY:   spinCount++; if(self->debuggingEnabled == YES) { self->readBusyCount++; } break; // Do nothing, we need to wait on the lock, which we do after the switch
+      case EDEADLK: NSLog(@"%@ returned EDEADLK.", functionString);             goto exitNow; break; // XXX Hopeless?
+      case ENOMEM:  NSLog(@"%@ returned ENOMEM.", functionString);              goto exitNow; break; // XXX Hopeless?
+      case EINVAL:  NSLog(@"%@ returned EINVAL.", functionString);              goto exitNow; break; // XXX Hopeless?
       default:
         if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
           spuriousErrors++;
-          RKAtomicIncrementInt((int *)&self->spuriousErrorsCount);
+          RKAtomicIncrementInteger(&self->spuriousErrorsCount);
           NSLog(@"%@ returned an unknown error code %d. This may be a spurious error, retry %d of %d.", functionString, pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
         } else { NSLog(@"%@ returned an unknown error code %d. Giving up after %d attempts.", functionString, pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS); goto exitNow; }
         break;
@@ -438,14 +443,14 @@ BOOL RKFastReadWriteLock(RKReadWriteLock * const self, const BOOL forWriting) {
       switch(pthreadError) {
         case 0:                                                                                    didLock = YES; goto exitNow; break; // Lock was acquired
         case EAGAIN:                                                                                                                   // drop through
-        case EBUSY:   if(self->debuggingEnabled == YES) { self->readSpinCount++; }                             RKThreadYield(); break; // Yield and then try again
-        case EINVAL:  NSLog(@"%@ returned EINVAL after a trylock succeeded without any error.", functionString);  goto exitNow; break; // XXX Hopeless?
+        case EBUSY:   spinCount++; if(self->debuggingEnabled == YES) { self->readSpinCount++; }                RKThreadYield(); break; // Yield and then try again
+        case EINVAL:  NSLog(@"%@ returned EINVAL after a trylock succeeded without any error.",  functionString); goto exitNow; break; // XXX Hopeless?
         case EDEADLK: NSLog(@"%@ returned EDEADLK after a trylock succeeded without any error.", functionString); goto exitNow; break; // XXX Hopeless?
-        case ENOMEM:  NSLog(@"%@ returned ENOMEM after a trylock succeeded without any error.", functionString);  goto exitNow; break; // XXX Hopeless?
+        case ENOMEM:  NSLog(@"%@ returned ENOMEM after a trylock succeeded without any error.",  functionString); goto exitNow; break; // XXX Hopeless?
         default:
           if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
             spuriousErrors++;
-            RKAtomicIncrementInt((int *)&self->spuriousErrorsCount);
+            RKAtomicIncrementInteger(&self->spuriousErrorsCount);
             NSLog(@"%@ returned an unknown error code %d. This may be a spurious error, retry %d of %d.", functionString, pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
           } else { NSLog(@"%@ returned an unknown error code %d. Giving up after %d attempts.", functionString, pthreadError, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS); goto exitNow; }
           break;
@@ -454,11 +459,15 @@ BOOL RKFastReadWriteLock(RKReadWriteLock * const self, const BOOL forWriting) {
   }
   
 exitNow:
-    return(didLock);
+  self->writeLocked = forWriting;
+  RK_PROBE(ENDLOCK, self, forWriting, globalIsMultiThreaded, didLock, spinCount);
+  return(didLock);
 }
 
 void RKFastReadWriteUnlock(RKReadWriteLock * const self) {
   int pthreadError = 0;
+
+  RK_PROBE(UNLOCK, self, self->writeLocked, globalIsMultiThreaded); 
   
   if(globalIsMultiThreaded == 0) { return; }
   if(RK_EXPECTED((pthreadError = pthread_rwlock_unlock(&self->readWriteLock)) != 0, 0)) {

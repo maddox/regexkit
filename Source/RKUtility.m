@@ -270,3 +270,101 @@ NSString *RKStringFromMatchErrorCode(const RKMatchErrorCode decodeErrorCode) {
   
   return(errorCodeString);
 }
+
+
+const char *RKCharactersFromCompileErrorCode(const RKCompileErrorCode decodeErrorCode) {
+  const char *errorCodeCharacters = NULL;
+  
+  switch(decodeErrorCode) {
+    case RKCompileErrorNoError:                                     errorCodeCharacters = "RKCompileErrorNoError";                                     break;
+    case RKCompileErrorEscapeAtEndOfPattern:                        errorCodeCharacters = "RKCompileErrorEscapeAtEndOfPattern";                        break;
+    case RKCompileErrorByteEscapeAtEndOfPattern:                    errorCodeCharacters = "RKCompileErrorByteEscapeAtEndOfPattern";                    break;
+    case RKCompileErrorUnrecognizedCharacterFollowingEscape:        errorCodeCharacters = "RKCompileErrorUnrecognizedCharacterFollowingEscape";        break;
+    case RKCompileErrorNumbersOutOfOrder:                           errorCodeCharacters = "RKCompileErrorNumbersOutOfOrder";                           break;
+    case RKCompileErrorNumbersToBig:                                errorCodeCharacters = "RKCompileErrorNumbersToBig";                                break;
+    case RKCompileErrorMissingTerminatorForCharacterClass:          errorCodeCharacters = "RKCompileErrorMissingTerminatorForCharacterClass";          break;
+    case RKCompileErrorInvalidEscapeInCharacterClass:               errorCodeCharacters = "RKCompileErrorInvalidEscapeInCharacterClass";               break;
+    case RKCompileErrorRangeOutOfOrderInCharacterClass:             errorCodeCharacters = "RKCompileErrorRangeOutOfOrderInCharacterClass";             break;
+    case RKCompileErrorNothingToRepeat:                             errorCodeCharacters = "RKCompileErrorNothingToRepeat";                             break;
+    case RKCompileErrorInternalErrorUnexpectedRepeat:               errorCodeCharacters = "RKCompileErrorInternalErrorUnexpectedRepeat";               break;
+    case RKCompileErrorUnrecognizedCharacterAfterOption:            errorCodeCharacters = "RKCompileErrorUnrecognizedCharacterAfterOption";            break;
+    case RKCompileErrorPOSIXNamedClassOutsideOfClass:               errorCodeCharacters = "RKCompileErrorPOSIXNamedClassOutsideOfClass";               break;
+    case RKCompileErrorMissingParentheses:                          errorCodeCharacters = "RKCompileErrorMissingParentheses";                          break;
+    case RKCompileErrorReferenceToNonExistentSubpattern:            errorCodeCharacters = "RKCompileErrorReferenceToNonExistentSubpattern";            break;
+    case RKCompileErrorErrorOffsetPassedAsNull:                     errorCodeCharacters = "RKCompileErrorErrorOffsetPassedAsNull";                     break;
+    case RKCompileErrorUnknownOptionBits:                           errorCodeCharacters = "RKCompileErrorUnknownOptionBits";                           break;
+    case RKCompileErrorMissingParenthesesAfterComment:              errorCodeCharacters = "RKCompileErrorMissingParenthesesAfterComment";              break;
+    case RKCompileErrorRegexTooLarge:                               errorCodeCharacters = "RKCompileErrorRegexTooLarge";                               break;
+    case RKCompileErrorNoMemory:                                    errorCodeCharacters = "RKCompileErrorNoMemory";                                    break;
+    case RKCompileErrorUnmatchedParentheses:                        errorCodeCharacters = "RKCompileErrorUnmatchedParentheses";                        break;
+    case RKCompileErrorInternalCodeOverflow:                        errorCodeCharacters = "RKCompileErrorInternalCodeOverflow";                        break;
+    case RKCompileErrorUnrecognizedCharacterAfterNamedSubppatern:   errorCodeCharacters = "RKCompileErrorUnrecognizedCharacterAfterNamedSubppatern";   break;
+    case RKCompileErrorLookbehindAssertionNotFixedLength:           errorCodeCharacters = "RKCompileErrorLookbehindAssertionNotFixedLength";           break;
+    case RKCompileErrorMalformedNameOrNumberAfterSubpattern:        errorCodeCharacters = "RKCompileErrorMalformedNameOrNumberAfterSubpattern";        break;
+    case RKCompileErrorConditionalGroupContainsMoreThanTwoBranches: errorCodeCharacters = "RKCompileErrorConditionalGroupContainsMoreThanTwoBranches"; break;
+    case RKCompileErrorAssertionExpectedAfterCondition:             errorCodeCharacters = "RKCompileErrorAssertionExpectedAfterCondition";             break;
+    case RKCompileErrorMissingEndParentheses:                       errorCodeCharacters = "RKCompileErrorMissingEndParentheses";                       break;
+    case RKCompileErrorUnknownPOSIXClassName:                       errorCodeCharacters = "RKCompileErrorUnknownPOSIXClassName";                       break;
+    case RKCompileErrorPOSIXCollatingNotSupported:                  errorCodeCharacters = "RKCompileErrorPOSIXCollatingNotSupported";                  break;
+    case RKCompileErrorMissingUTF8Support:                          errorCodeCharacters = "RKCompileErrorMissingUTF8Support";                          break;
+    case RKCompileErrorHexCharacterValueTooLarge:                   errorCodeCharacters = "RKCompileErrorHexCharacterValueTooLarge";                   break;
+    case RKCompileErrorInvalidCondition:                            errorCodeCharacters = "RKCompileErrorInvalidCondition";                            break;
+    case RKCompileErrorNotAllowedInLookbehindAssertion:             errorCodeCharacters = "RKCompileErrorNotAllowedInLookbehindAssertion";             break;
+    case RKCompileErrorNotSupported:                                errorCodeCharacters = "RKCompileErrorNotSupported";                                break;
+    case RKCompileErrorCalloutExceedsMaximumAllowed:                errorCodeCharacters = "RKCompileErrorCalloutExceedsMaximumAllowed";                break;
+    case RKCompileErrorMissingParenthesesAfterCallout:              errorCodeCharacters = "RKCompileErrorMissingParenthesesAfterCallout";              break;
+    case RKCompileErrorRecursiveInfinitLoop:                        errorCodeCharacters = "RKCompileErrorRecursiveInfinitLoop";                        break;
+    case RKCompileErrorUnrecognizedCharacterAfterNamedPattern:      errorCodeCharacters = "RKCompileErrorUnrecognizedCharacterAfterNamedPattern";      break;
+    case RKCompileErrorSubpatternNameMissingTerminator:             errorCodeCharacters = "RKCompileErrorSubpatternNameMissingTerminator";             break;
+    case RKCompileErrorDuplicateSubpatternNames:                    errorCodeCharacters = "RKCompileErrorDuplicateSubpatternNames";                    break;
+    case RKCompileErrorInvalidUTF8String:                           errorCodeCharacters = "RKCompileErrorInvalidUTF8String";                           break;
+    case RKCompileErrorMissingUnicodeSupport:                       errorCodeCharacters = "RKCompileErrorMissingUnicodeSupport";                       break;
+    case RKCompileErrorMalformedUnicodeProperty:                    errorCodeCharacters = "RKCompileErrorMalformedUnicodeProperty";                    break;
+    case RKCompileErrorUnknownPropertyAfterUnicodeCharacter:        errorCodeCharacters = "RKCompileErrorUnknownPropertyAfterUnicodeCharacter";        break;
+    case RKCompileErrorSubpatternNameTooLong:                       errorCodeCharacters = "RKCompileErrorSubpatternNameTooLong";                       break;
+    case RKCompileErrorTooManySubpatterns:                          errorCodeCharacters = "RKCompileErrorTooManySubpatterns";                          break;
+    case RKCompileErrorRepeatedSubpatternTooLong:                   errorCodeCharacters = "RKCompileErrorRepeatedSubpatternTooLong";                   break;
+    case RKCompileErrorIllegalOctalValueOutsideUTF8:                errorCodeCharacters = "RKCompileErrorIllegalOctalValueOutsideUTF8";                break;
+    case RKCompileErrorInternalOverranCompilingWorkspace:           errorCodeCharacters = "RKCompileErrorInternalOverranCompilingWorkspace";           break;
+    case RKCompileErrorInternalReferencedSubpatternNotFound:        errorCodeCharacters = "RKCompileErrorInternalReferencedSubpatternNotFound";        break;
+    case RKCompileErrorDEFINEGroupContainsMoreThanOneBranch:        errorCodeCharacters = "RKCompileErrorDEFINEGroupContainsMoreThanOneBranch";        break;
+    case RKCompileErrorRepeatingDEFINEGroupNotAllowed:              errorCodeCharacters = "RKCompileErrorRepeatingDEFINEGroupNotAllowed";              break;
+    case RKCompileErrorInconsistentNewlineOptions:                  errorCodeCharacters = "RKCompileErrorInconsistentNewlineOptions";                  break;
+    case RKCompileErrorReferenceMustBeNonZeroNumberOrBraced:        errorCodeCharacters = "RKCompileErrorReferenceMustBeNonZeroNumberOrBraced";        break;
+    case RKCompileErrorRelativeSubpatternNumberMustNotBeZero:       errorCodeCharacters = "RKCompileErrorRelativeSubpatternNumberMustNotBeZero";       break;
+    default:                                                        errorCodeCharacters = "Unknown error code";                                        break;
+  }
+  
+  return(errorCodeCharacters);
+}
+
+const char *RKCharactersFromMatchErrorCode(const RKMatchErrorCode decodeErrorCode) {
+  const char *errorCodeCharacters = NULL;
+  
+  if(decodeErrorCode > 0) { return(""); }
+  
+  switch(decodeErrorCode) {
+    case RKMatchErrorNoError:            errorCodeCharacters = "RKMatchErrorNoError";            break;
+    case RKMatchErrorNoMatch:            errorCodeCharacters = "RKMatchErrorNoMatch";            break;
+    case RKMatchErrorNull:               errorCodeCharacters = "RKMatchErrorNull";               break;
+    case RKMatchErrorBadOption:          errorCodeCharacters = "RKMatchErrorBadOption";          break;
+    case RKMatchErrorBadMagic:           errorCodeCharacters = "RKMatchErrorBadMagic";           break;
+    case RKMatchErrorUnknownOpcode:      errorCodeCharacters = "RKMatchErrorUnknownOpcode";      break;
+    case RKMatchErrorNoMemory:           errorCodeCharacters = "RKMatchErrorNoMemory";           break;
+    case RKMatchErrorNoSubstring:        errorCodeCharacters = "RKMatchErrorNoSubstring";        break;
+    case RKMatchErrorMatchLimit:         errorCodeCharacters = "RKMatchErrorMatchLimit";         break;
+    case RKMatchErrorCallout:            errorCodeCharacters = "RKMatchErrorCallout";            break;
+    case RKMatchErrorBadUTF8:            errorCodeCharacters = "RKMatchErrorBadUTF8";            break;
+    case RKMatchErrorBadUTF8Offset:      errorCodeCharacters = "RKMatchErrorBadUTF8Offset";      break;
+    case RKMatchErrorPartial:            errorCodeCharacters = "RKMatchErrorPartial";            break;
+    case RKMatchErrorBadPartial:         errorCodeCharacters = "RKMatchErrorBadPartial";         break;
+    case RKMatchErrorInternal:           errorCodeCharacters = "RKMatchErrorInternal";           break;
+    case RKMatchErrorBadCount:           errorCodeCharacters = "RKMatchErrorBadCount";           break;
+    case RKMatchErrorRecursionLimit:     errorCodeCharacters = "RKMatchErrorRecursionLimit";     break;
+    case RKMatchErrorNullWorkSpaceLimit: errorCodeCharacters = "RKMatchErrorNullWorkSpaceLimit"; break;
+    case RKMatchErrorBadNewline:         errorCodeCharacters = "RKMatchErrorBadNewline";         break;
+    default:                             errorCodeCharacters = "Unknown error code";             break;
+  }
+  
+  return(errorCodeCharacters);
+}

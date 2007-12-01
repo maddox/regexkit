@@ -121,6 +121,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
   <div class="box warning"><div class="table"><div class="row"><div class="label cell">Warning:</div><div class="message cell">Failure to terminate the argument list with a <span class="code">nil</span> will result in a crash.</div></div></div></div>
  @result <p>If <span class="argument">aRegex</span> matches the receiver, the supplied <span class="argument nobr">pointer to a pointer</span> arguments are updated with the match results and <span class="code">YES</span> is returned.  If <span class="argument">aRegex</span> matches the receiver multiple times, only the first match is used.</p>
  <p>If <span class="argument">aRegex</span> does not match the receiver, none of the supplied <span class="argument nobr">pointer to a pointer</span> arguments are altered and <span class="code">NO</span> is returned.</p>
+ @seealso @link getCapturesWithRegex:inRange:references: - getCapturesWithRegex:inRange:references: @/link
  @seealso <a href="NSString.html#CaptureSubpatternReferenceandTypeConversionSyntax" class="section-link">Capture Subpattern Reference and Type Conversion Syntax</a>
 */
 - (BOOL)getCapturesWithRegexAndReferences:(id)aRegex, ... RK_REQUIRES_NIL_TERMINATION;
@@ -131,7 +132,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @result <p>If <span class="argument">aRegex</span> matches the receiver within <span class="argument">range</span>, the supplied <span class="argument nobr">pointer to a pointer</span> arguments are updated with the match results and <span class="code">YES</span> is returned.  If <span class="argument">aRegex</span> matches the receiver multiple times, only the first match within <span class="argument">range</span> is used.</p>
  <p>If <span class="argument">aRegex</span> does not match the receiver within <span class="argument">range</span>, none of the supplied <span class="argument nobr">pointer to a pointer</span> arguments are altered and <span class="code">NO</span> is returned.</p>
  @seealso <a href="NSString.html#CaptureSubpatternReferenceandTypeConversionSyntax" class="section-link">Capture Subpattern Reference and Type Conversion Syntax</a>
- @seealso @link getCapturesWithRegexAndReferences: - getCapturesWithRegexAndReferences: @/link
+ @seealso @link NSString(RegexKitAdditions)/getCapturesWithRegexAndReferences: - getCapturesWithRegexAndReferences: @/link
 */
 - (BOOL)getCapturesWithRegex:(id)aRegex inRange:(const NSRange)range references:(NSString * const)firstReference, ... RK_REQUIRES_NIL_TERMINATION;
 /*!
@@ -140,17 +141,17 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @abstract   Returns a pointer to an array of @link NSRange NSRange @/link structures of the capture subpatterns of <span class="argument">aRegex</span> for the first match in the receiver.
  @discussion See @link rangesForCharacters:length:inRange:options: rangesForCharacters:length:inRange:options: @/link for details regarding the returned @link NSRange NSRange @/link array memory allocation.
  @result     Returns a pointer to an array of @link NSRange NSRange @/link structures of the capture subpatterns of <span class="argument">aRegex</span> for the first match in the receiver, or <span class="code">NULL</span> if <span class="argument">aRegex</span> does not match.
- @seealso @link rangesOfRegex:inRange: - rangesOfRegex:inRange: @/link
+ @seealso @link NSString(RegexKitAdditions)/rangesOfRegex:inRange: - rangesOfRegex:inRange: @/link
  @seealso @link rangesForCharacters:length:inRange:options: - rangesForCharacters:length:inRange:options: @/link
 */
 - (NSRange *)rangesOfRegex:(id)aRegex;
 /*!
  @method     rangesOfRegex:inRange:
  @tocgroup   NSString Determining the Range of a Match
- @abstract   Returns a point to an array of @link NSRange NSRange @/link structures of the capture subpatterns of <span class="argument">aRegex</span> for the first match in the receiver within <span class="argument">range</span>.
+ @abstract   Returns a pointer to an array of @link NSRange NSRange @/link structures of the capture subpatterns of <span class="argument">aRegex</span> for the first match in the receiver within <span class="argument">range</span>.
  @discussion See @link rangesForCharacters:length:inRange:options: rangesForCharacters:length:inRange:options: @/link for details regarding the returned @link NSRange NSRange @/link array memory allocation.
- @result     Returns a point to an array of @link NSRange NSRange @/link structures of the capture subpatterns of <span class="argument">aRegex</span> for the first match in the receiver within <span class="argument">range</span>, or <span class="code">NULL</span> if <span class="argument">aRegex</span> does not match.
- @seealso @link rangeOfRegex:inRange:capture: - rangeOfRegex:inRange:capture: @/link
+ @result     Returns a pointer to an array of @link NSRange NSRange @/link structures of the capture subpatterns of <span class="argument">aRegex</span> for the first match in the receiver within <span class="argument">range</span>, or <span class="code">NULL</span> if <span class="argument">aRegex</span> does not match.
+ @seealso @link NSString(RegexKitAdditions)/rangeOfRegex:inRange:capture: - rangeOfRegex:inRange:capture: @/link
  @seealso @link rangesForCharacters:length:inRange:options: - rangesForCharacters:length:inRange:options: @/link
 */
 - (NSRange *)rangesOfRegex:(id)aRegex inRange:(const NSRange)range;
@@ -159,7 +160,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @tocgroup   NSString Determining the Range of a Match
  @abstract   Returns the range of the first occurrence within the receiver of <span class="argument">aRegex</span>.
  @result     A @link NSRange NSRange @/link structure giving the location and length of the first match of <span class="argument">aRegex</span> in the receiver. Returns <span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span> if the receiver is not matched by <span class="argument">aRegex</span>.
- @seealso @link rangeOfRegex:inRange:capture: - rangeOfRegex:inRange:capture: @/link
+ @seealso @link NSString(RegexKitAdditions)/rangeOfRegex:inRange:capture: - rangeOfRegex:inRange:capture: @/link
 */
 - (NSRange)rangeOfRegex:(id)aRegex;
 /*!
@@ -170,14 +171,14 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @param      range The range of the receiver to search.
  @param      capture The matching range of <span class="argument">aRegex</span> capture number to return. Use <span class="code">0</span> for the entire range that <span class="argument">aRegex</span> matched.
  @result     A @link NSRange NSRange @/link structure giving the location and length of <span class="argument">aRegex</span> capture number <span class="argument">capture</span> for the first match within <span class="argument">range</span> of the receiver. Returns <span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span> if the receiver is not matched by <span class="argument">aRegex</span>.
- @seealso @link rangeOfRegex: - rangeOfRegex: @/link
+ @seealso @link NSString(RegexKitAdditions)/rangeOfRegex: - rangeOfRegex: @/link
 */
 - (NSRange)rangeOfRegex:(id)aRegex inRange:(const NSRange)range capture:(const RKUInteger)capture;
 /*!
  @method     isMatchedByRegex:
  @tocgroup   NSString Identifying Matches
  @abstract   Returns a Boolean value that indicates whether the receiver is matched by <span class="argument">aRegex</span>.
- @seealso    @link isMatchedByRegex:inRange: - isMatchedByRegex:inRange: @/link
+ @seealso    @link NSString(RegexKitAdditions)/isMatchedByRegex:inRange: - isMatchedByRegex:inRange: @/link
 */
 - (BOOL)isMatchedByRegex:(id)aRegex;
 /*!
@@ -193,7 +194,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @discussion Returns an @link RKEnumerator RKEnumerator @/link object that begins at location <span class="code">0</span> of the receiver and enumerates every match of <span class="argument">aRegex</span> in the receiver.
  @seealso    @link RKEnumerator RKEnumerator @/link
  @seealso    @link RKEnumerator/getCapturesWithReferences: - getCapturesWithReferences: @/link
- @seealso    @link matchEnumeratorWithRegex:inRange: - matchEnumeratorWithRegex:inRange: @/link
+ @seealso    @link RKEnumerator/matchEnumeratorWithRegex:inRange: - matchEnumeratorWithRegex:inRange: @/link
  @seealso    @link RKEnumerator/nextRanges - nextRanges @/link
  @seealso    @link RKEnumerator/stringWithReferenceFormat: - stringWithReferenceFormat: @/link
  @seealso    @link RKEnumerator/stringWithReferenceString: - stringWithReferenceString: @/link
@@ -206,7 +207,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @param      range The range of the receiver to enumerate matches.
  @discussion Returns an @link RKEnumerator RKEnumerator @/link object that enumerates every match of <span class="argument">aRegex</span> within <span class="argument">range</span> of the receiver.
  @seealso    @link RKEnumerator RKEnumerator @/link
- @seealso    @link matchEnumeratorWithRegex: - matchEnumeratorWithRegex: @/link
+ @seealso    @link RKEnumerator/matchEnumeratorWithRegex: - matchEnumeratorWithRegex: @/link
 */
 - (RKEnumerator *)matchEnumeratorWithRegex:(id)aRegex inRange:(const NSRange)range;
 
@@ -216,9 +217,9 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @method     stringByMatching:withReferenceString:
  @tocgroup   NSString Creating Temporary Strings from Match Results
  @abstract   Returns a new @link NSString NSString @/link containing the results of expanding the capture references in <span class="argument">referenceString</span> with the text of the first match of <span class="argument">aRegex</span> in the receiver.
- @discussion Equivalent to @link stringByMatching:inRange:withReferenceString: stringByMatching:inRange:withReferenceString: @/link with <span class="argument">range</span> specified as the entire range of the receiver.
+ @discussion Equivalent to @link NSString(RegexKitAdditions)/stringByMatching:inRange:withReferenceString: stringByMatching:inRange:withReferenceString: @/link with <span class="argument">range</span> specified as the entire range of the receiver.
  @seealso    <a href="NSString.html#CaptureSubpatternReferenceSyntax" class="section-link">Capture Subpattern Reference Syntax</a>
- @seealso    @link stringByMatching:inRange:withReferenceString: - stringByMatching:inRange:withReferenceString: @/link
+ @seealso    @link NSString(RegexKitAdditions)/stringByMatching:inRange:withReferenceString: - stringByMatching:inRange:withReferenceString: @/link
 */
 - (NSString *)stringByMatching:(id)aRegex withReferenceString:(NSString * const)referenceString;
 /*!
@@ -261,11 +262,11 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @method     stringByMatching:replace:withReferenceString:
  @tocgroup   NSString Search and Replace
  @abstract   Returns a new @link NSString NSString @/link containing the results of repeatedly searching the receiver with <span class="argument">aRegex</span> and replacing up to <span class="argument">count</span> matches with the text of <span class="argument">referenceString</span> after capture references have been expanded.
- @discussion Equivalent to @link stringByMatching:inRange:replace:withReferenceString: stringByMatching:inRange:replace:withReferenceString: @/link with <span class="argument">range</span> specified as the entire range of the receiver.
+ @discussion Equivalent to @link NSString(RegexKitAdditions)/stringByMatching:inRange:replace:withReferenceString: stringByMatching:inRange:replace:withReferenceString: @/link with <span class="argument">range</span> specified as the entire range of the receiver.
  @result     A @link NSString NSString @/link containing the results of repeatedly searching the receiver with <span class="argument">aRegex</span> and replacing up to <span class="argument">count</span> matches with the text of the replacement string after match references have been expanded.
  @seealso    <a href="NSString.html#CaptureSubpatternReferenceSyntax" class="section-link">Capture Subpattern Reference Syntax</a>
- @seealso    @link stringByMatching:inRange:replace:withReferenceString: - stringByMatching:inRange:replace:withReferenceString: @/link
- @seealso    @link match:replace:withString: - match:replace:withString: @/link
+ @seealso    @link NSString(RegexKitAdditions)/stringByMatching:inRange:replace:withReferenceString: - stringByMatching:inRange:replace:withReferenceString: @/link
+ @seealso    @link NSMutableString(RegexKitAdditions)/match:replace:withString: - match:replace:withString: @/link
 */
 - (NSString *)stringByMatching:(id)aRegex replace:(const RKUInteger)count withReferenceString:(NSString * const)referenceString;
 /*!
@@ -279,7 +280,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @param      referenceString The string used to replace the matched text.  May include references to <span class="argument">aRegex</span> captures with <i>perl</i> style <span class="regex">${</span><span class="code argument">NUMBER</span><span class="code">}</span> notation. Refer to <a href="NSString.html#CaptureSubpatternReferenceSyntax" class="section-link">Capture Subpattern Reference Syntax</a> for additional information.
  @result     A @link NSString NSString @/link containing the results of repeatedly searching the receiver with <span class="argument">aRegex</span> and replacing up to <span class="argument">count</span> matches with the text of the replacement string after match references have been expanded.
  @seealso    <a href="NSString.html#CaptureSubpatternReferenceSyntax" class="section-link">Capture Subpattern Reference Syntax</a>
- @seealso    @link match:replace:withString: - match:replace:withString: @/link
+ @seealso    @link NSMutableString(RegexKitAdditions)/match:replace:withString: - match:replace:withString: @/link
 */
 - (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count withReferenceString:(NSString * const)referenceString;
 //- (NSString *)stringByMatching:(id)aRegex fromIndex:(const RKUInteger)anIndex replace:(const RKUInteger)count withReferenceString:(NSString * const)referenceString;
@@ -295,8 +296,8 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    <a href="NSString.html#OrderofFormatSpecifierArgumentSubstitutionandExpansionofCaptureSubpatternMatchReferences" class="section-link">Order of Format Specifier Argument Substitution and Expansion of Capture Subpattern Match References</a>
  @seealso    <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/Strings/Articles/FormatStrings.html#//apple_ref/doc/uid/20000943" class="section-link">Formatting String Objects</a>
  @seealso    <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/Strings/Articles/formatSpecifiers.html#//apple_ref/doc/uid/TP40004265" class="section-link">String Format Specifiers</a>
- @seealso    @link stringByMatching:replace:withReferenceString: - stringByMatching:replace:withReferenceString: @/link
- @seealso    @link stringByMatching:inRange:replace:withReferenceFormat: - stringByMatching:inRange:replace:withReferenceFormat: @/link
+ @seealso    @link NSString(RegexKitAdditions)/stringByMatching:replace:withReferenceString: - stringByMatching:replace:withReferenceString: @/link
+ @seealso    @link NSString(RegexKitAdditions)/stringByMatching:inRange:replace:withReferenceFormat: - stringByMatching:inRange:replace:withReferenceFormat: @/link
 */
 - (NSString *)stringByMatching:(id)aRegex replace:(const RKUInteger)count withReferenceFormat:(NSString * const)referenceFormatString, ...;
 /*!
@@ -333,13 +334,13 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @method     match:replace:withString:
  @tocgroup   NSMutableString Search and Replace
  @abstract   Modifies the receiver by repeatedly searching the receiver with <span class="argument">aRegex</span> and replacing up to <span class="argument">count</span> matches with the text of <span class="argument">replacementString</span> after capture references have been expanded.
- @discussion <p>This method is identical to @link stringByMatching:replace:withReferenceString: stringByMatching:replace:withReferenceString: @/link except that this method modifies the mutable receiver directly instead of creating a new @link NSString NSString @/link that contains the result of the search and replace.</p>
+ @discussion <p>This method is identical to @link NSString(RegexKitAdditions)/stringByMatching:replace:withReferenceString: stringByMatching:replace:withReferenceString: @/link except that this method modifies the mutable receiver directly instead of creating a new @link NSString NSString @/link that contains the result of the search and replace.</p>
  @param      aRegex A regular expression string or @link RKRegex RKRegex @/link object.
  @param      count The maximum number of replacements to perform, or @link RKReplaceAll RKReplaceAll @/link to replace all matches.
  @param      replacementString The string used to replace the matched text.  May include references to <span class="argument">aRegex</span> captures with <i>perl</i> style <span class="regex">${</span><span class="code argument">NUMBER</span><span class="code">}</span> notation. Refer to <a href="NSString.html#ExpansionofCaptureSubpatternMatchReferencesinStrings" class="section-link">Expansion of Capture Subpattern Match References in Strings</a> for additional information.
  @result     Modifies the receiver by repeatedly searching the receiver with <span class="argument">aRegex</span> and replacing up to <span class="argument">count</span> matches with the text of <span class="argument">replacementString</span> after capture references have been expanded.  Returns the number of match and replace operations performed.
  @seealso    <a href="NSString.html#ExpansionofCaptureSubpatternMatchReferencesinStrings" class="section-link">Expansion of Capture Subpattern Match References in Strings</a>
- @seealso    @link stringByMatching:replace:withReferenceString: - stringByMatching:replace:withReferenceString: @/link
+ @seealso    @link NSString(RegexKitAdditions)/stringByMatching:replace:withReferenceString: - stringByMatching:replace:withReferenceString: @/link
 */
 - (RKUInteger)match:(id)aRegex replace:(const RKUInteger)count withString:(NSString * const)replacementString;
 - (RKUInteger)match:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count withString:(NSString * const)replacementString;

@@ -84,9 +84,9 @@
   if(RK_EXPECTED(stringBuffer.length < searchByteRange.location, 0))    { [[NSException exceptionWithName:NSRangeException reason:RKPrettyObjectMethodString(@"length %lu < start location %lu for range %@.", (unsigned long)[string length], (unsigned long)searchUTF16Range.location, NSStringFromRange(searchUTF16Range)) userInfo:NULL] raise]; }  
   if(RK_EXPECTED(stringBuffer.length < NSMaxRange(searchByteRange), 0)) { [[NSException exceptionWithName:NSRangeException reason:RKPrettyObjectMethodString(@"length %lu < end location %lu for range %@.", (unsigned long)[string length], (unsigned long)NSMaxRange(searchUTF16Range), NSStringFromRange(searchUTF16Range)) userInfo:NULL] raise]; }  
 
-  if(RK_EXPECTED((resultUTF8Ranges  = malloc(sizeof(NSRange) * regexCaptureCount)) == NULL, 0)) { goto errorExit; }
-  if(RK_EXPECTED((resultUTF16Ranges = malloc(sizeof(NSRange) * regexCaptureCount)) == NULL, 0)) { goto errorExit; }
-  
+  if(RK_EXPECTED((resultUTF8Ranges  = RK_MALLOC_NOT_SCANNED(sizeof(NSRange) * regexCaptureCount)) == NULL, 0)) { goto errorExit; }
+  if(RK_EXPECTED((resultUTF16Ranges = RK_MALLOC_NOT_SCANNED(sizeof(NSRange) * regexCaptureCount)) == NULL, 0)) { goto errorExit; }
+
   for(RKUInteger x = 0; x < regexCaptureCount; x++) { resultUTF8Ranges[x] = resultUTF16Ranges[x] = NSMakeRange(NSNotFound, 0); }
   
   return(RKRetain(self));
@@ -242,7 +242,7 @@ errorExit:
   if(RK_EXPECTED(referenceFormatString == NULL, 0)) { [[NSException exceptionWithName:NSInvalidArgumentException reason:RKPrettyObjectMethodString(@"referenceFormatString == nil.") userInfo:NULL] raise]; } 
   if(RK_EXPECTED(atBufferLocation == NSNotFound, 0)) { return(NULL); }
   RKStringBuffer stringBuffer                = RKStringBufferWithString(string);
-  RKStringBuffer referenceFormatStringBuffer = RKStringBufferWithString([[[NSString alloc] initWithFormat:referenceFormatString arguments:argList] autorelease]);
+  RKStringBuffer referenceFormatStringBuffer = RKStringBufferWithString(RKAutorelease([[NSString alloc] initWithFormat:referenceFormatString arguments:argList]));
   return(RKStringFromReferenceString(self, _cmd, regex, resultUTF8Ranges, &stringBuffer, &referenceFormatStringBuffer));
 }
 
@@ -256,6 +256,7 @@ errorExit:
   if(RK_EXPECTED(atBufferLocation == NSNotFound, 0)) { return(NO); }
   RKStringBuffer stringBuffer = RKStringBufferWithString(string);
     
+  RK_PREFETCH_WR(resultUTF16Ranges);
   RKMatchErrorCode matched = [regex getRanges:&resultUTF8Ranges[0] withCharacters:stringBuffer.characters length:stringBuffer.length inRange:NSMakeRange(atBufferLocation, NSMaxRange(searchByteRange) - atBufferLocation) options:RKMatchNoUTF8Check];
   hasPerformedMatch = 1;
   if(RK_EXPECTED(matched > 0, 1)) {
@@ -269,10 +270,10 @@ errorExit:
 
 - (void)releaseAllResources
 {
-  if(regex             != NULL) { RKRelease(regex);        regex             = NULL; }
-  if(string            != NULL) { RKRelease(string);       string            = NULL; }
-  if(resultUTF8Ranges  != NULL) { free(resultUTF8Ranges);  resultUTF8Ranges  = NULL; }
-  if(resultUTF16Ranges != NULL) { free(resultUTF16Ranges); resultUTF16Ranges = NULL; }
+  if(regex             != NULL) { RKRelease(regex);  regex  = NULL;    }
+  if(string            != NULL) { RKRelease(string); string = NULL;    }
+  if(resultUTF8Ranges  != NULL) { RK_FREE_AND_NULL(resultUTF8Ranges);  }
+  if(resultUTF16Ranges != NULL) { RK_FREE_AND_NULL(resultUTF16Ranges); }
   atBufferLocation = NSNotFound;
 }
   

@@ -55,8 +55,8 @@
   
 /*!
  @toc        NSSet
- @group      Querying a Set
  @group      Deriving New Sets
+ @group      Querying a Set
 */
   
  @interface NSSet (RegexKitAdditions)

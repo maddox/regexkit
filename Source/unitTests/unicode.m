@@ -91,8 +91,8 @@ static NSMutableArray *unicodeStringsArray = NULL;
 {
   if(unicodeStringsArray != NULL) { [unicodeStringsArray autorelease]; unicodeStringsArray = NULL; }
 
-  NSLog(REPrettyObjectMethodString(@"Cache status:\n%@", [RKRegex regexCache]));
-  NSLog(REPrettyObjectMethodString(@"Teardown complete\n\n"));
+  NSLog(@"%@", REPrettyObjectMethodString(@"Cache status:\n%@", [RKRegex regexCache]));
+  NSLog(@"%@", REPrettyObjectMethodString(@"Teardown complete\n\n"));
   fprintf(stderr, "-----------------------------------------\n\n");
 
   if([objc_getClass("NSGarbageCollector") defaultCollector] != NULL) {
@@ -102,6 +102,15 @@ static NSMutableArray *unicodeStringsArray = NULL;
       objc_col(3 << 0);
     }
   }
+
+  if(getenv("SLEEP_WHEN_FINISHED") != NULL) {
+    if(atoi(getenv("SLEEP_WHEN_FINISHED")) == 1) {
+      NSLog(@"Environment variable SLEEP_WHEN_FINISHED exists.  Will now enter a sleep loop forever.");
+      NSLog(@"PID: %lu", (unsigned long)getpid());
+      while(1) { sleep(1); }
+    }
+  }
+  sleep(1);
 }
 
 - (void)testSimple

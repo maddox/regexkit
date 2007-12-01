@@ -116,11 +116,12 @@ updateRegexKitMpkgVersion()
 updatePackageInfoPlists()
 {
   if [ ! -d "$1" ] ; then return 1; fi;
-  updateVersion   "$1/Framework_info.plist"     ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/Frameworks" && \
-    updateVersion "$1/DocSet_info.plist"        ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "/Library/Developer/Shared/Documentation/DocSets/" && \
-    updateVersion "$1/Documentation_info.plist" ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/RegexKit/" && \
-    updateVersion "$1/Sourcecode_info.plist"    ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/RegexKit/" && \
-    updateVersion "$1/pcre_info.plist"          ${PCRE_VERSION_MAJOR}    ${PCRE_VERSION_MINOR}    0                        "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/RegexKit/" && \
+  updateVersion   "$1/Framework_info.plist"             ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/Frameworks/" && \
+    updateVersion "$1/Instruments_Additions_info.plist" ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "/Developer/Library/Instruments/PlugIns/" && \
+    updateVersion "$1/DocSet_info.plist"                ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "/Library/Developer/Shared/Documentation/DocSets/" && \
+    updateVersion "$1/Documentation_info.plist"         ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/RegexKit/" && \
+    updateVersion "$1/Sourcecode_info.plist"            ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/RegexKit/" && \
+    updateVersion "$1/pcre_info.plist"                  ${PCRE_VERSION_MAJOR}    ${PCRE_VERSION_MINOR}    0                        "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/RegexKit/" && \
     "${PLISTUTIL_SCRIPT}" "$1/pcre_info.plist" CFBundleGetInfoString "${PCRE_VERSION_MAJOR}.${PCRE_VERSION_MINOR}.0, Copyright (c) 1997-2007 University of Cambridge" && \
     updateRegexKitMpkgVersion "$1/RegexKit_mpkg_info.plist" ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT}
 
@@ -179,6 +180,7 @@ rm -rf "${DISTRIBUTION_TEMP_PACKAGES_DIR}" && \
     "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/${DOCUMENTATION_DOCSET_ID}" \
     "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation" \
     "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework" \
+    "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Instruments_Additions" \
     "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Sourcecode" && \
   if [ "${DISTRIBUTION_INCLUDE_PCRE_PACKAGE}" == "YES" ]; then mkdir -p "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/pcre/Sourcecode/Source/pcre"; fi
 if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to delete the staging area from a previous build attempt."; exit 1; fi;
@@ -209,10 +211,12 @@ echo "$0:$LINENO: note: Copying files to the packaging staging area."
 "${RSYNC}" -aCE "${BUILD_DISTRIBUTION_DIR}/Documentation.html" "${BUILD_DISTRIBUTION_DIR}/Adding RegexKit to your Project.html" "${DOCUMENTATION_TARGET_DIR}" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation" && \
   "${SYSTEM_DEVELOPER_TOOLS}/SetFile" -a E "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation/Adding RegexKit to your Project.html" && \
   "${RSYNC}" -aCE "${TARGET_BUILD_DIR}/RegexKit.framework/" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework/RegexKit.framework" && \
+  "${RSYNC}" -aCE "${DISTRIBUTION_SOURCE_DTRACE_DIR}/"*.usdt "${DISTRIBUTION_SOURCE_DTRACE_DIR}/"*.instrument "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Instruments_Additions/" && \
   strip -S "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/RegexKit.framework//RegexKit.framework/Versions/A/RegexKit" && \
   "${RSYNC}" -aCE "${DISTRIBUTION_TEMP_SOURCE_DIR}/Sourcecode/" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Sourcecode/Sourcecode" && \
   if [ "${DISTRIBUTION_INCLUDE_PCRE_PACKAGE}" == "YES" ]; then "${RSYNC}" -a "${PCRE_TARBALL_FILE_PATH}" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/pcre/Sourcecode/Source/pcre/${PCRE_TARBALL_FILE_NAME}"; fi && \
   if [ "${XCODE_VERSION_MAJOR}" != "0200" ]; then "${RSYNC}" -aCE "${TARGET_BUILD_DIR}/DocSet/${DOCUMENTATION_DOCSET_ID}/" "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/${DOCUMENTATION_DOCSET_ID}/${DOCUMENTATION_DOCSET_ID}"; fi && \
+  "${CHMOD}" -R g+w "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Instruments_Additions" && \
   "${CHMOD}" -R g+w "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Documentation" && \
   "${CHMOD}" -R g+w "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Sourcecode" && \
   if [ "${XCODE_VERSION_MAJOR}" != "0200" ]; then "${CHMOD}" -R g+w "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/com.zang.RegexKit.Documentation.docset"; fi
@@ -302,6 +306,7 @@ echo "$0:$LINENO: note: Packaging DocSet Documentation."
 if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to create DocSet Documentation package."; exit 1; fi;
 fi
 
+
 echo "$0:$LINENO: note: Packaging sourcecode."
 "${PACKAGEMAKER}" -build \
     -p "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE}" \
@@ -314,6 +319,21 @@ echo "$0:$LINENO: note: Packaging sourcecode."
   if [ "${DISTRIBUTION_GZIP_PACKAGES}" == "YES" ]; then "${GZIP_CMD}" -n9 "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE}/Contents/Archive.pax" ; fi && \
   "${PERL}" -e 'while(<>) { s/\x0\x0\x1\xf5\x0\x0\x1\xf5/\x0\x0\x0\x0\x0\x0\x0\x50/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE}/Contents/Archive.bom"
 if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to create sourcecode package."; exit 1; fi;
+
+
+echo "$0:$LINENO: note: Packaging Instrument.app Additions."
+"${PACKAGEMAKER}" -build \
+    -p "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_INSTRUMENTS_ADDITIONS}" \
+    -f "${DISTRIBUTION_TEMP_PACKAGES_DIR}/staging/Instruments_Additions/" \
+    -u \
+    -ds \
+    -i "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}/Instruments_Additions_info.plist" \
+    -d "${DISTRIBUTION_TEMP_PACKAGE_PLISTS_DIR}/Instruments_Additions_desc.plist" && \
+  "${PERL}" -e 'while(<>) { s/(070707\d{18})(\d{12})(\d{40})/${1}000000000120${3}/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_INSTRUMENTS_ADDITIONS}/Contents/Archive.pax" && \
+  if [ "${DISTRIBUTION_GZIP_PACKAGES}" == "YES" ]; then "${GZIP_CMD}" -n9 "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_INSTRUMENTS_ADDITIONS}/Contents/Archive.pax" ; fi && \
+  "${PERL}" -e 'while(<>) { s/\x0\x0\x1\xf5\x0\x0\x1\xf5/\x0\x0\x0\x0\x0\x0\x0\x50/g; print $_; }' -i "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_INSTRUMENTS_ADDITIONS}/Contents/Archive.bom"
+if [ $? != 0 ]; then echo "$0:$LINENO: error: Unable to create Instruments Additions package."; exit 1; fi;
+
 
 if [ "${DISTRIBUTION_INCLUDE_PCRE_PACKAGE}" == "YES" ]; then
   echo "$0:$LINENO: note: Packaging PCRE distribution."
@@ -340,6 +360,7 @@ mkdir -p "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/Packages" && \
   "${RSYNC}" -aC "${DISTRIBUTION_TEMP_PACKAGEMAKER_DIR}/plists/RegexKit_mpkg_info.plist" "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/Info.plist" && \
   "${RSYNC}" -aC \
     "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_FRAMEWORK}" \
+    "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_INSTRUMENTS_ADDITIONS}" \
     "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_HTML_DOCUMENTATION}" \
     "${DISTRIBUTION_TEMP_PACKAGES_DIR}/${DISTRIBUTION_PACKAGE_SOURCECODE}" \
     "${DISTRIBUTION_TEMP_INSTALLER_PACKAGE}/Contents/Packages" && \

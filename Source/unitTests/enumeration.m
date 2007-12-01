@@ -18,8 +18,8 @@ void startGC(void);
 
 + (void)tearDown
 {
-  NSLog(REPrettyObjectMethodString(@"Cache status:\n%@", [RKRegex regexCache]));
-  NSLog(REPrettyObjectMethodString(@"Teardown complete\n\n"));
+  NSLog(@"%@", REPrettyObjectMethodString(@"Cache status:\n%@", [RKRegex regexCache]));
+  NSLog(@"%@", REPrettyObjectMethodString(@"Teardown complete\n\n"));
   fprintf(stderr, "-----------------------------------------\n\n");
 }
 
@@ -36,13 +36,13 @@ void startGC(void);
 #ifdef REGEXKIT_DEBUGGING
   RKRegex *debugRegex = NSAllocateObject([RKRegex class], 0, NULL);
   [debugRegex setDebugRetainCount:YES];
-  [debugRegex initWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames];
+  [debugRegex initWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)];
   [debugRegex autorelease];
 #endif
   
   tempPool = [[NSAutoreleasePool alloc] init];
   enumerator = NULL;
-  STAssertTrueNoThrow((enumerator = [[RKEnumerator alloc] initWithRegex:[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] string:subjectString]) != NULL, nil);
+  STAssertTrueNoThrow((enumerator = [[RKEnumerator alloc] initWithRegex:[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)] string:subjectString]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
   [tempPool release]; tempPool = NULL;
   [enumerator autorelease];
@@ -110,14 +110,14 @@ void startGC(void);
   
   tempPool = [[NSAutoreleasePool alloc] init];
   enumerator = NULL;
-  STAssertTrueNoThrow((enumerator = [[RKEnumerator alloc] initWithRegex:[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] string:subjectString]) != NULL, nil);
+  STAssertTrueNoThrow((enumerator = [[RKEnumerator alloc] initWithRegex:[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)] string:subjectString]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
   
   [tempPool release]; tempPool = NULL;
   [enumerator autorelease];
   [[RKRegex regexCache] clearCache];
 
-  RKEnumerator *secondEnumerator = [RKEnumerator enumeratorWithRegex:[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] string:subjectString];
+  RKEnumerator *secondEnumerator = [RKEnumerator enumeratorWithRegex:[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)] string:subjectString];
 #ifdef REGEXKIT_DEBUGGING
   [[secondEnumerator regex] setDebugRetainCount:YES];
 #endif

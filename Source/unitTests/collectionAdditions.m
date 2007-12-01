@@ -295,6 +295,27 @@ void startGC(void);
 
 }
 
+- (void)testDataExtensions
+{
+  char characters[] = {'1', 0, '2', 0, '3', 0, '2', '3', 0, '4', 0, '4', '2', 0};
+  NSData *charData = [NSData dataWithBytes:characters length:14];
+  
+  BOOL result = NO;
+  STAssertNoThrow((result = [charData isMatchedByRegex:@"42"]), nil);
+  STAssertTrue(result, @"Result = %d", result);
+
+  NSRange matchRange = NSMakeRange(23, 59);
+  STAssertNoThrow((matchRange = [charData rangeOfRegex:@"23"]), nil);
+  STAssertTrue(NSEqualRanges(matchRange, NSMakeRange(6, 2)), @"matchRange: %@", NSStringFromRange(matchRange));
+
+  NSData *subdata = NULL;
+  STAssertNoThrow((subdata = [charData subdataByMatching:@"23.*42"]), nil);
+  STAssertNotNil(subdata, nil);
+  const char *subdataBytes = [subdata bytes];
+  STAssertTrue((subdataBytes != NULL), nil);
+  STAssertTrue((memcmp(&characters[6], subdataBytes, 7) == 0), nil);
+}
+
 - (void)testDictionaryExtensions
 {
   NSMutableDictionary *testDict = [NSMutableDictionary dictionary];

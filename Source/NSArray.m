@@ -44,7 +44,8 @@ typedef enum {
   RKArrayActionCountOfMatchingObjects = 2,
   RKArrayActionAddMatches = 3,
   RKArrayActionRemoveMatches = 4,
-  RKArrayActionArrayMaxAction = 4
+  RKArrayActionIndexSetOfMatchingObjects = 5,
+  RKArrayActionArrayMaxAction = 5
 } RKArrayAction;
 
 static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange *againstRange, id regexObject, const RKArrayAction performAction, RKUInteger *UIntegerResult);
@@ -104,6 +105,13 @@ doAction:
 #endif
     case RKArrayActionAddMatches:             for(RKUInteger x = 0; x < matchedCount; x++) { [self addObject:matchedObjects[x]];               } goto exitNow; break;
     case RKArrayActionRemoveMatches:          for(RKUInteger x = 0; x < matchedCount; x++) { [self removeObjectAtIndex:matchedIndexes[x] - x]; } goto exitNow; break;
+    case RKArrayActionIndexSetOfMatchingObjects: {
+      NSMutableIndexSet *indexSet = [[NSMutableIndexSet alloc] init];
+      for(RKUInteger x = 0; x < matchedCount; x++) { [indexSet addIndex:matchedIndexes[x]]; }
+      returnObject = [[NSIndexSet alloc] initWithIndexSet:indexSet];
+      RKRelease(indexSet);
+      }
+      break;
     default: returnObject = NULL; NSCAssert1(1 == 0, @"Unknown RKArrayAction in switch block, performAction = %lu", (unsigned long)performAction);             break;
   }
 
@@ -165,6 +173,16 @@ exitNow:
   RKUInteger result = NSNotFound - 1;
   RKDoArrayAction(self, _cmd, self, &range, aRegex, RKArrayActionIndexOfFirstMatch, &result); 
   return(result);
+}
+
+-(NSIndexSet *)indexSetOfObjectsMatchingRegex:(id)aRegex
+{
+  return(RKDoArrayAction(self, _cmd, self, NULL, aRegex, RKArrayActionIndexSetOfMatchingObjects, NULL)); 
+}
+
+-(NSIndexSet *)indexSetOfObjectsMatchingRegex:(id)aRegex inRange:(const NSRange)range
+{
+  return(RKDoArrayAction(self, _cmd, self, &range, aRegex, RKArrayActionIndexSetOfMatchingObjects, NULL)); 
 }
 
 @end

@@ -67,6 +67,7 @@ INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/DataTypes.ht
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/Functions.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/index.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/NSArray.html', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/NSData.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/NSDictionary.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/NSMutableArray.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/Documentation/NSMutableDictionary.html', 'f', 33188);
@@ -156,6 +157,7 @@ INSERT INTO file (cid, name, type, mode) VALUES (1, '/RegexKit.framework/Version
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/RegexKit.framework/Versions/A/RegexKit', 'f', 33261);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/RegexKit.framework/Versions/A/Headers', 'd', 16877);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/RegexKit.framework/Versions/A/Headers/NSArray.h', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (1, '/RegexKit.framework/Versions/A/Headers/NSData.h', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/RegexKit.framework/Versions/A/Headers/NSDictionary.h', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/RegexKit.framework/Versions/A/Headers/NSObject.h', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (1, '/RegexKit.framework/Versions/A/Headers/NSSet.h', 'f', 33188);
@@ -189,6 +191,7 @@ INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/DataTypes.ht
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/Functions.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/index.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/NSArray.html', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/NSData.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/NSDictionary.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/NSMutableArray.html', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Documentation/NSMutableDictionary.html', 'f', 33188);
@@ -277,6 +280,7 @@ INSERT INTO file (cid, name, type, mode) VALUES (2, '/RegexKit.xcodeproj/project
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source', 'd', 16877);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Info.plist', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/NSArray.m', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/NSData.m', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/NSDictionary.m', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/NSObject.m', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/NSSet.m', 'f', 33188);
@@ -307,6 +311,8 @@ INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Build/Packagemaker/
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Build/Packagemaker/plists/Documentation_info.plist','f',33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Build/Packagemaker/plists/Framework_desc.plist','f',33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Build/Packagemaker/plists/Framework_info.plist','f',33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Build/Packagemaker/plists/Instruments_Additions_desc.plist','f',33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Build/Packagemaker/plists/Instruments_Additions_info.plist','f',33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Build/Packagemaker/plists/RegexKit_mpkg_info.plist','f',33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Build/Packagemaker/plists/Sourcecode_desc.plist','f',33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Build/Packagemaker/plists/Sourcecode_info.plist','f',33188);
@@ -330,6 +336,17 @@ INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Build/SQL/files.sql
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Build/Xcode', 'd', 16877);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Build/Xcode/projectExportedSymbols', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Build/Xcode/RegexKit Build Settings.xcconfig', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/DTrace', 'd', 16877);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/DTrace/RegexKit.usdt', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/DTrace/RegexKitProbes.d', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/DTrace/RegexKit_cache_lookup_timing.instrument', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/DTrace/RegexKit_compile_error.instrument', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/DTrace/RegexKit_compile_timing.instrument', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/DTrace/RegexKit_lock_timing.instrument', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/DTrace/RegexKit_match_error.instrument', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/DTrace/RegexKit_match_timinig.instrument', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/DTrace/RegexKit_per_second.instrument', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/DTrace/RegexKit_performance_notes.instrument', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation', 'd', 16877);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Misc', 'd', 16877);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Misc/spelling_words', 'f', 33188);
@@ -383,6 +400,7 @@ INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Templ
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Templates/DataTypes.tmpl', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Templates/Functions.tmpl', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Templates/NSArray.tmpl', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Templates/NSData.tmpl', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Templates/NSDictionary.tmpl', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Templates/NSMutableArray.tmpl', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Templates/NSMutableDictionary.tmpl', 'f', 33188);
@@ -398,6 +416,7 @@ INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Templ
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Headers', 'd', 16877);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Headers/RegexKit', 'd', 16877);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Headers/RegexKit/NSArray.h', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Headers/RegexKit/NSData.h', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Headers/RegexKit/NSDictionary.h', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Headers/RegexKit/NSObject.h', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Headers/RegexKit/NSSet.h', 'f', 33188);

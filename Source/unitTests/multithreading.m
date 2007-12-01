@@ -59,7 +59,7 @@ NSString *RKThreadWillExitNotification = @"RKThreadWillExitNotification";
 
     [[RKRegex regexCache] setDebug:YES];
     
-    iterations = 500;
+    iterations = 250;
     if(([leakEnvString intValue] > 0) || ([debugEnvString intValue] > 0)) { iterations = 200; }
     
     if(([leakEnvString intValue] > 0)) {
@@ -265,7 +265,7 @@ exitNow:
 - (void)testSimpleMultiThreading
 {
   if(isInitialized == NO) { STFail(@"[%@ %@] is not initialized!", [self className], NSStringFromSelector(_cmd)); return; }
-  int pthread_err = 0, totalThreads = 19;
+  int pthread_err = 0, totalThreads = 13;
   
   [self thread:0 log:[NSString stringWithFormat:@"%@ is initializing.\n", NSStringFromSelector(_cmd)]];
   
@@ -378,7 +378,7 @@ exitNow:
 
   int x = 0, y = 0;
 
-  for(x = 0; x < 13; x++) {
+  for(x = 0; x < 7; x++) {
     NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
 
     [self thread:threadID log:[NSString stringWithFormat:@"Thread %3d, round %3d starting.. cacheCount: %3u cacheClearedCount: %5u read busy: %5u spin: %5u write busy: %5u totalAutoreleasedObjects: %8u\n", threadID, x, [[RKRegex regexCache] cacheCount], [[RKRegex regexCache] cacheClearedCount], [[RKRegex regexCache] readBusyCount], [[RKRegex regexCache] readSpinCount], [[RKRegex regexCache] writeBusyCount], [NSAutoreleasePool totalAutoreleasedObjects]]];
@@ -991,15 +991,15 @@ exitNow:
 //- (void)testSimpleMatches
 - (void)mt_test_13
 {
-  STAssertTrue([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:0]], nil);
-  STAssertTrue([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(2, 3)], nil);
+  STAssertTrue([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)]], nil);
+  STAssertTrue([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(2, 3)], nil);
   STAssertTrue([[RKRegex regexWithRegexString:@"123" options:0] matchesCharacters:" 012345 " length:strlen(" 012345 ") inRange:NSMakeRange(2, 3) options:0], nil);
-  STAssertFalse([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(1, 2)], nil);
-  STAssertFalse([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(3, 2)], nil);
+  STAssertFalse([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(1, 2)], nil);
+  STAssertFalse([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(3, 2)], nil);
   STAssertFalse([[RKRegex regexWithRegexString:@"123" options:0] matchesCharacters:" 012345 " length:strlen(" 012345 ") inRange:NSMakeRange(1, 2) options:0], nil);
   STAssertFalse([[RKRegex regexWithRegexString:@"123" options:0] matchesCharacters:" 012345 " length:strlen(" 012345 ") inRange:NSMakeRange(3, 2) options:0], nil);
   
-  STAssertThrowsSpecificNamed([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(400, 16)], NSException, NSRangeException, nil);
+  STAssertThrowsSpecificNamed([@" 012345 " isMatchedByRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(400, 16)], NSException, NSRangeException, nil);
   STAssertThrowsSpecificNamed([[RKRegex regexWithRegexString:@"123" options:0] matchesCharacters:" 012345 " length:strlen(" 012345 ") inRange:NSMakeRange(400, 16) options:0], NSException, NSRangeException, nil);
   STAssertThrowsSpecificNamed([[RKRegex regexWithRegexString:@"123" options:0] matchesCharacters:" 012345 " length:0 inRange:NSMakeRange(0, 8) options:0], NSException, NSRangeException, nil);
   
@@ -1011,13 +1011,13 @@ exitNow:
 {
   NSRange matchRange = NSMakeRange(0, 0);
   
-  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:0]]), NSMakeRange(2, 3)), @"matchRange = %@", NSStringFromRange(matchRange));
-  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(2, 3) capture:0]), NSMakeRange(2, 3)), @"matchRange = %@", NSStringFromRange(matchRange));
+  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)]]), NSMakeRange(2, 3)), @"matchRange = %@", NSStringFromRange(matchRange));
+  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(2, 3) capture:0]), NSMakeRange(2, 3)), @"matchRange = %@", NSStringFromRange(matchRange));
   
-  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(1,2) capture:0]), NSMakeRange(NSNotFound, 0)), @"matchRange = %@", NSStringFromRange(matchRange));
-  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(3,2) capture:0]), NSMakeRange(NSNotFound, 0)), @"matchRange = %@", NSStringFromRange(matchRange));
+  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(1,2) capture:0]), NSMakeRange(NSNotFound, 0)), @"matchRange = %@", NSStringFromRange(matchRange));
+  STAssertTrue(NSEqualRanges((matchRange = [@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(3,2) capture:0]), NSMakeRange(NSNotFound, 0)), @"matchRange = %@", NSStringFromRange(matchRange));
   
-  STAssertThrowsSpecificNamed([@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(400, 16) capture:0], NSException, NSRangeException, nil);
+  STAssertThrowsSpecificNamed([@" 012345 " rangeOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(400, 16) capture:0], NSException, NSRangeException, nil);
   
   STAssertThrowsSpecificNamed([[RKRegex regexWithRegexString:@"123" options:0] rangeForCharacters:nil length:strlen(" 012345 ") inRange:NSMakeRange(400, 16) captureIndex:23 options:RKMatchNoOptions], NSException, NSInvalidArgumentException, nil);
 }
@@ -1028,12 +1028,12 @@ exitNow:
   NSRange *matchRanges = NULL;
   
   matchRanges = NULL;
-  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:0]], nil);
+  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)]], nil);
   STAssertTrue(matchRanges != NULL, nil); if(matchRanges == NULL) { return; }
   STAssertTrue(NSEqualRanges(matchRanges[0], NSMakeRange(2, 3)), @"matchRanges[0] = %@", NSStringFromRange(matchRanges[0]));
   
   matchRanges = NULL;
-  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(2, 3)], nil);
+  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(2, 3)], nil);
   STAssertTrue(matchRanges != NULL, nil); if(matchRanges == NULL) { return; }
   STAssertTrue(NSEqualRanges(matchRanges[0], NSMakeRange(2, 3)), @"matchRanges[0] = %@", NSStringFromRange(matchRanges[0]));
   
@@ -1043,11 +1043,11 @@ exitNow:
   STAssertTrue(NSEqualRanges(matchRanges[0], NSMakeRange(2, 3)), @"matchRanges[0] = %@", NSStringFromRange(matchRanges[0]));
   
   matchRanges = NULL;
-  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(1, 2)], nil);
+  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(1, 2)], nil);
   STAssertTrue(matchRanges == NULL, nil);
   
   matchRanges = NULL;
-  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(3, 2)], nil);
+  STAssertNoThrow(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(3, 2)], nil);
   STAssertTrue(matchRanges == NULL, nil);
   
   matchRanges = NULL;
@@ -1059,7 +1059,7 @@ exitNow:
   STAssertTrue(matchRanges == NULL, nil);
   
   matchRanges = NULL;
-  STAssertThrowsSpecificNamed(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:0] inRange:NSMakeRange(400, 16)], NSException, NSRangeException, nil);
+  STAssertThrowsSpecificNamed(matchRanges = [@" 012345 " rangesOfRegex:[RKRegex regexWithRegexString:@"123" options:(RKCompileUTF8 | RKCompileNoUTF8Check)] inRange:NSMakeRange(400, 16)], NSException, NSRangeException, nil);
   STAssertTrue(matchRanges == NULL, nil);
   
   matchRanges = NULL;
@@ -1984,7 +1984,7 @@ exitNow:
   
   tempPool = [[NSAutoreleasePool alloc] init];
   enumerator = NULL;
-  STAssertTrueNoThrow((enumerator = [[RKEnumerator alloc] initWithRegex:[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:RKCompileDupNames] string:subjectString]) != NULL, nil);
+  STAssertTrueNoThrow((enumerator = [[RKEnumerator alloc] initWithRegex:[RKRegex regexWithRegexString:@"\\s*\\S+\\s+" options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)] string:subjectString]) != NULL, nil);
   STAssertTrue([subjectString isEqualToString:[enumerator string]], nil);
   [tempPool release]; tempPool = NULL;
   [enumerator autorelease];
@@ -2176,7 +2176,7 @@ exitNow:
 
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
-    RKRegex *regex = [RKRegex regexWithRegexString:@"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))" options:RKCompileDupNames];
+    RKRegex *regex = [RKRegex regexWithRegexString:@"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))" options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)];
     NSRange *ranges = [subjectString rangesOfRegex:regex];
     STAssertNotNil(regex, nil);
     STAssertTrue(ranges != NULL, nil);
@@ -2257,7 +2257,7 @@ exitNow:
 
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
-    RKRegex *regex = [RKRegex regexWithRegexString:@"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))" options:RKCompileDupNames];
+    RKRegex *regex = [RKRegex regexWithRegexString:@"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))" options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)];
     NSRange *ranges = [subjectString rangesOfRegex:regex];
     STAssertNotNil(regex, nil);
     STAssertTrue(ranges == NULL, nil);
@@ -2275,7 +2275,7 @@ exitNow:
 
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
-    RKRegex *regex = [RKRegex regexWithRegexString:regexString options:RKCompileDupNames];
+    RKRegex *regex = [RKRegex regexWithRegexString:regexString options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)];
     NSRange *ranges = [subjectString rangesOfRegex:regex];
     STAssertNotNil(regex, nil);
     STAssertTrue(ranges != NULL, nil);

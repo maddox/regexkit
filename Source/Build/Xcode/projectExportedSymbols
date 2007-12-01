@@ -51,11 +51,13 @@ _RKConvertUTF16ToUTF8RangeForString
 # A list of some of the other symbols that we have, but don't export.  For reference, mostly.
 #
 #.objc_category_name_NSArrayRegexKitAdditions
+#.objc_category_name_NSDataRegexKitAdditions
 #.objc_category_name_NSDictionaryRegexKitAdditions
 #.objc_category_name_NSObjectRegexKitAdditions
 #.objc_category_name_NSSetRegexKitAdditions
 #.objc_category_name_NSStringRegexKitAdditions
 #.objc_category_name_NSMutableArrayRegexKitAdditions
+#.objc_category_name_NSMutableDataRegexKitAdditions
 #.objc_category_name_NSMutableDictionaryRegexKitAdditions
 #.objc_category_name_NSMutableSetRegexKitAdditions
 #.objc_category_name_NSMutableStringRegexKitAdditions

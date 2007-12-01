@@ -71,15 +71,17 @@
 
 <h3><a name="overview_UnicodeSupport">Unicode Support</a></h3>
 
-<p>Unicode strings are fully supported by RegexKit, both in the regular expression pattern and the string to search.  F</p>
+<p>Unicode strings are fully supported by RegexKit, both in the regular expression pattern and the string to search.</p>
 
-  <h3><a name="overview_FoundationAdditionsRKCompileOptionRequirements">Foundation Additions RKCompileOption Requirements</a></h3>
+<h3><a name="overview_FoundationAdditionsRKCompileOptionRequirements">Foundation Additions RKCompileOption Requirements</a></h3>
   
   <p>The @link Foundation Foundation @/link additions use Unicode strings exclusively for the buffer that @link RKRegex RKRegex @/link performs matches against.  If a @link NSString NSString @/link has an encoding format other than @link ASCII ASCII @/link, it is first converted to @link UTF8 UTF8 @/link before any matching can occur. Because of this, @link RKRegex RKRegex @/link objects must have the @link RKCompileOption RKCompileOption @/link flags @link RKCompileUTF8 RKCompileUTF8 @/link and @link RKCompileNoUTF8Check RKCompileNoUTF8Check @/link set.  Bytes with the most significant bit set in @link UTF8 UTF8 @/link encoded strings have special meaning that must be interpreted.  Without these options set, PCRE treats the buffer as a collection of 8 bit bytes without the required @link UTF8 UTF8 @/link decoding.</p>
 
   <p>The various @link Foundation Foundation @/link additions will accept either a @link RKRegex RKRegex @/link or a @link NSString NSString @/link for the regex argument.  If the supplied object is a @link NSString NSString@/link, it is automatically converted to a @link RKRegex RKRegex @/link object via the @link regexWithRegexString:options: regexWithRegexString:options: @/link method with an option argument of (@link RKCompileUTF8 RKCompileUTF8 @/link | @link RKCompileNoUTF8Check RKCompileNoUTF8Check@/link).</p>
-
+  
   <p>If you are supplying an instantiated @link RKRegex RKRegex @/link object instead of using the @link NSString NSString @/link auto-compile functionality, the @link RKCompileOption RKCompileOption @/link options @link RKCompileUTF8 RKCompileUTF8 @/link and @link RKCompileNoUTF8Check RKCompileNoUTF8Check @/link must be set.</p>
+
+  <div class="box note marginTopSpacer marginBottomSpacer"><div class="table"><div class="row"><div class="label cell">Note:</div><div class="message cell">Unlike the other Foundation additions, the @link NSData NSData @/link additions do not require and <b><i>do not</i></b> set the @link RKCompileUTF8 RKCompileUTF8 @/link and @link RKCompileNoUTF8Check RKCompileNoUTF8Check@/link compile option flags.</div></div></div></div>
 
   <div class="box important marginTopSpacer marginBottomSpacer"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">Failure to set the required @link RKCompileOption RKCompileOption @/link options will cause the supplied @link RKRegex RKRegex @/link to be discarded and a new @link RKRegex RKRegex @/link object created from the discarded regex with the required @link UTF8 UTF8 @/link flags logically ORd to any existing options.</div></div></div></div>
 

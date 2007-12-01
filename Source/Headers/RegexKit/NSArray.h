@@ -54,8 +54,8 @@
   
 /*!
  @toc   NSArray
- @group Querying an Array
  @group Deriving New Arrays
+ @group Querying an Array
 */
 
 @interface NSArray (RegexKitAdditions)
@@ -117,10 +117,25 @@
  @tocgroup   NSArray Querying an Array
  @abstract   Searches the specified <span class="argument">range</span> within the receiver for an object that matches <span class="argument">aRegex</span> and returns the lowest index whose corresponding array value is equal to the matched object.
  @discussion If none of the objects in the specified <span class="argument">range</span> are matched by <span class="argument">aRegex</span>, @link indexOfObjectMatchingRegex:inRange: indexOfObjectMatchingRegex:inRange: @/link returns @link NSNotFound NSNotFound @/link.
+ @seealso    @link indexOfObjectMatchingRegex: - indexOfObjectMatchingRegex: @/link
 */
 -(RKUInteger)indexOfObjectMatchingRegex:(id)aRegex inRange:(const NSRange)range;
+/*!
+ @method     indexSetOfObjectsMatchingRegex:
+ @tocgroup   NSArray Querying an Array
+ @abstract   Searches the receiver for objects that are matched by <span class="argument">aRegex</span> and returns a @link NSIndexSet NSIndexSet @/link containing the matching indexes.
+ @seealso    @link indexSetOfObjectsMatchingRegex:inRange: - indexSetOfObjectsMatchingRegex:inRange: @/link
+*/
+-(NSIndexSet *)indexSetOfObjectsMatchingRegex:(id)aRegex;
+/*!
+ @method     indexSetOfObjectsMatchingRegex:inRange:
+ @tocgroup   NSArray Querying an Array
+ @abstract   Searches the specified <span class="argument">range</span> within the receiver for objects that are matched by <span class="argument">aRegex</span> and returns a @link NSIndexSet NSIndexSet @/link containing the matching indexes.
+ @seealso    @link indexSetOfObjectsMatchingRegex: - indexSetOfObjectsMatchingRegex: @/link
+*/
+-(NSIndexSet *)indexSetOfObjectsMatchingRegex:(id)aRegex inRange:(const NSRange)range;
 
- @end
+@end
 
 
 /*!

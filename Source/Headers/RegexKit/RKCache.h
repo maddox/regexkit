@@ -65,17 +65,17 @@
 */
 
 @interface RKCache : NSObject {
-  RKReadWriteLock  *cacheRWLock;
-  RK_STRONG_REF NSMapTable *cacheMapTable;
-  NSString         *cacheDescriptionString;
-  const NSMapTableKeyCallBacks *cacheMapKeyCallBacks;
-  int              cacheInitialized;
-  int              cacheIsEnabled;
-  RKUInteger       cacheHits;
-  RKUInteger       cacheMisses;
-  RKUInteger       cacheClearedCount;
-  int              cacheAddingIsEnabled;   // Used during debugging
-  int              cacheLookupIsEnabled;   // Used during debugging  
+  RK_STRONG_REF RKReadWriteLock *cacheRWLock;
+  RK_STRONG_REF NSMapTable      *cacheMapTable;
+  RK_STRONG_REF NSString        *cacheDescriptionString;
+                RKUInteger       cacheHits;
+                RKUInteger       cacheMisses;
+                RKUInteger       cacheClearedCount;
+                int              cacheInitialized;
+                int              cacheIsEnabled;
+                int              cacheAddingIsEnabled;   // Used during debugging
+                int              cacheLookupIsEnabled;   // Used during debugging  
+  RK_STRONG_REF char            *cacheDescriptionUTF8String;
 }
 
 
@@ -135,26 +135,28 @@
 - (NSString *)description;
 
 /*!
- @method     objectForHash:
+ @method     objectForHash:description:
  @tocgroup   RKCache Adding, Retrieving, and Removing Objects from the Cache
  @abstract   Return the cached object for the supplied hash, if it exists.
- @discussion <p>Invokes @link objectForHash:autorelease: objectForHash:autorelease: @/link with <span class="argument">objectHash</span> and <span class="code">YES</span> for @link autorelease autorelease@/link.</p>
+ @discussion <p>Invokes @link objectForHash:description:autorelease: objectForHash:description:autorelease: @/link with <span class="argument">objectHash</span>, <span class="argument">descriptionString</span>, and <span class="code">YES</span> for @link autorelease autorelease@/link.</p>
             <div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">The returned object will be released when the current @link NSAutoreleasePool NSAutoreleasePool @/link is released.  Therefore, the caller must send the returned object a @link retain retain @/link message if the object will be used past the current @link NSAutoreleasePool NSAutoreleasePool @/link context.</div></div></div></div>
  @param      objectHash The hash that represents the value of an object.
+ @param      descriptionString A description of the object.
  @result     Returns the object that matches <span class="argument">objectHash</span> if it currently exists in the cache, <span class="code">nil</span> otherwise.
  @seealso    @link RKCache/addObjectToCache: - addObjectToCache: @/link
  @seealso    @link hash - hash @/link
  @seealso    @link RKCache/objectForHash:autorelease: - objectForHash:autorelease: @/link
  @seealso    @link RKCache/removeObjectFromCache: - removeObjectFromCache: @/link
 */
-- (id)objectForHash:(const RKUInteger)objectHash;
+- (id)objectForHash:(const RKUInteger)objectHash description:(NSString * const)descriptionString;
 
 /*!
- @method     objectForHash:autorelease:
+ @method     objectForHash:description:autorelease:
  @tocgroup   RKCache Adding, Retrieving, and Removing Objects from the Cache
  @abstract   Return the cached object for the supplied hash, if it exists.
  @discussion <p>This method is used in cases such as returning a cached object from an <span class="code">init...</span> method to avoid adding the object unnecessarily to the current @link NSAutoreleasePool NSAutoreleasePool @/link which would result in wasted work because <span class="code">init...</span> would require sending a @link retain retain @/link to counter the @link autorelease autorelease@/link.</p>
  @param      objectHash The hash that represents the value of an object.
+ @param      descriptionString A description of the object.
  @param      shouldAutorelease While the cache is locked, the object matching <span class="argument">objectHash</span> is sent a @link retain retain @/link to ensure the object is not deallocated once the cache lock is released. If <span class="code">YES</span>, the object is also sent an @link autorelease autorelease @/link to keep the retain count balanced.  If <span class="code">NO</span>, the caller takes responsibility for releasing the returned cached object when finished with it.
  @result     Returns the object that matches <span class="argument">objectHash</span> if it currently exists in the cache, <span class="code">nil</span> otherwise.
  @seealso    @link RKCache/addObjectToCache:withHash: - addObjectToCache:withHash: @/link
@@ -162,7 +164,7 @@
  @seealso    @link RKCache/objectForHash: - objectForHash: @/link
  @seealso    @link RKCache/removeObjectWithHash: - removeObjectWithHash: @/link
 */
-- (id)objectForHash:(const RKUInteger)objectHash autorelease:(const BOOL)shouldAutorelease;
+- (id)objectForHash:(const RKUInteger)objectHash description:(NSString * const)descriptionString autorelease:(const BOOL)shouldAutorelease;
 
 /*!
  @method     addObjectToCache:

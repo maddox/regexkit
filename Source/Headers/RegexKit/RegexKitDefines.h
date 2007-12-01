@@ -98,7 +98,7 @@
  @discussion <p>On <span class="nobr">Mac OS X 10.5</span> this is defined to be @link NSUIntegerMax NSUIntegerMax@/link, otherwise it is defined as @link UINT_MAX UINT_MAX@/link.</p>
  */
 
-#if defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5)
+#if defined(NSINTEGER_DEFINED)
 #define RKInteger     NSInteger
 #define RKUInteger    NSUInteger
 #define RKIntegerMax  NSIntegerMax
@@ -242,6 +242,19 @@
 
 #if defined(ENABLE_MACOSX_GARBAGE_COLLECTION) && !defined(MAC_OS_X_VERSION_10_5)
 #error The Mac OS X Garbage Collection feature requires at least Mac OS X 10.5
+#endif
+
+/*!
+ @defined ENABLE_DTRACE_INSTRUMENTATION
+ @tocgroup Constants Preprocessor Macros
+ @abstract Preprocessor definition to enable RegexKit specific DTrace probe points.
+ @discussion <p>This preprocessor define enables support for RegexKit specific DTrace probe points.</p>
+ @seealso <a href="http://developer.apple.com/documentation/DeveloperTools/Conceptual/InstrumentsUserGuide/index.html" class="section-link" target="_top">Instruments User Guide</a>
+ @seealso <a href="http://docs.sun.com/app/docs/doc/817-6223" class="section-link" target="_top">Solaris Dynamic Tracing Guide</a> <a href="http://dlc.sun.com/pdf/817-6223/817-6223.pdf" class="section-link" target="_top">(as .PDF)</a>
+ */
+
+#if (defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5))
+#define ENABLE_DTRACE_INSTRUMENTATION
 #endif
 
 // AFAIK, only the GCC 3.3+ Mac OSX objc runtime has -fobjc-exception support

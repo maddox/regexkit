@@ -109,7 +109,7 @@ fi
 
 #if [ ! -f "${DOCUMENTATION_TEMP_DIR}/cpp_defines.out" ]; then
   echo "Extracting C Preprocessor #defines."
-  gcc -E -Wp,-dM -std=gnu99 -x objective-c "-I${PROJECT_HEADERS_ROOT}" "${PROJECT_HEADERS_DIR}/RegexKitPrivate.h" > "${DOCUMENTATION_TEMP_DIR}/cpp_defines.out"
+  gcc -E -Wp,-dM -std=gnu99 -x objective-c "-I${PROJECT_HEADERS_ROOT}" "-Ibuild/RegexKit.build/${CONFIGURATION}/RegexKit Framework.build/DerivedSources" "${PROJECT_HEADERS_DIR}/RegexKitPrivate.h" > "${DOCUMENTATION_TEMP_DIR}/cpp_defines.out"
 #fi
 
 # Extract the documentation from the header files.

@@ -36,7 +36,7 @@
 </div>
 
 
-<div class="prerequisites">
+<div class="prerequisitees">
 <h3><a name="Introduction_Prerequisites">Prerequisites</a></h3>
 
 <ul class="square">
@@ -55,6 +55,7 @@
 <li><a href="#RegularExpressions">Regular Expressions</a></li>
 <li><a href="#TheRegexKitClasses">The RegexKit Classes</a></li>
 <li><a href="#NSStringAdditions">NSString Additions</a></li>
+<li><a href="#DTraceProbePointsinRegexKit">DTrace Probe Points in RegexKit</a></li>
 <li><a href="#AddingtheRegexKitframeworktoyourProject">Adding the <span class="nobr">RegexKit.framework</span> to your Project</a></li>
 <li><a href="#LicenseInformation">License Information</a></li>
 </ul>
@@ -712,8 +713,429 @@ while([matchEnumerator nextRanges] != NULL) {
 
 
 </div>
-
 <!-- ____________________________________________ -->
+
+<div class="dtrace">
+<h2><a name="DTraceProbePointsinRegexKit">DTrace Probe Points in RegexKit</a></h2>
+
+<p>Mac OS X 10.5 Leopard contains a powerful new debugging facility called DTrace.  DTrace, originally developed by Sun Microsystems for the Solaris Operating System, is an open source kernel level framework for dynamically instrumenting live systems.  While there have been numerous tools in the past to record program execution trace information, such as <span class="file">truss</span> or <span class="file">ktrace</span>, none have been as comprehensive as DTrace.  For example, DTrace allows you to trace the entry and exit of any function, in any program, and record the arguments on entry and the results on exit.  Mac OS X 10.5 provides an Objective-C DTrace provider that extends that functionality to Objective-C class and instance methods as well.  Of course, DTrace also provides extensive kernel level tracing as well, including user to kernel crossings such as <span class="code">syscall</span>.</p>
+
+<p>DTrace also allows applications to define custom probe points that DTrace can attach to.  This allows, for example, shared library developers to offer tailored probe points for specific information, instead of trying to recreate the information by tracking individual calls in to the library.  RegexKit makes use of this functionality to provide a number of RegexKit specific DTrace probe points.</p>
+
+<p>The following simply documents the enhanced DTrace functionality that RegexKit provides.  It is not a guide to the DTrace facility.  A pre-requisite to making the most of DTrace is the <a href="http://docs.sun.com/app/docs/doc/817-6223" class="section-link" target="_top">Solaris Dynamic Tracing Guide</a> <a href="http://dlc.sun.com/pdf/817-6223/817-6223.pdf" class="section-link" target="_top">(as .PDF)</a>.  This is a <b><i>must read</i></b> for anyone who wishes to make the most of DTrace and the information outlined in the following sections.</p>
+
+<div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">You are <b>strongly encouraged</b> to familiarize yourself with the <a href="http://docs.sun.com/app/docs/doc/817-6223" class="section-link" target="_top">Solaris Dynamic Tracing Guide</a> <a href="http://dlc.sun.com/pdf/817-6223/817-6223.pdf" class="section-link" target="_top">(as .PDF)</a>, not just for use with RegexKit, but in general.  DTrace is a powerful, general purpose debugging tool that every Mac OS X programmer should be familiar with.</div></div></div></div>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+    <li><a href="http://developer.apple.com/documentation/DeveloperTools/Conceptual/InstrumentsUserGuide/index.html" class="section-link" target="_top">Instruments User Guide</a></li>
+    <li><a href="http://docs.sun.com/app/docs/doc/817-6223" class="section-link" target="_top">Solaris Dynamic Tracing Guide</a> <a href="http://dlc.sun.com/pdf/817-6223/817-6223.pdf" class="section-link" target="_top">(as .PDF)</a></li>
+  </ul>
+</div>
+
+<h3><a name="DTraceProbePointsinRegexKit_RegexKitProviderDTraceProbePoints">RegexKit Provider DTrace Probe Points</a></h3>
+
+<p>The following table provides a list of the available RegexKit probe points.  Following the table, the details of each probe are provided, including the number of arguments, argument types, and description of each argument.</p>
+
+<div class="table">
+<table class="standard" summary="RegexKit Provider DTrace Probe Points">
+<caption>RegexKit Provider DTrace Probe Points</caption>
+<tr><th>Probe Point</th><th>Description</th></tr>
+<tr><td><span class="code">RegexKit:::PerformanceNote</span></td><td>Fires for potential performance problems.</td></tr>
+<tr><td><span class="code">RegexKit:::BeginRegexCompile</span></td><td>Fires at the start of compiling a regular expression.</td></tr>
+<tr><td><span class="code">RegexKit:::EndRegexCompile</span></td><td>Fires at the end of compiling a regular expression.</td></tr>
+<tr><td><span class="code">RegexKit:::MatchException</span></td><td>Fires when matching results in an exception.</td></tr>
+<tr><td><span class="code">RegexKit:::BeginMatch</span></td><td>Fires at the start of a match.</td></tr>
+<tr><td><span class="code">RegexKit:::EndMatch</span></td><td>Fires at the end of a match.</td></tr>
+<tr><td><span class="code">RegexKit:::CacheCleared</span></td><td>Fires when the regular expression cache is cleared.</td></tr>
+<tr><td><span class="code">RegexKit:::BeginCacheLookup</span></td><td>Fires at the start of a cache lookup.</td></tr>
+<tr><td><span class="code">RegexKit:::EndCacheLookup</span></td><td>Fires when a cache lookup completes.</td></tr>
+<tr><td><span class="code">RegexKit:::BeginCacheAdd</span></td><td>Fires at the start of adding an object to the cache.</td></tr>
+<tr><td><span class="code">RegexKit:::EndCacheAdd</span></td><td>Fires at the end of adding an object to the cache.</td></tr>
+<tr><td><span class="code">RegexKit:::BeginCacheRemove</span></td><td>Fires at the start of removing an object from the cache.</td></tr>
+<tr><td><span class="code">RegexKit:::EndCacheRemove</span></td><td>Fires at the end of removing an object from the cache.</td></tr>
+<tr><td><span class="code">RegexKit:::BeginLock</span></td><td>Fires at the start of an attempt to acquire a lock.</td></tr>
+<tr><td><span class="code">RegexKit:::EndLock</span></td><td>Fires once a lock has been acquired.</td></tr>
+<tr><td><span class="code">RegexKit:::Unlock</span></td><td>Fires when a previously acquired lock is released and unlocked.</td></tr>
+</table>
+</div>
+
+<h4><a name="DTraceProbePointsinRegexKit_PerformanceNotificationRelatedProbes">Performance Notification Related Probes</a></h4>
+
+<p>The following probe fires when the framework has detected a potential performance impacting condition.</p>
+
+<div class="box sourcecode marginBottomSpacer">PerformanceNote(<span title="arg0">void *object</span>, <span title="arg1">NSUInteger hash</span>, <span title="arg2">char *description</span>, <span title="arg3">NSUInteger size</span>,
+                <span title="arg4">int impact</span>, <span title="arg5">int noteType</span>, <span title="arg6">char *note</span>);</div>
+
+<div class="table marginTopSpacer">
+<table class="standard" summary="Performance Note Arguments Description">
+<caption>Performance Note Arguments Description</caption>
+<tr><th>Name</th><th>Argument</th><th>Description</th></tr>
+<tr><td><span class="code">object</span></td><td><span class="argument">arg0</span></td><td>If applicable, contains a pointer to the relevant object.</td></tr>
+<tr><td><span class="code">hash</span></td><td><span class="argument">arg1</span></td><td>The hash value for <span class="argument">object</span>.</td></tr>
+<tr><td><span class="code">description</span></td><td><span class="argument">arg2</span></td><td>The description for <span class="argument">object</span>.</td></tr>
+<tr><td><span class="code">size</span></td><td><span class="argument">arg3</span></td><td>If applicable, contains the size value related to the performance note.</td></tr>
+<tr><td><span class="code">impact</span></td><td><span class="argument">arg4</span></td><td>Conditions which negatively impact performance will have a value <span class="code">&lt; 0</span>.  Conditions which positively impact performance will have a value <span class="code">&gt; 0</span>.</td></tr>
+<tr><td><span class="code">noteType</span></td><td><span class="argument">arg5</span></td><td>For a general performance notes, <span class="argument">noteType</span> is <span class="code">0</span>.  For performance notes that can be timed, <span class="argument">noteType</span> is <span class="code">1</span> to indicate the start, and <span class="code">2</span> to indicate the end.</td></tr>
+<tr><td><span class="code">note</span></td><td><span class="argument">arg6</span></td><td>A pointer to a <span class="code">NULL</span> terminated string containing a description of the performance condition.</td></tr>
+</table>
+</div>
+
+<h4><a name="DTraceProbePointsinRegexKit_RegularExpressionRelatedProbes">Regular Expression Related Probes</a></h4>
+
+<p>The following probes fire at the start and end of the compiling of a regular expression in to an internal format.</p>
+
+<div class="box sourcecode marginBottomSpacer">BeginRegexCompile(<span title="arg0">void *regex</span>, <span title="arg1">NSUInteger hash</span>, <span title="arg2">char *regexCharacters</span>, <span title="arg3">int compileOption</span>);
+
+EndRegexCompile(  <span title="arg0">void *regex</span>, <span title="arg1">NSUInteger hash</span>, <span title="arg2">char *regexCharacters</span>, <span title="arg3">int compileOption</span>,
+                  <span title="arg4">int errorCode</span>, <span title="arg5">char *errorCodeCharacters</span>, <span title="arg6">char *pcreErrorCharacters</span>,
+                  <span title="arg7">int errorAtOffsetOfRegexCharacters</span>);</div>
+
+<div class="table marginTopSpacer">
+<table class="standard" summary="Regular Expression Compile Arguments Description">
+<caption>Regular Expression Compile Arguments Description</caption>
+<tr><th>Name</th><th>Argument</th><th>Description</th></tr>
+<tr><td><span class="code">regex</span></td><td><span class="argument">arg0</span></td><td>A pointer to the @link RKRegex RKRegex @/link object.</td></tr>
+<tr><td><span class="code">hash</span></td><td><span class="argument">arg1</span></td><td>The computed hash value for the @link RKRegex RKRegex @/link object.</td></tr>
+<tr><td><span class="code">regexCharacters</span></td><td><span class="argument">arg2</span></td><td>A pointer to a <span class="code">NULL</span> terminated string containing the text of the regular expression.</td></tr>
+<tr><td><span class="code">compileOption</span></td><td><span class="argument">arg3</span></td><td>The @link RKCompileOption RKCompileOption @/link options for the regular expression.</td></tr>
+<tr><td><span class="code">errorCode</span></td><td><span class="argument">arg4</span></td><td>Contains the @link RKCompileErrorCode RKCompileErrorCode @/link error code.</td></tr>
+<tr><td><span class="code">errorCodeCharacters</span></td><td><span class="argument">arg5</span></td><td>A pointer to a <span class="code">NULL</span> terminated string of the text of the @link RKCompileErrorCode RKCompileErrorCode @/link error code.</td></tr>
+<tr><td><span class="code">pcreErrorCharacters</span></td><td><span class="argument">arg6</span></td><td>If there was an error compiling the regular expression, this is set to a pointer to a <span class="code">NULL</span> terminated string from the pcre library describing the error.</td></tr>
+<tr><td><span class="code">errorAtOffsetOfRegexCharacters</span></td><td><span class="argument">arg7</span></td><td>If there was an error compiling the regular expression, this contains the location of the first character in <span class="code">regexCharacters</span> that caused the error.</td></tr>
+</table>
+</div>
+
+<p>The <span class="code">regexProbeObject</span> type is used in the following match methods as there are only ten arguments, <span class="code">arg0</span> through <span class="code">arg9</span>, available to probes. Although the use of <span class="code">regexProbeObject</span> results in some inconvenience, it does allow for more information to be passed by the probe than would otherwise normally be available.</p>
+
+<div class="box sourcecode">typedef struct {
+  void *regexObject;
+  const char *regexCharacters;
+  int options;
+} regexProbeObject;</div>
+
+<p>The following probes fire at the start and end of a match by a regular expression.</p>
+
+<div class="box sourcecode">BeginMatch(<span title="arg0">regexProbeObject *probeObject</span>, <span title="arg1">NSUInteger hash</span>, <span title="arg2">NSRange *ranges</span>,
+           <span title="arg3">NSUInteger rangeCount</span>, <span title="arg4">void *charactersBuffer</span>, <span title="arg5">NSUInteger length</span>,
+           <span title="arg6">NSRange *searchRange</span>, <span title="arg7">int matchOptions</span>);
+
+EndMatch(  <span title="arg0">regexProbeObject *probeObject</span>, <span title="arg1">NSUInteger hash</span>, <span title="arg2">NSRange *ranges</span>,
+           <span title="arg3">NSUInteger rangeCount</span>, <span title="arg4">void *charactersBuffer</span>, <span title="arg5">NSUInteger length</span>,
+           <span title="arg6">NSRange *searchRange</span>, <span title="arg7">int matchOptions</span>,
+           <span title="arg8">int errorCode</span>, <span title="arg9">char *errorCodeCharacters</span>);</div>
+
+<div class="table marginTopSpacer">
+<table class="standard" summary="Regular Expression Match Arguments Description">
+<caption>Regular Expression Match Arguments Description</caption>
+<tr><th>Name</th><th>Argument</th><th>Description</th></tr>
+<tr><td><span class="code">probeObject</span></td><td><span class="argument">arg0</span></td><td>A pointer to a <span class="code">regexProbeObject</span> type.</td></tr>
+<tr><td><span class="code">hash</span></td><td><span class="argument">arg1</span></td><td>The computed hash value for the @link RKRegex RKRegex @/link object.</td></tr>
+<tr><td><span class="code">ranges</span></td><td><span class="argument">arg2</span></td><td>A pointer to an array of @link NSRange NSRange @/link that will contain the results of the match.</td></tr>
+<tr><td><span class="code">rangeCount</span></td><td><span class="argument">arg3</span></td><td>The number of valid <span class="argument">ranges</span>, usually equal to the number of captures for the regular expression.</td></tr>
+<tr><td><span class="code">charactersBuffer</span></td><td><span class="argument">arg4</span></td><td>A pointer to the buffer containing the bytes to perform the match on.</td></tr>
+<tr><td><span class="code">length</span></td><td><span class="argument">arg5</span></td><td>The length, in bytes, of <span class="argument">charactersBuffer</span>.</td></tr>
+<tr><td><span class="code">searchRange</span></td><td><span class="argument">arg6</span></td><td>A pointer to a @link NSRange NSRange @/link containing the range within <span class="argument">charactersBuffer</span> to perform the match on.</td></tr>
+<tr><td><span class="code">matchOptions</span></td><td><span class="argument">arg7</span></td><td>The @link RKMatchOption RKMatchOption @/link match options.</td></tr>
+<tr><td><span class="code">errorCode</span></td><td><span class="argument">arg8</span></td><td>If the match was successful, <span class="argument">errorCode</span> contains the number of <span class="argument">ranges</span> that contain valid results.  Otherwise, <span class="argument">errorCode</span> contains the @link RKMatchErrorCode RKMatchErrorCode @/link error code.</td></tr>
+<tr><td><span class="code">errorCodeCharacters</span></td><td><span class="argument">arg9</span></td><td>A pointer to a <span class="code">NULL</span> terminated string of the text of the @link RKMatchErrorCode RKMatchErrorCode @/link error code.</td></tr>
+</table>
+</div>
+
+<p>The following probe fires if a regular expression match generates an exception.</p>
+
+<div class="box sourcecode">MatchException(<span title="arg0">regexProbeObject *probeObject</span>, <span title="arg1">NSUInteger hash</span>, <span title="arg2">NSRange *ranges</span>,
+               <span title="arg3">NSUInteger rangeCount</span>, <span title="arg4">void *charactersBuffer</span>, <span title="arg5">NSUInteger length</span>,
+               <span title="arg6">NSRange *searchRange</span>, <span title="arg7">int matchOptions</span>,
+               <span title="arg8">char *exceptionNameCharacters</span>, <span title="arg9">char *reasonCharacters</span>);</div>
+
+<div class="table marginTopSpacer">
+<table class="standard" summary="Regular Expression Match Exception Arguments Description">
+<caption>Regular Expression Match Exception Arguments Description</caption>
+<tr><th>Name</th><th>Argument</th><th>Description</th></tr>
+<tr><td><span class="code">probeObject</span></td><td><span class="argument">arg0</span></td><td>A pointer to a <span class="code">regexProbeObject</span> type.</td></tr>
+<tr><td><span class="code">hash</span></td><td><span class="argument">arg1</span></td><td>The computed hash value for the @link RKRegex RKRegex @/link object.</td></tr>
+<tr><td><span class="code">ranges</span></td><td><span class="argument">arg2</span></td><td>A pointer to an array of @link NSRange NSRange @/link that will contain the results of the match.</td></tr>
+<tr><td><span class="code">rangeCount</span></td><td><span class="argument">arg3</span></td><td>The number of valid <span class="argument">ranges</span>, usually equal to the number of captures for the regular expression.</td></tr>
+<tr><td><span class="code">charactersBuffer</span></td><td><span class="argument">arg4</span></td><td>A pointer to the buffer containing the bytes to perform the match on.</td></tr>
+<tr><td><span class="code">length</span></td><td><span class="argument">arg5</span></td><td>The length, in bytes, of <span class="argument">charactersBuffer</span>.</td></tr>
+<tr><td><span class="code">searchRange</span></td><td><span class="argument">arg6</span></td><td>A pointer to a @link NSRange NSRange @/link containing the range within <span class="argument">charactersBuffer</span> to perform the match on.</td></tr>
+<tr><td><span class="code">matchOptions</span></td><td><span class="argument">arg7</span></td><td>The @link RKMatchOption RKMatchOption @/link match options.</td></tr>
+<tr><td><span class="code">exceptionNameCharacters</span></td><td><span class="argument">arg8</span></td><td>A pointer to a <span class="code">NULL</span> terminated string of the name of the exception.</td></tr>
+<tr><td><span class="code">reasonCharacters</span></td><td><span class="argument">arg9</span></td><td>A pointer to a <span class="code">NULL</span> terminated string for the reason of the exception.</td></tr>
+</table>
+</div>
+
+<h4><a name="DTraceProbePointsinRegexKit_CacheRelatedProbes">Cache Related Probes</a></h4>
+
+<p>The following probes fire at the start and end of a cache lookup.</p>
+
+<div class="box sourcecode">BeginCacheLookup(<span title="arg0">void *cache</span>, <span title="arg1">char *description</span>, <span title="arg2">NSUInteger lookupObjectHash</span>,
+                 <span title="arg3">char *lookupObjectDescription</span>, <span title="arg4">int shouldAutorelease</span>,
+                 <span title="arg5">int isCacheEnabled</span>, <span title="arg6">NSUInteger cacheHits</span>, <span title="arg7">NSUInteger cacheMisses</span>);
+
+EndCacheLookup(  <span title="arg0">void *cache</span>, <span title="arg1">char *description</span>, <span title="arg2">NSUInteger lookupObjectHash</span>,
+                 <span title="arg3">char *lookupObjectDescription</span>, <span title="arg4">int shouldAutorelease</span>,
+                 <span title="arg5">int isCacheEnabled</span>, <span title="arg6">NSUInteger cacheHits</span>, <span title="arg7">NSUInteger cacheMisses</span>,
+                 <span title="arg8">NSUInteger currentCount</span>, <span title="arg9">void *cachedObject</span>);</div>
+
+<div class="table marginTopSpacer">
+<table class="standard" summary="Cache Look Up Arguments Description">
+<caption>Cache Look Up Arguments Description</caption>
+<tr><th>Name</th><th>Argument</th><th>Description</th></tr>
+<tr><td><span class="code">cache</span></td><td><span class="argument">arg0</span></td><td>A pointer to the @link RKCache RKCache @/link object.</td></tr>
+<tr><td><span class="code">description</span></td><td><span class="argument">arg1</span></td><td>A pointer to a <span class="code">NULL</span> terminated string containing a description of the @link RKCache RKCache @/link object.</td></tr>
+<tr><td><span class="code">lookupObjectHash</span></td><td><span class="argument">arg2</span></td><td>The hash value of the object to look up in the cache.</td></tr>
+<tr><td><span class="code">lookupObjectDescription</span></td><td><span class="argument">arg3</span></td><td>A pointer to a <span class="code">NULL</span> terminated string containing a description of the object to look up, if available.</td></tr>
+<tr><td><span class="code">shouldAutorelease</span></td><td><span class="argument">arg4</span></td><td>If the requested object is in the cache, it is always sent a @link retain retain @/link message while the cache is locked.  If <span class="argument">shouldAutorelease</span> is set to <span class="code">1</span>, the cache will send a @link autorelease autorelease @/link message to the retrieved object as well.</td></tr>
+<tr><td><span class="code">isCacheEnabled</span></td><td><span class="argument">arg5</span></td><td>Set to <span class="code">1</span> if the cache is currently enabled, <span class="code">0</span> otherwise.</td></tr>
+<tr><td><span class="code">cacheHits</span></td><td><span class="argument">arg6</span></td><td>The number of times an object was found in the cache since the last reset of the counters.</td></tr>
+<tr><td><span class="code">cacheMisses</span></td><td><span class="argument">arg7</span></td><td>The number of times the cache was unable to fulfill a lookup request with a cached result since the last reset of the counters.</td></tr>
+<tr><td><span class="code">currentCount</span></td><td><span class="argument">arg8</span></td><td>The number of objects currently in the cache.</td></tr>
+<tr><td><span class="code">cachedObject</span></td><td><span class="argument">arg9</span></td><td>Set to <span class="code">NULL</span> if the cache was unable to fulfill the look up request with a result from the cache, other <span class="argument">cachedObject</span> contains a pointer to the object found in the cache.</td></tr>
+</table>
+</div>
+
+<p>The following probes fire at the start and end of adding an object to a cache.</p>
+
+<div class="box sourcecode">BeginCacheAdd(<span title="arg0">void *cache</span>, <span title="arg1">char *description</span>, <span title="arg2">void *addObject</span>, <span title="arg3">NSUInteger addObjectHash</span>,
+              <span title="arg4">char *addObjectDescription</span>, <span title="arg5">int isCacheEnabled</span>);
+
+EndCacheAdd(  <span title="arg0">void *cache</span>, <span title="arg1">char *description</span>, <span title="arg2">void *addObject</span>, <span title="arg3">NSUInteger addObjectHash</span>,
+              <span title="arg4">char *addObjectDescription</span>, <span title="arg5">int isCacheEnabled</span>, <span title="arg6">NSUInteger currentCount</span>,
+              <span title="arg7">int didCache</span>);</div>
+
+<div class="table marginTopSpacer">
+<table class="standard" summary="Add Object To Cache Arguments Description">
+<caption>Add Object To Cache Arguments Description</caption>
+<tr><th>Name</th><th>Argument</th><th>Description</th></tr>
+<tr><td><span class="code">cache</span></td><td><span class="argument">arg0</span></td><td>A pointer to the @link RKCache RKCache @/link object.</td></tr>
+<tr><td><span class="code">description</span></td><td><span class="argument">arg1</span></td><td>A pointer to a <span class="code">NULL</span> terminated string containing a description of the @link RKCache RKCache @/link object.</td></tr>
+<tr><td><span class="code">addObject</span></td><td><span class="argument">arg2</span></td><td>A pointer to the object to add to the cache.</td></tr>
+<tr><td><span class="code">addObjectHash</span></td><td><span class="argument">arg3</span></td><td>The hash value of the object to add to the cache.</td></tr>
+<tr><td><span class="code">addObjectDescription</span></td><td><span class="argument">arg4</span></td><td>A pointer to a <span class="code">NULL</span> terminated string containing a description of the object to add, if available.</td></tr>
+<tr><td><span class="code">isCacheEnabled</span></td><td><span class="argument">arg5</span></td><td>Set to <span class="code">1</span> if the cache is currently enabled, <span class="code">0</span> otherwise.</td></tr>
+<tr><td><span class="code">currentCount</span></td><td><span class="argument">arg6</span></td><td>The number of objects currently in the cache.</td></tr>
+<tr><td><span class="code">didCache</span></td><td><span class="argument">arg7</span></td><td>Set to <span class="code">1</span> if the object did not already exist in the cache and was successfully added, <span class="code">0</span> otherwise.</td></tr>
+</table>
+</div>
+
+<p>The following probes fire at the start and end of removing an object from a cache.</p>
+
+<div class="box sourcecode">BeginCacheRemove(<span title="arg0">void *cache</span>, <span title="arg1">char *description</span>, <span title="arg2">NSUInteger removeObjectHash</span>,
+                 <span title="arg3">int isCacheEnabled</span>);
+
+EndCacheRemove(  <span title="arg0">void *cache</span>, <span title="arg1">char *description</span>, <span title="arg2">NSUInteger removeObjectHash</span>,
+                 <span title="arg3">int isCacheEnabled</span>, <span title="arg4">NSUInteger currentCount</span>,
+                 <span title="arg5">void *removedObject</span>, <span title="arg6">char *removedObjectDescription</span>);</div>
+
+<div class="table marginTopSpacer">
+<table class="standard" summary="Cache Object Removal Arguments Description">
+<caption>Cache Object Removal Arguments Description</caption>
+<tr><th>Name</th><th>Argument</th><th>Description</th></tr>
+<tr><td><span class="code">cache</span></td><td><span class="argument">arg0</span></td><td>A pointer to the @link RKCache RKCache @/link object.</td></tr>
+<tr><td><span class="code">description</span></td><td><span class="argument">arg1</span></td><td>A pointer to a <span class="code">NULL</span> terminated string containing a description of the @link RKCache RKCache @/link object.</td></tr>
+<tr><td><span class="code">removeObjectHash</span></td><td><span class="argument">arg2</span></td><td>The hash value of the object to remove from the cache.</td></tr>
+<tr><td><span class="code">isCacheEnabled</span></td><td><span class="argument">arg3</span></td><td>Set to <span class="code">1</span> if the cache is currently enabled, <span class="code">0</span> otherwise.</td></tr>
+<tr><td><span class="code">currentCount</span></td><td><span class="argument">arg4</span></td><td>The number of objects currently in the cache.</td></tr>
+<tr><td><span class="code">removedObject</span></td><td><span class="argument">arg5</span></td><td>If the object was unable to be removed, or did not exist in the cache, <span class="argument">removedObject</span> contains a pointer to the removed object. Otherwise <span class="argument">removedObject</span> contains <span class="code">NULL</span>.</td></tr>
+<tr><td><span class="code">removedObjectDescription</span></td><td><span class="argument">arg6</span></td><td>A pointer to a <span class="code">NULL</span> terminated string containing a description of the object to add, if available.</td></tr>
+</table>
+</div>
+
+<p>The following probe fires whenever the statistic counters for a cache are cleared.  The probe provides the cache hit and miss counts just prior to clearing the counters.</p>
+
+<div class="box sourcecode">CacheCleared(<span title="arg0">void *cache</span>, <span title="arg1">char *description</span>, <span title="arg2">int didClearCache</span>, <span title="arg3">NSUInteger cacheClearedCount</span>,
+             <span title="arg4">NSUInteger preClearCacheHits</span>, <span title="arg5">NSUInteger preClearCacheMissed</span>);</div>
+
+<div class="table marginTopSpacer">
+<table class="standard" summary="Cache Clearing Arguments Description">
+<caption>Cache Clearing Arguments Description</caption>
+<tr><th>Name</th><th>Argument</th><th>Description</th></tr>
+<tr><td><span class="code">cache</span></td><td><span class="argument">arg0</span></td><td>A pointer to the @link RKCache RKCache @/link object.</td></tr>
+<tr><td><span class="code">description</span></td><td><span class="argument">arg1</span></td><td>A pointer to a <span class="code">NULL</span> terminated string containing a description of the @link RKCache RKCache @/link object.</td></tr>
+<tr><td><span class="code">didClearCache</span></td><td><span class="argument">arg2</span></td><td>Set to <span class="code">1</span> if the cache was successfully cleared, <span class="code">0</span> otherwise.</td></tr>
+<tr><td><span class="code">cacheClearedCount</span></td><td><span class="argument">arg3</span></td><td>The number of times the cache was cleared.</td></tr>
+<tr><td><span class="code">preClearCacheHits</span></td><td><span class="argument">arg4</span></td><td>The number of times an object was found in the cache before the counter was cleared.</td></tr>
+<tr><td><span class="code">preClearCacheMissed</span></td><td><span class="argument">arg5</span></td><td>T number of times the cache was unable to fulfill a lookup request with a cached result before the counter was cleared.</td></tr>
+</table>
+</div>
+
+<h4><a name="DTraceProbePointsinRegexKit_MultithreadedLocksRelatedProbes">Multithreaded Locks Related Probes</a></h4>
+
+<p>The following probes fire at the start and end of an attempt to acquire a multithreaded lock.  The Unlock probe fires when a thread relinquishes a lock.</p>
+
+<div class="box sourcecode marginBottomSpacer">BeginLock(<span title="arg0">void *lock</span>, <span title="arg1">int forWriting</span>, <span title="arg2">int isMultithreaded</span>);
+
+EndLock(  <span title="arg0">void *lock</span>, <span title="arg1">int forWriting</span>, <span title="arg2">int isMultithreaded</span>, <span title="arg3">int acquiredLock</span>, <span title="arg4">NSUInteger spinCount</span>); 
+
+Unlock(   <span title="arg0">void *lock</span>, <span title="arg1">int forWriting</span>, <span title="arg2">int isMultithreaded</span>);</div>
+
+<div class="table marginTopSpacer">
+<table class="standard" summary="Multithreaded Locks Arguments Description">
+<caption>Multithreaded Locks Arguments Description</caption>
+<tr><th>Argument</th><th>Argument</th><th>Description</th></tr>
+<tr><td><span class="code">lock</span></td><td><span class="argument">arg0</span></td><td>A pointer to the @link RKLock RKLock @/link object.</td></tr>
+<tr><td><span class="code">forWriting</span></td><td><span class="argument">arg1</span><td>Set to <span class="code">1</span> if the request is a write lock, <span class="code">0</span> otherwise.</td></tr>
+<tr><td><span class="code">isMultithreaded</span></td><td><span class="argument">arg2</span><td>Set to <span class="code">1</span> if the lock has switched to full multithreading mode, otherwise set to <span class="code">0</span> if the lock still in single threaded performance mode.</td></tr>
+<tr><td><span class="code">acquiredLock</span></td><td><span class="argument">arg3</span><td>Set to <span class="code">1</span> if the the lock was successfully acquired, <span class="code">0</span> otherwise.</td></tr>
+<tr><td><span class="code">spinCount</span></td><td><span class="argument">arg4</span><td>The number of times that an attempt was made to acquire the lock, but the lock was busy and unavailable.</td></tr>
+</table>
+</div>
+
+<h3><a name="DTraceProbePointsinRegexKit_AccessingProbesFromtheShell">Accessing Probes From the Shell</a></h3>
+
+<div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">Most uses of the <span class="file">dtrace</span> command require superuser privileges.  The following examples use <span class="file">sudo</span> to execute <span class="file">dtrace</span> as the <span class="regex">root</span> user.</div></div></div></div>
+
+<p>The following is an example of a <span class="file">dtrace</span> script file.  It uses the aggregation variable type to record the number of times a select number of RegexKit probes fire.  Then, once per second, the script outputs the current counts and resets the aggregation variables to zero and begins counting again.</p>
+
+<p>An example <span class="file">dtrace</span> script file, <span class="file">perSecond.d</span> :</p>
+
+<div class="box sourcecode">#pragma D option switchrate=10msec
+#pragma D option bufsize=15m
+#pragma D option quiet
+
+BEGIN { perTimeUnitStart = walltimestamp; }
+
+RegexKit*:::EndMatch        { @matchCount   = count(); }
+RegexKit*:::EndRegexCompile { @compileCount = count(); }
+RegexKit*:::EndCacheLookup  { @lookupCount  = count(); }
+
+tick-1sec
+{
+  normalize(@matchCount,   (walltimestamp - perTimeUnitStart) / 1000000000);
+  normalize(@compileCount, (walltimestamp - perTimeUnitStart) / 1000000000);
+  normalize(@lookupCount,  (walltimestamp - perTimeUnitStart) / 1000000000);
+  printa("Matches %@8d/sec, Compiles %@8d/sec, Cache Lookups %@8d/sec\n", @matchCount, @compileCount, @lookupCount);
+  perTimeUnitStart = walltimestamp;
+  clear(@matchCount);
+  clear(@compileCount);
+  clear(@lookupCount);
+}</div>
+
+<p>The example script above can be copy and pasted in to a shell, and then executed with the following command:</p>
+
+<div class="box sourcecode marginBottomSpacer">shell% sudo dtrace -Z -s perSecond.d
+Matches     1216/sec, Compiles      156/sec, Cache Lookups      456/sec
+Matches     1883/sec, Compiles      345/sec, Cache Lookups     2917/sec
+Matches    25148/sec, Compiles     3453/sec, Cache Lookups    35248/sec
+Matches    26968/sec, Compiles     3697/sec, Cache Lookups    34116/sec
+Matches    28312/sec, Compiles     3586/sec, Cache Lookups    40055/sec
+Matches    25688/sec, Compiles     4196/sec, Cache Lookups    34066/sec
+Matches    28298/sec, Compiles     3178/sec, Cache Lookups    38510/sec
+Matches    26780/sec, Compiles     4902/sec, Cache Lookups    33363/sec
+Matches    29088/sec, Compiles     3560/sec, Cache Lookups    38429/sec
+^C
+
+shell%</div>
+
+<div class="box tip marginTopSpacer"><div class="table"><div class="row"><div class="label cell">Tip:</div><div class="message cell">You can syntax check a script, without <span class="file">sudo</span>, using <span class="file">dtrace -e -s <i>SCRIPT</i></span></div></div></div></div>
+
+<p>It is important to note that in the above example output, the executable to be traced was already executing before the <span class="file">dtrace</span> command was executed.  This illustrates the dynamic part of <span class="file"><b>d</b>trace</span>.  The probe points are always active in the RegexKit framework, and they can be enabled on the fly at any time.</p>
+
+<p>You can also specify probes to match as an argument to the <span class="file">dtrace</span> command.  The following two examples demonstrate the aggregation functionality of <span class="file">dtrace</span> by counting the number of samples within an aggregation bin.</p>
+
+<div class="box note"><div class="table"><div class="row"><div class="label cell">Note:</div><div class="message cell">The following statistics were gathered on a 1.5GHz G4 PowerBook while the RegexKit Unit Tests were executing.</div></div></div></div>
+
+<p>The first example measures the amount of time, in microseconds, it takes to perform a lookup in the cache.  The left hand side is the number of microseconds, from zero to 20, an the right hand side is the number of samples counted for each sample bin.  The majority of samples are in the 4 to 6 microsecond range.</p>
+
+<div class="box sourcecode">shell% sudo dtrace -Z -q -n 'RegexKit*:::BeginCacheLookup { self->lookupStartTime = vtimestamp; }' -n 'RegexKit*:::EndCacheLookup { @lookups = lquantize(((vtimestamp - self->lookupStartTime) / 1000), 0, 20, 1); }'
+<i>after a few seconds...</i>
+^C
+
+
+           value  ------------- Distribution ------------- count    
+               3 |                                         0        
+               4 |@@@                                      133696   
+               5 |@@@@@@@@@@@@@@@@@@@@                     768620   
+               6 |@@@@@@@@@@@@@@@                          595496   
+               7 |                                         16868    
+               8 |                                         8733     
+               9 |                                         4119     
+              10 |                                         3112     
+              11 |                                         3071     
+              12 |                                         1690     
+              13 |                                         1831     
+              14 |                                         1050     
+              15 |                                         917      
+              16 |                                         811      
+              17 |                                         670      
+              18 |                                         714      
+              19 |                                         869      
+           >= 20 |                                         10541    
+
+shell% </div>
+
+<p>Next, the amount of time to compile a regular expression is graphed with the same units of measurements (zero to 20 microseconds).</p>
+
+<div class="box sourcecode">shell% sudo dtrace -Z -q -n 'RegexKit*:::BeginRegexCompile { self->compileStartTime = vtimestamp; }' -n 'RegexKit*:::EndRegexCompile { @compiles = lquantize(((vtimestamp - self->compileStartTime) / 1000), 0, 20, 1); }'
+<i>after a few seconds...</i>
+^C
+
+
+           value  ------------- Distribution ------------- count    
+               4 |                                         0        
+               5 |                                         223      
+               6 |@                                        1006     
+               7 |@                                        1062     
+               8 |@                                        1276     
+               9 |@                                        1107     
+              10 |                                         477      
+              11 |                                         582      
+              12 |@                                        977      
+              13 |                                         584      
+              14 |@@@@@@@@@@@@@@@@@@@@@@@@@@               37308    
+              15 |@@@                                      5033     
+              16 |@@                                       2372     
+              17 |@                                        897      
+              18 |                                         577      
+              19 |                                         517      
+           >= 20 |@@@                                      3884     
+
+shell% </div>
+
+<p>It's easy to see that the majority of samples for compiling a regular expression are in the 14 microsecond range, and the distribution is much more spread out compared to the cache lookup distributions.  This also clearly demonstrates the usefulness of the RegexKit cache which is nearly three times faster.</p>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+    <li><a href="http://docs.sun.com/app/docs/doc/817-6223" class="section-link" target="_top">Solaris Dynamic Tracing Guide</a> <a href="http://dlc.sun.com/pdf/817-6223/817-6223.pdf" class="section-link" target="_top">(as .PDF)</a></li>
+  </ul>
+</div>
+
+<h3><a name="DTraceProbePointsinRegexKit_AccessingProbesWithInstruments_app">Accessing Probes With Instruments.app</a></h3>
+
+<div class="box warning"><div class="table"><div class="row"><div class="label cell">Warning:</div><div class="message cell">Several bugs in <span class="file">Instrument.app</span> were encountered during the creation of the RegexKit instruments.  Using instruments modified from within <span class="file">Instrument.app</span> may not create the expected results. Since every aspect that is used to generate the results, from RegexKit to DTrace to <span class="file">Instrument.app</span>, is only very recently released results should not be considered authoritative or necessarily even correct.</div></div></div></div>
+
+<p>RegexKit includes a number of instruments tailored to RegexKit for Instruments.app.  These are installed in <span class="file">/Developer/Library/Instruments/PlugIns</span> automatically if <span class="file">Instruments.app</span> is installed.</p>
+
+<div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">The file format for creating <span class="file">Instrument.app</span> instruments is currently not documented, therefore the following should be considered experimental.  The following were tested on <span class="file">Instrument.app</span> version <span class="code">1.0 (72)</span>.</div></div></div></div>
+
+<div class="table marginTopSpacer">
+<table class="standard" summary="Description of RegexKit Instruments for Instruments.app">
+<caption>Description of RegexKit Instruments for Instruments.app</caption>
+<tr><th>Instrument</th><th>Description</th></tr>
+<tr><td>Cache Lookup Timing</td><td>Records the time it takes to retrieve a regular expression from the cache in microseconds.</td></tr>
+<tr><td>Compile Errors</td><td>Records regular expressions that failed to compile due to an error.</td></tr>
+<tr><td>Compile Timing</td><td>Records the time it takes to compile a regular expression in microseconds.</td></tr>
+<tr><td>Lock Timing</td><td>Records timing information for multithreaded locks in microseconds.</td></tr>
+<tr><td>Match Errors</td><td>Records matches that result in an error.</td></tr>
+<tr><td>Match Timing</td><td>Records the time it takes to perform a match in microseconds.</td></tr>
+<tr><td>Per Second</td><td>Records per second statistics.</td></tr>
+<tr><td>Performance Notes</td><td>Records potential performance problems that the framework has detected.</td></tr>
+</table>
+</div>
+
+<p>The use of <span class="file">Instrument.app</span> will not be covered here.  None the less, using the provided instruments should be straight forward.  <span class="file">Instrument.app</span> also allows for the creation of your own DTrace scripts so you can create or modify scripts to extract the information that you require.</p>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+    <li><a href="http://developer.apple.com/documentation/DeveloperTools/Conceptual/InstrumentsUserGuide/index.html" class="section-link" target="_top">Instruments User Guide</a></li>
+  </ul>
+</div>
+
+</div>
+<!-- ____________________________________________ -->
+
 <div class="adding-to-project">
 
 <h2><a name="AddingtheRegexKitframeworktoyourProject">Adding the <span class="nobr">RegexKit.framework</span> to your Project</a></h2>
@@ -855,6 +1277,7 @@ while([matchEnumerator nextRanges] != NULL) {
 
 </div>
 <!-- ____________________________________________ -->
+
 <div class="license">
 
 <h2><a name="LicenseInformation">License Information</a></h2>

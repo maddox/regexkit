@@ -51,10 +51,12 @@ A:visited:hover	{ text-decoration: underline; color: #FF6600; }
 /*.box.warning   > p:before { content: "Warning:";   font-weight: bold; margin-right: 1.5ex; }*/
 .box .label { font-weight: bold; padding-right: 1.5ex; vertical-align: middle; }
 
-.box.important { border-color: #111111; background-color: #e8e8e8; }
-.box.warning   { border-color: black;   background-color: white;   }
+.box.important  { border-color: #111111; background-color: #e8e8e8; }
+.box.warning    { border-color: black;   background-color: white;   }
+.box.tip        { display: table; padding: 0.25em 1.0ex; border: 1px solid rgba(0,0,0,0.25); background-color: #e9e9e9; -webkit-border-radius: 1.5ex; -moz-border-radius: 1.5ex; }
+.box.tip .label { padding-right: 1.0ex; }
 
-/* Scripts/common.js:fixupBoxRows() tidies all .box.hasRows so everything tip top and good to go. */
+/* Scripts/common.js:fixupBoxRows() tidies all .box.hasRows so everything is tip top and good to go. */
 /* automatically sets: firstRow, lastRow, firstCell, lastCell, even, odd (when zebraRows is set)  */
 .box.hasRows                                 { display: table; padding: 0px; background-color: white; }
 .box.hasRows                                 { border-left: 1px solid #919699; border-top: 1px solid #919699; }

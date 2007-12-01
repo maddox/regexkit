@@ -317,7 +317,7 @@ void startGC(void);
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
     if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
-    RKRegex *regex = [RKRegex regexWithRegexString:@"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))" options:RKCompileDupNames];
+    RKRegex *regex = [RKRegex regexWithRegexString:@"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))" options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)];
     NSRange *ranges = [subjectString rangesOfRegex:regex];
     if(ranges == NULL) {
       NSLog(@"regex: %@ regexString: %@", regex, [regex regexString]);
@@ -405,7 +405,7 @@ exitNow:
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
     if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
-    RKRegex *regex = [RKRegex regexWithRegexString:@"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))" options:RKCompileDupNames];
+    RKRegex *regex = [RKRegex regexWithRegexString:@"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))" options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)];
     NSRange *ranges = [subjectString rangesOfRegex:regex];
     if(ranges != NULL) {
       NSLog(@"regex: %@ regexString: %@", regex, [regex regexString]);
@@ -431,7 +431,7 @@ exitNow:
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
     if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
-    RKRegex *regex = [RKRegex regexWithRegexString:regexString options:RKCompileDupNames];
+    RKRegex *regex = [RKRegex regexWithRegexString:regexString options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)];
     NSRange *ranges = [subjectString rangesOfRegex:regex];
     if(ranges == NULL) {
       NSLog(@"regex: %@ regexString: %@", regex, [regex regexString]);
@@ -478,7 +478,7 @@ exitNow:
   unsigned int x = 0;
   NSString *regexString = @"(\\d+)";
   NSString *subjectString = @"12345";
-  RKRegex *regex = [RKRegex regexWithRegexString:regexString options:RKCompileNoOptions];
+  RKRegex *regex = [RKRegex regexWithRegexString:regexString options:(RKCompileUTF8 | RKCompileNoUTF8Check)];
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
@@ -504,7 +504,7 @@ exitNow:
   unsigned int x = 0;
   NSString *regexString = @"(\\d+)";
   NSString *subjectString = @"12345";
-  RKRegex *regex = [RKRegex regexWithRegexString:regexString options:RKCompileNoOptions];
+  RKRegex *regex = [RKRegex regexWithRegexString:regexString options:(RKCompileUTF8 | RKCompileNoUTF8Check)];
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
@@ -532,7 +532,7 @@ exitNow:
   unsigned int x = 0;
   NSString *regexString = @"(\\d+)";
   NSString *subjectString = @"12345";
-  RKRegex *regex = [RKRegex regexWithRegexString:regexString options:RKCompileNoOptions];
+  RKRegex *regex = [RKRegex regexWithRegexString:regexString options:(RKCompileUTF8 | RKCompileNoUTF8Check)];
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
@@ -558,7 +558,7 @@ exitNow:
   unsigned int x = 0;
   NSString *regexString = @"(\\d+)";
   NSString *subjectString = @"12345";
-  RKRegex *regex = [RKRegex regexWithRegexString:regexString options:RKCompileNoOptions];
+  RKRegex *regex = [RKRegex regexWithRegexString:regexString options:(RKCompileUTF8 | RKCompileNoUTF8Check)];
   
   for(x = 0; x < iterations; x++) {
     int convertedInt = 0;

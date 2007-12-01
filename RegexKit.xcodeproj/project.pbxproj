@@ -62,6 +62,7 @@
 		122401EC0CCD5D89006F56F9 /* timing.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5700C7A50100044B285 /* timing.m */; };
 		122401ED0CCD5E15006F56F9 /* multithreading.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D56C0C7A50100044B285 /* multithreading.m */; };
 		122F45CB0CE097D600B25051 /* unicode.m in Sources */ = {isa = PBXBuildFile; fileRef = 122F45CA0CE097D600B25051 /* unicode.m */; };
+		124F5D370CEC06DB00AD798D /* RegexKitProbes.d in Sources */ = {isa = PBXBuildFile; fileRef = 124F5D360CEC06DB00AD798D /* RegexKitProbes.d */; };
 		1264D7880C7A95F80044B285 /* NSDate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5640C7A50100044B285 /* NSDate.m */; };
 		1264D7890C7A95F80044B285 /* core.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5660C7A50100044B285 /* core.m */; };
 		1264D83B0C7A9D7D0044B285 /* collectionAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5680C7A50100044B285 /* collectionAdditions.m */; };
@@ -101,6 +102,8 @@
 		12DB1A260C787E3D00735165 /* RKRegex.m in Sources */ = {isa = PBXBuildFile; fileRef = 12DB1A180C787E3D00735165 /* RKRegex.m */; };
 		12DB1A270C787E3D00735165 /* RKUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = 12DB1A190C787E3D00735165 /* RKUtility.m */; };
 		12DB1A9C0C788DBB00735165 /* RegexKitDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 12DB1A9B0C788DBB00735165 /* RegexKitDefines.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		12E04CDC0CF551A600794477 /* NSData.m in Sources */ = {isa = PBXBuildFile; fileRef = 12E04CDB0CF551A600794477 /* NSData.m */; };
+		12E04CDE0CF551B900794477 /* NSData.h in Headers */ = {isa = PBXBuildFile; fileRef = 12E04CDD0CF551B900794477 /* NSData.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
@@ -160,7 +163,7 @@
 /* Begin PBXFileReference section */
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
-		089C1667FE841158C02AAC07 /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = Source/Resources/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		089C1667FE841158C02AAC07 /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = Resources/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		120291BE0CD1CDAD0045B036 /* buildDocSet.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = buildDocSet.sh; path = Source/Documentation/Scripts/buildDocSet.sh; sourceTree = "<group>"; };
 		120DCD160CE4E3A600616CEA /* ReleaseNotes.html */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = ReleaseNotes.html; path = Source/Documentation/Static/ReleaseNotes.html; sourceTree = "<group>"; };
@@ -169,7 +172,18 @@
 		122400F10CCD4587006F56F9 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = /System/Library/Frameworks/SenTestingKit.framework; sourceTree = "<absolute>"; };
 		122F45C90CE097D600B25051 /* unicode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = unicode.h; path = Source/unitTests/unicode.h; sourceTree = "<group>"; };
 		122F45CA0CE097D600B25051 /* unicode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = unicode.m; path = Source/unitTests/unicode.m; sourceTree = "<group>"; };
+		123A83D00CEEBFDC009DF564 /* RegexKit_compile_error.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_compile_error.instrument; sourceTree = "<group>"; };
+		123A83D10CEEBFDC009DF564 /* RegexKit_compile_timing.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_compile_timing.instrument; sourceTree = "<group>"; };
+		123A83D20CEEBFDC009DF564 /* RegexKit_match_error.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_match_error.instrument; sourceTree = "<group>"; };
+		123A83D30CEEBFDC009DF564 /* RegexKit_match_timinig.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_match_timinig.instrument; sourceTree = "<group>"; };
+		123A83D80CEEE6BB009DF564 /* Instruments_Additions_desc.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Instruments_Additions_desc.plist; sourceTree = "<group>"; };
+		123A83D90CEEE6BB009DF564 /* Instruments_Additions_info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Instruments_Additions_info.plist; sourceTree = "<group>"; };
+		123A86020CEFBDFC009DF564 /* RegexKit_cache_lookup_timing.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_cache_lookup_timing.instrument; sourceTree = "<group>"; };
+		123A86310CEFD04E009DF564 /* RegexKit_performance_notes.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_performance_notes.instrument; sourceTree = "<group>"; };
+		123A86AF0CF157D0009DF564 /* RegexKit_per_second.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_per_second.instrument; sourceTree = "<group>"; };
 		124BF9DE0CAACEFC00D04C96 /* buildPCRE.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = buildPCRE.sh; sourceTree = "<group>"; };
+		124F5D360CEC06DB00AD798D /* RegexKitProbes.d */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.dtrace; path = RegexKitProbes.d; sourceTree = "<group>"; };
+		124F5EC10CECA4D200AD798D /* RegexKit.usdt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit.usdt; sourceTree = "<group>"; };
 		1261B6F20CD24E6900F2E972 /* createDocSet.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = createDocSet.pl; path = Source/Documentation/Scripts/createDocSet.pl; sourceTree = "<group>"; };
 		1261B7870CD27AF400F2E972 /* DocSet_desc.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = DocSet_desc.plist; sourceTree = "<group>"; };
 		1261B7880CD27AF400F2E972 /* DocSet_info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = DocSet_info.plist; sourceTree = "<group>"; };
@@ -225,7 +239,7 @@
 		1264DC100C7B3BFA0044B285 /* RegexKitImplementationTopics.html */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = RegexKitImplementationTopics.html; path = Source/Documentation/Static/RegexKitImplementationTopics.html; sourceTree = "<group>"; };
 		127B94390CC6EF92003E7257 /* Makefile.dist */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; path = Makefile.dist; sourceTree = "<group>"; };
 		1299AE850C78AC97007F3859 /* Makefile.pcre */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; path = Makefile.pcre; sourceTree = "<group>"; };
-		1299AEAA0C78AE4A007F3859 /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = pcre.h; path = Source/Headers/RegexKit/pcre.h; sourceTree = "<group>"; };
+		1299AEAA0C78AE4A007F3859 /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = pcre.h; sourceTree = "<group>"; };
 		1299AFAA0C78C14F007F3859 /* Constants.tmpl */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = Constants.tmpl; path = Source/Documentation/Templates/Constants.tmpl; sourceTree = "<group>"; };
 		1299AFAB0C78C14F007F3859 /* content.tmpl */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = content.tmpl; path = Source/Documentation/Templates/content.tmpl; sourceTree = "<group>"; };
 		1299AFAC0C78C14F007F3859 /* DataTypes.tmpl */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = DataTypes.tmpl; path = Source/Documentation/Templates/DataTypes.tmpl; sourceTree = "<group>"; };
@@ -253,40 +267,44 @@
 		12BD49A30CB75A6900EBA014 /* ReleaseNotes */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ReleaseNotes; sourceTree = "<group>"; };
 		12D5817F0C80B75500674FA2 /* enumeration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = enumeration.h; path = Source/unitTests/enumeration.h; sourceTree = "<group>"; };
 		12D581800C80B75500674FA2 /* enumeration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = enumeration.m; path = Source/unitTests/enumeration.m; sourceTree = "<group>"; };
-		12DB19EC0C787E1700735165 /* NSArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSArray.h; path = Source/Headers/RegexKit/NSArray.h; sourceTree = "<group>"; };
-		12DB19ED0C787E1700735165 /* NSDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSDictionary.h; path = Source/Headers/RegexKit/NSDictionary.h; sourceTree = "<group>"; };
-		12DB19EE0C787E1700735165 /* NSObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSObject.h; path = Source/Headers/RegexKit/NSObject.h; sourceTree = "<group>"; };
-		12DB19EF0C787E1700735165 /* NSSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSSet.h; path = Source/Headers/RegexKit/NSSet.h; sourceTree = "<group>"; };
-		12DB19F00C787E1700735165 /* NSString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSString.h; path = Source/Headers/RegexKit/NSString.h; sourceTree = "<group>"; };
-		12DB19F10C787E1700735165 /* RKAutoreleasedMemory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKAutoreleasedMemory.h; path = Source/Headers/RegexKit/RKAutoreleasedMemory.h; sourceTree = "<group>"; };
-		12DB19F20C787E1700735165 /* RKCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKCache.h; path = Source/Headers/RegexKit/RKCache.h; sourceTree = "<group>"; };
-		12DB19F30C787E1700735165 /* RKCoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKCoder.h; path = Source/Headers/RegexKit/RKCoder.h; sourceTree = "<group>"; };
-		12DB19F40C787E1700735165 /* RKEnumerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKEnumerator.h; path = Source/Headers/RegexKit/RKEnumerator.h; sourceTree = "<group>"; };
-		12DB19F50C787E1700735165 /* RegexKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegexKit.h; path = Source/Headers/RegexKit/RegexKit.h; sourceTree = "<group>"; };
-		12DB19F60C787E1700735165 /* RKLock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKLock.h; path = Source/Headers/RegexKit/RKLock.h; sourceTree = "<group>"; };
-		12DB19F70C787E1700735165 /* RKPlaceholder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKPlaceholder.h; path = Source/Headers/RegexKit/RKPlaceholder.h; sourceTree = "<group>"; };
-		12DB19F80C787E1700735165 /* RegexKitPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegexKitPrivate.h; path = Source/Headers/RegexKit/RegexKitPrivate.h; sourceTree = "<group>"; };
-		12DB19F90C787E1700735165 /* RKRegex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKRegex.h; path = Source/Headers/RegexKit/RKRegex.h; sourceTree = "<group>"; };
-		12DB19FA0C787E1700735165 /* RegexKitTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegexKitTypes.h; path = Source/Headers/RegexKit/RegexKitTypes.h; sourceTree = "<group>"; };
-		12DB19FB0C787E1700735165 /* RKUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RKUtility.h; path = Source/Headers/RegexKit/RKUtility.h; sourceTree = "<group>"; };
-		12DB1A0C0C787E3D00735165 /* NSArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSArray.m; path = Source/NSArray.m; sourceTree = "<group>"; };
-		12DB1A0D0C787E3D00735165 /* NSDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSDictionary.m; path = Source/NSDictionary.m; sourceTree = "<group>"; };
-		12DB1A0E0C787E3D00735165 /* NSObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSObject.m; path = Source/NSObject.m; sourceTree = "<group>"; };
-		12DB1A0F0C787E3D00735165 /* NSSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSSet.m; path = Source/NSSet.m; sourceTree = "<group>"; };
-		12DB1A100C787E3D00735165 /* NSString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSString.m; path = Source/NSString.m; sourceTree = "<group>"; };
-		12DB1A110C787E3D00735165 /* RKAutoreleasedMemory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKAutoreleasedMemory.m; path = Source/RKAutoreleasedMemory.m; sourceTree = "<group>"; };
-		12DB1A120C787E3D00735165 /* RKCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKCache.m; path = Source/RKCache.m; sourceTree = "<group>"; };
-		12DB1A130C787E3D00735165 /* RKCoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKCoder.m; path = Source/RKCoder.m; sourceTree = "<group>"; };
-		12DB1A140C787E3D00735165 /* RKEnumerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKEnumerator.m; path = Source/RKEnumerator.m; sourceTree = "<group>"; };
-		12DB1A150C787E3D00735165 /* RKLock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKLock.m; path = Source/RKLock.m; sourceTree = "<group>"; };
-		12DB1A160C787E3D00735165 /* RKPlaceholder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKPlaceholder.m; path = Source/RKPlaceholder.m; sourceTree = "<group>"; };
-		12DB1A170C787E3D00735165 /* RKPrivate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKPrivate.m; path = Source/RKPrivate.m; sourceTree = "<group>"; };
-		12DB1A180C787E3D00735165 /* RKRegex.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKRegex.m; path = Source/RKRegex.m; sourceTree = "<group>"; };
-		12DB1A190C787E3D00735165 /* RKUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RKUtility.m; path = Source/RKUtility.m; sourceTree = "<group>"; };
-		12DB1A9B0C788DBB00735165 /* RegexKitDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegexKitDefines.h; path = Source/Headers/RegexKit/RegexKitDefines.h; sourceTree = "<group>"; };
-		12EACB4A0CBC156C00175505 /* GNUmakefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; name = GNUmakefile; path = GNUstep/GNUmakefile; sourceTree = "<group>"; };
-		12EACB4B0CBC156C00175505 /* GNUmakefile.postamble */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = GNUmakefile.postamble; path = GNUstep/GNUmakefile.postamble; sourceTree = "<group>"; };
-		12EACB4C0CBC156C00175505 /* README.GNUstep */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.GNUstep; path = GNUstep/README.GNUstep; sourceTree = "<group>"; };
+		12DB19EC0C787E1700735165 /* NSArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSArray.h; sourceTree = "<group>"; };
+		12DB19ED0C787E1700735165 /* NSDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDictionary.h; sourceTree = "<group>"; };
+		12DB19EE0C787E1700735165 /* NSObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSObject.h; sourceTree = "<group>"; };
+		12DB19EF0C787E1700735165 /* NSSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSSet.h; sourceTree = "<group>"; };
+		12DB19F00C787E1700735165 /* NSString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSString.h; sourceTree = "<group>"; };
+		12DB19F10C787E1700735165 /* RKAutoreleasedMemory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RKAutoreleasedMemory.h; sourceTree = "<group>"; };
+		12DB19F20C787E1700735165 /* RKCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RKCache.h; sourceTree = "<group>"; };
+		12DB19F30C787E1700735165 /* RKCoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RKCoder.h; sourceTree = "<group>"; };
+		12DB19F40C787E1700735165 /* RKEnumerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RKEnumerator.h; sourceTree = "<group>"; };
+		12DB19F50C787E1700735165 /* RegexKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKit.h; sourceTree = "<group>"; };
+		12DB19F60C787E1700735165 /* RKLock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RKLock.h; sourceTree = "<group>"; };
+		12DB19F70C787E1700735165 /* RKPlaceholder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RKPlaceholder.h; sourceTree = "<group>"; };
+		12DB19F80C787E1700735165 /* RegexKitPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitPrivate.h; sourceTree = "<group>"; };
+		12DB19F90C787E1700735165 /* RKRegex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RKRegex.h; sourceTree = "<group>"; };
+		12DB19FA0C787E1700735165 /* RegexKitTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitTypes.h; sourceTree = "<group>"; };
+		12DB19FB0C787E1700735165 /* RKUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RKUtility.h; sourceTree = "<group>"; };
+		12DB1A0C0C787E3D00735165 /* NSArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSArray.m; sourceTree = "<group>"; };
+		12DB1A0D0C787E3D00735165 /* NSDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDictionary.m; sourceTree = "<group>"; };
+		12DB1A0E0C787E3D00735165 /* NSObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSObject.m; sourceTree = "<group>"; };
+		12DB1A0F0C787E3D00735165 /* NSSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSet.m; sourceTree = "<group>"; };
+		12DB1A100C787E3D00735165 /* NSString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSString.m; sourceTree = "<group>"; };
+		12DB1A110C787E3D00735165 /* RKAutoreleasedMemory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKAutoreleasedMemory.m; sourceTree = "<group>"; };
+		12DB1A120C787E3D00735165 /* RKCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKCache.m; sourceTree = "<group>"; };
+		12DB1A130C787E3D00735165 /* RKCoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKCoder.m; sourceTree = "<group>"; };
+		12DB1A140C787E3D00735165 /* RKEnumerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKEnumerator.m; sourceTree = "<group>"; };
+		12DB1A150C787E3D00735165 /* RKLock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKLock.m; sourceTree = "<group>"; };
+		12DB1A160C787E3D00735165 /* RKPlaceholder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKPlaceholder.m; sourceTree = "<group>"; };
+		12DB1A170C787E3D00735165 /* RKPrivate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKPrivate.m; sourceTree = "<group>"; };
+		12DB1A180C787E3D00735165 /* RKRegex.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKRegex.m; sourceTree = "<group>"; };
+		12DB1A190C787E3D00735165 /* RKUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKUtility.m; sourceTree = "<group>"; };
+		12DB1A9B0C788DBB00735165 /* RegexKitDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitDefines.h; sourceTree = "<group>"; };
+		12E04B620CF1C55D00794477 /* RegexKit_lock_timing.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_lock_timing.instrument; sourceTree = "<group>"; };
+		12E04CDB0CF551A600794477 /* NSData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSData.m; sourceTree = "<group>"; };
+		12E04CDD0CF551B900794477 /* NSData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSData.h; sourceTree = "<group>"; };
+		12E04CEE0CF5578D00794477 /* NSData.tmpl */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = NSData.tmpl; path = Source/Documentation/Templates/NSData.tmpl; sourceTree = "<group>"; };
+		12EACB4A0CBC156C00175505 /* GNUmakefile */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; path = GNUmakefile; sourceTree = "<group>"; };
+		12EACB4B0CBC156C00175505 /* GNUmakefile.postamble */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = GNUmakefile.postamble; sourceTree = "<group>"; };
+		12EACB4C0CBC156C00175505 /* README.GNUstep */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.GNUstep; sourceTree = "<group>"; };
 		12EB3C8B0CC1610100162FCC /* packageDist.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = packageDist.pl; sourceTree = "<group>"; };
 		12EB3C8C0CC1610100162FCC /* plistUtil.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = plistUtil.pl; sourceTree = "<group>"; };
 		12EB3D5A0CC1707000162FCC /* Documentation_desc.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = Documentation_desc.plist; sourceTree = "<group>"; };
@@ -309,7 +327,7 @@
 		12FD1C2C0CE673080096E435 /* ChangeLog.html */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = ChangeLog.html; path = Source/Documentation/Static/ChangeLog.html; sourceTree = "<group>"; };
 		12FD1D460CE6DD890096E435 /* ReleaseInformation.html */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = ReleaseInformation.html; path = Source/Documentation/Static/ReleaseInformation.html; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* RegexKit_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegexKit_Prefix.pch; path = Source/RegexKit_Prefix.pch; sourceTree = "<group>"; };
-		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Info.plist; path = Source/Info.plist; sourceTree = "<group>"; };
+		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* RegexKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RegexKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2F7E79907B2D74100F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
@@ -404,6 +422,7 @@
 			children = (
 				124BFAD70CAAEC1A00D04C96 /* Headers */,
 				12DB1A0C0C787E3D00735165 /* NSArray.m */,
+				12E04CDB0CF551A600794477 /* NSData.m */,
 				12DB1A0D0C787E3D00735165 /* NSDictionary.m */,
 				12DB1A0E0C787E3D00735165 /* NSObject.m */,
 				12DB1A0F0C787E3D00735165 /* NSSet.m */,
@@ -416,12 +435,31 @@
 			isa = PBXGroup;
 			children = (
 				12DB19EC0C787E1700735165 /* NSArray.h */,
+				12E04CDD0CF551B900794477 /* NSData.h */,
 				12DB19ED0C787E1700735165 /* NSDictionary.h */,
 				12DB19EE0C787E1700735165 /* NSObject.h */,
 				12DB19EF0C787E1700735165 /* NSSet.h */,
 				12DB19F00C787E1700735165 /* NSString.h */,
 			);
 			name = Headers;
+			path = Headers/RegexKit;
+			sourceTree = "<group>";
+		};
+		124F5EB80CECA3E300AD798D /* DTrace */ = {
+			isa = PBXGroup;
+			children = (
+				124F5EC10CECA4D200AD798D /* RegexKit.usdt */,
+				124F5D360CEC06DB00AD798D /* RegexKitProbes.d */,
+				123A86020CEFBDFC009DF564 /* RegexKit_cache_lookup_timing.instrument */,
+				123A83D00CEEBFDC009DF564 /* RegexKit_compile_error.instrument */,
+				123A83D10CEEBFDC009DF564 /* RegexKit_compile_timing.instrument */,
+				12E04B620CF1C55D00794477 /* RegexKit_lock_timing.instrument */,
+				123A83D20CEEBFDC009DF564 /* RegexKit_match_error.instrument */,
+				123A83D30CEEBFDC009DF564 /* RegexKit_match_timinig.instrument */,
+				123A86AF0CF157D0009DF564 /* RegexKit_per_second.instrument */,
+				123A86310CEFD04E009DF564 /* RegexKit_performance_notes.instrument */,
+			);
+			path = DTrace;
 			sourceTree = "<group>";
 		};
 		1264D5010C7A4DA00044B285 /* Scripts */ = {
@@ -644,6 +682,7 @@
 				1299AFAC0C78C14F007F3859 /* DataTypes.tmpl */,
 				1299AFAD0C78C14F007F3859 /* Functions.tmpl */,
 				1299AFAE0C78C14F007F3859 /* NSArray.tmpl */,
+				12E04CEE0CF5578D00794477 /* NSData.tmpl */,
 				1299AFAF0C78C14F007F3859 /* NSDictionary.tmpl */,
 				1299AFB00C78C14F007F3859 /* NSMutableArray.tmpl */,
 				1299AFB10C78C14F007F3859 /* NSMutableDictionary.tmpl */,
@@ -663,6 +702,7 @@
 		12DB19EA0C787DE700735165 /* RegexKit */ = {
 			isa = PBXGroup;
 			children = (
+				124F5EB80CECA3E300AD798D /* DTrace */,
 				089C1665FE841158C02AAC07 /* Resources */,
 				12DB19EB0C787DF400735165 /* Headers */,
 				124BFAD60CAAEBF800D04C96 /* Foundation Additions */,
@@ -677,6 +717,7 @@
 				12DB1A190C787E3D00735165 /* RKUtility.m */,
 			);
 			name = RegexKit;
+			path = Source;
 			sourceTree = "<group>";
 		};
 		12DB19EB0C787DF400735165 /* Headers */ = {
@@ -686,6 +727,7 @@
 				12DB1B100C7895FC00735165 /* Public */,
 			);
 			name = Headers;
+			path = Headers/RegexKit;
 			sourceTree = "<group>";
 		};
 		12DB1B100C7895FC00735165 /* Public */ = {
@@ -722,7 +764,7 @@
 				12EACB4B0CBC156C00175505 /* GNUmakefile.postamble */,
 				12EACB4C0CBC156C00175505 /* README.GNUstep */,
 			);
-			name = GNUstep;
+			path = GNUstep;
 			sourceTree = "<group>";
 		};
 		12EB3D300CC16F3B00162FCC /* Packagemaker */ = {
@@ -744,6 +786,8 @@
 				12EB3D5B0CC1707000162FCC /* Documentation_info.plist */,
 				12EB3D5C0CC1707000162FCC /* Framework_desc.plist */,
 				12EB3D5D0CC1707000162FCC /* Framework_info.plist */,
+				123A83D80CEEE6BB009DF564 /* Instruments_Additions_desc.plist */,
+				123A83D90CEEE6BB009DF564 /* Instruments_Additions_info.plist */,
 				12EB3DAD0CC17AA500162FCC /* RegexKit_mpkg_info.plist */,
 				12EB3D5E0CC1707000162FCC /* Sourcecode_desc.plist */,
 				12EB3D5F0CC1707000162FCC /* Sourcecode_info.plist */,
@@ -788,6 +832,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				12DB19FC0C787E1700735165 /* NSArray.h in Headers */,
+				12E04CDE0CF551B900794477 /* NSData.h in Headers */,
 				12DB19FD0C787E1700735165 /* NSDictionary.h in Headers */,
 				12DB19FE0C787E1700735165 /* NSObject.h in Headers */,
 				12DB19FF0C787E1700735165 /* NSSet.h in Headers */,
@@ -1004,6 +1049,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				12DB1A1A0C787E3D00735165 /* NSArray.m in Sources */,
+				12E04CDC0CF551A600794477 /* NSData.m in Sources */,
 				12DB1A1B0C787E3D00735165 /* NSDictionary.m in Sources */,
 				12DB1A1C0C787E3D00735165 /* NSObject.m in Sources */,
 				12DB1A1D0C787E3D00735165 /* NSSet.m in Sources */,
@@ -1017,6 +1063,7 @@
 				12DB1A250C787E3D00735165 /* RKPrivate.m in Sources */,
 				12DB1A260C787E3D00735165 /* RKRegex.m in Sources */,
 				12DB1A270C787E3D00735165 /* RKUtility.m in Sources */,
+				124F5D370CEC06DB00AD798D /* RegexKitProbes.d in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
