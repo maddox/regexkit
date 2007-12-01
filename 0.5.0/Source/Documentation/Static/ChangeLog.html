@@ -1,0 +1,429 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<style type="text/css">
+@import "CSS/guide.css";
+</style>
+<link rel="stylesheet" type="text/css" href="CSS/print.css" media="print">
+<title>RegexKit Change Log</title>
+</head>
+
+<body>
+<div class="changeLog">
+<h1>RegexKit Change Log</h1>
+
+<div class="changeLogContents">
+<h4><a name="Contents">Contents:</a></h4>
+
+<ul class="contents">
+<li><a href="#Release_0_5_0">Release 0.5.0 Beta</a></li>
+<li><a href="#Release_0_4_0">Release 0.4.0 Beta</a></li>
+<li><a href="#Release_0_3_1">Release 0.3.1 Beta</a></li>
+<li><a href="#Release_0_3_0">Release 0.3.0 Beta</a></li>
+<li><a href="#Release_0_2_0">Release 0.2.0 Beta</a></li>
+<li><a href="#Release_Alpha">Release Alpha</a></li>
+</ul>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+    <li><a href="ReleaseInformation.html" class="section-link nobr">RegexKit Framework Release Information - Release History</a></li>
+    <li><a href="ReleaseNotes.html" class="section-link nobr">RegexKit Framework Release Information - Release Notes</a></li>
+  </ul>
+</div>
+
+</div> <!-- changeLogContents -->
+
+<div class="Release_0_5_0_Beta">
+<h2><a name="Release_0_5_0">Change Log for 0.5.0 Beta</a></h2>
+
+<h4>DTrace Instrumentation</h4>
+
+<p>Created several macro wrappers for DTrace probe insertion in <span class="file">RKRegexPrivate.h</span>.  This allows a simple macro, @link RK_PROBE RK_PROBE()@/link, to be placed in the code where a probe point is desired.  The macro will rewrite to nothing if @link ENABLE_DTRACE_INSTRUMENTATION ENABLE_DTRACE_INSTRUMENTATION @/link is not defined.  If it is defined, then it re-writes to an <span class="code">if() {}</span> statement that first calls the 'Is Enabled' probe function, and only if the probe is enabled does it go through the work of assembling the arguments and calling the actual probe firing function.</p>
+
+<p>A few modifications here and there to assist in passing information via the probe efficiently.  For example, @link RKRegex RKRegex @/link has a new private function, @link regexUTF8String regexUTF8String()@/link, which will create a copy of the regex string in @link UTF8 UTF8 @/link form and stores the pointer in an ivar.  This allows for lazy evaluation, it's only created if the function is called, and right now the function is only called when a probe requires it.  Once created, the function obviously returns the pointer to the already created @link UTF8 UTF8 @/link string.</p>
+
+<p>The majority of probes inserted at this time have to do with extracting timing information.  @link RKRegex RKRegex @/link had the PCRE compile and match functions instrumented, and @link RKCache RKCache @/link had the add, insert, lookup, and clear methods instrumented.  A probe named 'PerformanceNote' was created and sprinkled in a few places.  This is for passing text strings to a dtrace listener at certain spots in the code which have a negative performance impact.  For example, if we're unable to get direct access to the backing store of a string, and are required to call <span class="code">[string UTF8String]</span> as a result, a PerformanceNote is generated.</p>
+
+<h4>Instruments.app Instruments</h4>
+
+<p>To make use of the new dtrace probe points, several <span class="file">.instruments</span> were created for <span class="file">Instruments.app</span>.  This tool shows a hell of a lot of potential.  It's got some nasty bugs when creating your own <span class="file">.instruments</span>, but it's a 1.0 product, on top of a whole new kernel facility (dtrace), so it's a bit understandable.  While there's documentation for using the application proper, there's just a token mention of creating your own probes.  From digging through the guts to create the RegexKit functionality, I'd say that a third-party plugin architecture is on the way.  Not just beatified dtrace <span class="file">.d</span> scripts, but the ability to write objective-c plugins with custom interfaces.  The ObjectAlloc tool is a good example of this.</p>
+
+<p>I hope Apple hurries up with the third party plug in support.  While you can get a hell of a lot done with the few probes and <span class="file">.instrument</span> scripts I put together, I can see creating some incredibly powerful performance tools with a custom interface.  It would almost be like <span class="file">Shark</span>, but for regular expressions.  There's only so much you can do with dtrace scripts, but you can do so much more if you can post process the raw data and make changes on the fly.  Say you're having performance problems with your regex, and you want to know why.  And you have a lot of regex, and you're note sure which one is causing the problem.  Enabling the matching probes would give you a stream of raw data, and you could post process it to aggregate timing information on a per regex basis.  Regexes that take a long time to perform a match would bubble right to the top, and the great thing is you can even get snapshots of the buffers involved.  And once you start to narrow things down, and you're only interested in a single regex out of all of them, because each regex has a unique hash, this can be easily placed in the dtrace predicate which means you're only collecting data on the ones you're interested in, the others will have just a minor performance impact since the dtrace kernel module has a constant, cacheable predicate that comes down to a simple integer compare.</p>
+
+<p>These instruments, and the probe points, should be considered expiremental.  The specifics are very likely to change as I gain more experience with both DTrace and <span class="file">Instruments.app</span>.  I've marked the DTrace probe points 'Unstable', which is an advisory to users of the probe points that things are likely to change from release to release.  DTrace has a versioning scheme for the various parts of the DTrace interfaces to help DTrace users gauge how likely it is their scripts and what not are to break between patches, releases, etc.</p>
+
+<h4>NSArray Additions</h4>
+
+<p>Added @link indexSetOfObjectsMatchingRegex: indexSetOfObjectsMatchingRegex: @/link and @link indexSetOfObjectsMatchingRegex:inRange: indexSetOfObjectsMatchingRegex:inRange: @/link to the @link NSArray NSArray @/link category additions.</p>
+
+<h4>NSData Class Category Additions</h4>
+
+<p>Added the following category method additions to the @link NSData NSData @/link class:</p>
+
+<ul class="square">
+  <li>@link isMatchedByRegex: - isMatchedByRegex: @/link</li>
+  <li>@link isMatchedByRegex:inRange: - isMatchedByRegex:inRange: @/link</li>
+  <li>@link rangeOfRegex: - rangeOfRegex: @/link</li>
+  <li>@link rangeOfRegex:inRange:capture: - rangeOfRegex:inRange:capture: @/link</li>
+  <li>@link rangesOfRegex: - rangesOfRegex: @/link</li>
+  <li>@link rangesOfRegex:inRange: - rangesOfRegex:inRange: @/link</li>
+  <li>@link subdataByMatching: - subdataByMatching: @/link</li>
+  <li>@link subdataByMatching:inRange: - subdataByMatching:inRange: @/link</li>
+</ul>
+
+<p>See <a href="NSData.html" class="section-link">NSData RegexKit Additions Reference</a> for additional information.</p>
+
+<h4>Other changes</h4>
+
+<ul class="square">
+
+  <li>Altered <span class="code">RKAppendInstruction()</span> and <span class="code">RKAppendCopyInstruction()</span> to grow heap allocated instruction buffers by <span class="code">RK_DEFAULT_STACK_INSTRUCTIONS</span> number of instructions instead of 16.</li>
+
+  <li>Created some memory allocation macros to pick the appropriate allocation, free, and other potentially GC related / impacting functions dynamically.  Keeps the code considerably cleaner.</li>
+
+  <li>Using the above new allocation macros, moved several memory allocations over to the new macros.  Examples include: @link RKEnumerator RKEnumerator @/link range buffers, @link NSString NSString @/link temporary string buffers, @link RKRegex RKRegex @/link and @link RKCache RKCache @/link UTF8 strings of the objects description.  Updated various dealloc / finalize methods to account for differences.</li>
+  
+  <li>For @link RKRegex RKRegex @/link and @link RKCache RKCache@/link, created private functions to on demand create a long lasting UTF8 string of the objects description.  This is demand created by various DTrace probes to provide access to a string that can be easily copied when required.</li>
+  
+  <li>Created various RKAtomic primitives of 'Integer' size.  Previous atomic operations were only of 'int' size.  This is in keeping with the @link NSInteger NSInteger @/link 32 / 64 bit dynamic sizing.</li>
+  
+  <li>Altered the order of some comparison operators in <span class="code">RKParseReference</span> to be slightly more optimal.  This can cause the conditional part of an <span class="code">if</span> statement to be executed slightly faster.</li>
+</ul>
+
+<h4>Bug fixes</h4>
+
+<ul class="square">
+
+  <li>Fixed a "search and replace" family of methods bug which would cause a crash if there were a lot (~1000) of replacements made on a string.  This was the result of an incorrect <span class="code">sizeof()</span> which resulted in copying too much data.  The bug itself was harmless and didn't damage the stack, but if there wasn't enough 'buffer space' on the stack to absorb the over-run, then you'd walk past the start of the stack at <span class="code">0xc0000000</span>.  This would be most likely to happen when a search and replace method was called from <span class="code">main()</span>.</li>
+
+  <li>Switched to using <span class="cpp_definition">NSINTEGER_DEFINED</span> to determine if <span class="code">NSInteger</span> and friends are typedef'd.  Previously tried to infer whether or not the type existed from checking if <span class="cpp_definition">MAC_OS_X_VERSION_10_5</span> existed.</li>
+
+  <li>Fixed potential race condition in non-Garbage Collection mode where the @link RKRegex RKRegex @/link self maintained reference count was not atomically checked correctly to determine if the reference count became zero.</li>
+  
+  <li>Under garbage collection, @link addObjectToCache:withHash: addObjectToCache:withHash: @/link would always return <span class="code">NO</span>, even though the object was added to the cache.</li>
+
+</ul>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+      <li><a href="ReleaseNotes.html#Release_0_5_0" class="section-link">Release Information - Release Notes for 0.5.0 Beta</a></li>
+  </ul>
+</div>
+
+</div> <!-- Release_0_5_0_Beta -->
+
+<div class="Release_0_4_0_Beta">
+<h2><a name="Release_0_4_0">Change Log for 0.4.0 Beta</a></h2>
+
+<h4>Unicode changes</h4>
+
+<p>Previously, most convenience methods would use @link RKCompileDupNames RKCompileDupNames @/link as the compile time options.  This was removed (you can now specify this via the regex string with <span class="regex">(?J)</span>), and replaced with (@link RKCompileUTF8 RKCompileUTF8 @/link | @link RKCompileNoUTF8Check RKCompileNoUTF8Check @/link).  This activates various Unicode behaviors that I expect most people would assume to be "on" automatically.  It also changes some matching behavior, but both of these are probably only important if you're making use of Unicode functionality.</p>
+
+<h4>NSRange results changes</h4>
+
+<p>Previously, RegexKit always returned the ranges as reported by the pcre engine. This could cause problems for Unicode strings because PCRE uses byte oriented @link UTF8 UTF8 @/link, where as @link Foundation Foundation @/link defines a character to be the characters @link UTF16 UTF16 @/link representation.  The majority of common characters map to a single @link UTF16 UTF16 @/link character, but anything beyond @link ASCII ASCII @/link (&lt;128) takes multiple bytes in @link UTF8 UTF8@/link.</p>
+
+<p>The @link Foundation Foundation @/link additions (@link NSString NSString@/link, etc) now accept and return results in @link UTF16 UTF16 @/link 'coordinate space'.  The @link RKRegex RKRegex @/link class continues to work in the native @link UTF8 UTF8 @/link 'coordinate space'.  Mapping between the two can be costly, and at this time no particular optimizations are made to improve performance.</p>
+
+<p>The following two functions map ranges for a string from one coordinate space to the other:</p>
+
+<p>
+@link RKConvertUTF8ToUTF16RangeForString RKConvertUTF8ToUTF16RangeForString@/link<span class="code">(string, range)</span><br>
+@link RKConvertUTF16ToUTF8RangeForString RKConvertUTF16ToUTF8RangeForString@/link<span class="code">(string, range)</span>
+</p>
+
+<p>The buffers internally are always in @link UTF8 UTF8 @/link format, so to map between the two these routines start at offset 0 and advance both a @link UTF8 UTF8 @/link offset (which is always the current byte offset), and the @link UTF16 UTF16 @/link offset (which is less than or equal to the @link UTF8 UTF8 @/link offset, depending on how many multi-byte @link UTF8 UTF8 @/link characters have been processed).</p>
+
+<p>The <span class="code">Mac Roman</span> and @link ASCII ASCII @/link string encodings always have a 1:1 mapping of @link UTF8 UTF8 @/link offsets and @link UTF16 UTF16 @/link offsets, since there can be no multi-byte long characters in these encodings, so mapping in this case is very fast (returns the requested range unaltered).</p>
+
+<p>Ranges as returned by the various @link Foundation Foundation @/link extensions can now be used interchangeably with other @link Foundation Foundation @/link methods that accept a @link NSRange NSRange @/link as an argument.</p>
+
+<h4>Other changes</h4>
+
+<ul class="square">
+
+<li>Bumped the RegexKit version to 0.4.0 and updated the <span class="xcode-setting">PROJECT_COMPATIBLE_VERSION</span> to 0.4.0 as well due to the various @link NSRange NSRange @/link API changes.</li>
+
+<li>Changed <span class="xcode-setting">PCRE_URL_ROOT</span> build setting to point to sourceforge.net and download via <span class="file">http://</span>, which is probably more firewall traversing friendly than the older <span class="file">ftp://</span> from the primary site.  The <span class="file">curl</span> options <span class="code">-LR</span> were added so that <span class="file">curl</span> will follow the initial requests redirect to a mirror site and set the timestamp to the download servers timestamp of the file.  Also split the <span class="xcode-setting">PCRE_URL_ROOT</span> into <span class="xcode-setting">_SCHEME</span>, <span class="xcode-setting">_SITE</span>, and <span class="xcode-setting">_PATH</span> components and added <span class="xcode-setting">PCRE_FETCH_OPTIONS</span>.</li>
+
+<li>Altered the way the RegexKit Framework and Unit Tests targets link to the pcre static library that we build.  Previously it used the <span class="file">-L</span><span class="xcode-setting">${PATH}</span> <span class="file">-lpcre</span> way of linking.  This was changed to (verbatim) <span class="xcode-setting">${PCRE_TARGET_LIB_FILE}</span>. No flags, just the full path to the <span class="file">.a</span> static library archive.  The reason for this is <span class="file">/usr/local/lib</span> happens to be a directory that <span class="file">ld</span> searches. If you have a version of PCRE installed in <span class="file">/usr/local/lib</span>, the <span class="file">ld</span> linker would prefer and link to the <span class="file">/usr/local/lib/libpcre.dylib</span> and not the version that we built.  The new method unambiguously removes this problem.</li>
+
+<li>Moved all information from the <span class="file">ReleaseNotes</span> and <span class="file">ChangeLog</span> plain text files in the project root directory to the <span class="file">ReleaseNotes.html</span> and <span class="file">ChangeLog.html</span> files, respectively, adding additional markup where required.  The body of the plain text files now refers to their respective <span class="file">.html</span> versions.</li>
+
+<li>Removed the <i>Release Information</i> from <span class="file">RegexKitProgrammingGuide.html</span> and placed it in its own file, <span class="file">ReleaseInformation.html</span>.</li>
+
+<li>Added <i>Release Information</i> to the table of contents, with subsections that point to <span class="file">ChangeLog.html</span>, <span class="file">ReleaseNotes.html</span>, and <span class="file">ReleaseInformation.html</span>.</li>
+
+<li>Added <span class="file">unicode.m</span> to <i>Unit Tests</i> to test that the various @link NSString NSString @/link additions are correctly matching strings with unicode characters in them, and that @link NSRange NSRange @/link results are in @link UTF16 UTF16 @/link based character indexes.</li>
+
+<li>Added several @link stringByMatching:replace:withReferenceString: stringByMatching:replace:withReferenceString: @/link (and related methods) tests to <span class="file">collectionAdditions.m</span>.  Oddly, I forgot to convert these from some previous test code, an they were left in a comment.</li>
+
+<li>Added tests to exercise the new case conversion <span class="regex">\u \l \U \L \E</span> escape sequences and the <span class="regex">\[0-9]</span> capture reference syntax.</li>
+
+<li>Added a <i>Release Notes</i> link to <span class="file">ReleaseNotes.html</span> in the zebra strip banners next to the RegexKit version information.</li>
+
+<li>Added @link RKConvertUTF8ToUTF16RangeForString RKConvertUTF8ToUTF16RangeForString @/link and @link RKConvertUTF16ToUTF8RangeForString RKConvertUTF16ToUTF8RangeForString @/link to <span class="file">projectExportedSymbols</span> for external framework users.</li>
+
+<li>Added <i>Unicode Character Index Conversions</i> to the <i>Functions</i> table of content section for @link RKConvertUTF8ToUTF16RangeForString RKConvertUTF8ToUTF16RangeForString @/link and @link RKConvertUTF16ToUTF8RangeForString RKConvertUTF16ToUTF8RangeForString @/link and added HeaderDoc comments for both.</li> 
+
+<li>Updated <span class="file">NSString.tmpl</span> with documentation for the <span class="regex">\u \l \U \L \E</span> case conversion escape sequences, information on the @link NSRange NSRange @/link updates, and <span class="regex">\[0-9]</span> capture subpattern reference syntax.</li>
+
+<li>Updated <span class="file">RKRegex.tmpl</span> with information regarding the various Unicode and @link NSRange NSRange @/link changes.</li>
+
+<li>Updated <span class="file">RKEnumerator.tmpl</span> with information regarding the various Unicode and @link NSRange NSRange @/link changes.</li>
+
+<li>Several unit tests required minor modifications due to the various Unicode and @link NSRange NSRange @/link changes.</li>
+
+<li>Added some additional information to <span class="file">README.MacOSX</span> about building RegexKit from the command line, such as targets available, and overriding options.</li>
+
+</ul>
+
+<h4>Bug fixes</h4>
+
+<ul class="square">
+
+<li>Added the missing <span class="code">target="doc"</span> to <span class="file">generatePCREToC.pl</span> for the individual sub-entries so they open in the main frame, not in the tocs frame.</li>
+
+<li>@link RKArrayFromMatchOption RKArrayFromMatchOption@/link, @link RKArrayFromCompileOption RKArrayFromCompileOption@/link, and @link RKArrayFromBuildConfig RKArrayFromBuildConfig @/link were incorrectly reporting newline bits as undecoded.</li>
+
+<li>Updated @link RKCaptureIndexForCaptureNameCharacters RKCaptureIndexForCaptureNameCharacters @/link to check both the @link pcre_fullinfo pcre_fullinfo @/link PCRE_INFO_JCHANGED indicator AND @link RKCompileDupNames RKCompileDupNames @/link as opposed to the older check of just @link RKCompileDupNames RKCompileDupNames@/link. If <span class="regex">(?J)</span> was used in the regex and @link RKCompileDupNames RKCompileDupNames @/link was not set, then some name to index conversions would be faulty under the right circumstances.</li>
+
+<li>@link RKEnumerator RKEnumerator @/link and the @link NSString NSString @/link additions were incorrectly throwing a @link NSInvalidArgumentException NSInvalidArgumentException @/link for named captures that did not exist in a regular expression instead of the expected @link RKRegexCaptureReferenceException RKRegexCaptureReferenceException@/link.</li>
+
+<li>With the Unicode improvements, there were a few places where various functions had a choice of encoding between two source strings.  Occasionally, this choice would be the wrong one.  In general, the conversion choice was hard set to UTF8 which should be correct for all source string encodings.</li>
+
+<li>Several build system issues dealing with Xcode 2.4.1 / Xcode 3.0 and Mac OS X 10.4 / 10.5, such as proper SDKROOT and ARCHS selection.  Now detected and handled automatically.</li>
+
+<li>Changed the DocSet to display <span class="file">index.html</span>, which contains the Table of Contents, instead of just <span class="file">content.html</span>.</li>
+
+</ul>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+      <li><a href="ReleaseNotes.html#Release_0_4_0" class="section-link">Release Information - Release Notes for 0.4.0 Beta</a></li>
+  </ul>
+</div>
+
+</div> <!-- Release_0_4_0_Beta -->
+
+<div class="Release_0_3_1_Beta">
+<h2><a name="Release_0_3_1">Change Log for 0.3.1 Beta</a></h2>
+
+<h4>Xcode 3.0 DocSet Subscriptions</h4>
+
+<p>Added <span class="xcode-setting">DOCUMENTATION_DOCSET_FEED_SCHEME</span> and <span class="xcode-setting">DOCUMENTATION_DOCSET_FEED_URL</span> to the build settings which control which URL is placed in the assembled DocSet for subscriptions and auto-updates.  Realized that it'd probably be helpful to have the versions in question be displayed, so updated a number of templates to place the PCRE and RegexKit versions in the zebra banners. SCHEME and URL are separate because <span class="file">http://</span> is interpreted as a comment start in <span class="file">.xcconfig</span> files. :(</p>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+      <li><a href="ReleaseNotes.html#Release_0_3_1" class="section-link">Release Information - Release Notes for 0.3.1 Beta</a></li>
+  </ul>
+</div>
+
+</div> <!-- Release_0_3_1_Beta -->
+
+<div class="Release_0_3_0_Beta">
+<h2><a name="Release_0_3_0">Change Log for 0.3.0 Beta</a></h2>
+
+<h4>Xcode 3.0 DocSet Documentation</h4>
+
+<p>The DocSet documentation is essentially the HTML documentation with a few minor tweaks.  It is created by the scripts:</p>
+
+<p>
+<span class="file">Documentation/Scripts/buildDocSet.sh</span><br>
+<span class="file">Documentation/Scripts/createDocSet.pl</span>
+</p>
+
+<p><span class="file">createDocSet.pl</span> is pretty horrific, and was kludged together very quickly. It creates the required <span class="file">Nodes.xml</span> and <span class="file">Tokens.xml</span> by extracting the information from the documentation database and rewrites the anchors in the <span class="file">.html</span> files to use the <span class="code">//apple_ref/</span> style format.  This is not used in the normal HTML documentation because it isn't valid HTML (<span class="file">tidy</span> throws a fit and there's hundreds of warnings generated.)  However, the DocSet tool chain appears to be much happier with <span class="code">//apple_ref/</span> style anchors, so the legal html name anchors are rewritten.</p>
+
+<p>Once all these pieces are in placed, and a <span class="file">Info.plist</span> is created, the <span class="file">docsetutil</span> command is run to build the DocSet index and that's pretty much it.</p>
+
+<h4>Garbage Collection</h4>
+
+<p>Mac OS X 10.5 Garbage Collection is controlled by the C Preprocessor flag <span class="cpp_flag">ENABLE_MACOSX_GARBAGE_COLLECTION</span>.  A number of macros were created to ease various portability issues.  Of special note is the framework global variable @link RKRegexGarbageCollect RKRegexGarbageCollect@/link.  If <span class="cpp_flag">ENABLE_MACOSX_GARBAGE_COLLECTION</span> is defined, then @link RKRegexGarbageCollect RKRegexGarbageCollect @/link is a <span class="code">int32_t</span> defined in <span class="file">RKRegex.m</span>. If <span class="cpp_flag">ENABLE_MACOSX_GARBAGE_COLLECTION</span> is not defined, then @link RKRegexGarbageCollect RKRegexGarbageCollect @/link is <span class="code">#defined</span> in <span class="file">RegexKitPrivate.h</span> as <span class="code">0</span>.  Also in <span class="file">RegexKitPrivate.h</span> are a number of macros for managing various @link retain retain @/link / @link release release @/link / @link autorelease autorelease@/link.</p>
+
+<p>If <span class="cpp_flag">ENABLE_MACOSX_GARBAGE_COLLECTION</span> is defined, then <span class="file">RKRegex.m</span>, <span class="file">RKCache.m</span>, and <span class="file">NSString.m</span> will all check and see if the class @link NSGarbageCollector NSGarbageCollector @/link exists, and if so, check to see if garbage collection is enabled in their <span class="code">+load</span> methods.</p>
+
+<p>If <span class="cpp_flag">ENABLE_MACOSX_GARBAGE_COLLECTION</span> is not defined, then most of the macros become a compile time static conditional which the compiler will optimize away, so compiling on pre-10.5 or @link GNUstep GNUstep @/link is branchless.  It was the best I could come up with for maximum portability while still maintaining readability.</p>
+
+<p>In <span class="file">RKCache.m</span>, if <span class="cpp_flag">ENABLE_MACOSX_GARBAGE_COLLECTION</span> is defined, AND if garbage collection is enabled at load time, then the class switches to using the new @link NSMapTable NSMapTable @/link class for managing the cache.  It places cached @link RKRegex RKRegex @/link objects in a @link NSMapTable NSMapTable @/link with a weak reference to the object.  This should allow for auto trimming of the cache to the working set.  Not sure how it will work out in real life.</p>
+
+<h4>64 bit support</h4>
+
+<p>A set of macros was adopted to ease multi-platform 64 bit issues.  They are essentially parallel to the Leopard @link NSInteger NSInteger @/link / @link NSUInteger NSUInteger @/link types, except that they are cpp macros.  They have the names @link RKInteger RKInteger @/link and @link RKUInteger RKUInteger @/link / etc. They are re-written to either @link NSInteger NSInteger @/link or int depending on the detected run time environment.  This allows for type checking / compatibility to be maintained for each environment.  @link GNUstep GNUstep @/link still has things such as <span class="code">hash</span> defined as <span class="code">unsigned int</span>, and for some of our objects we return the pointer to the instantiated object as the hash (there can be only one) and this causes truncation on @link GNUstep GNUstep@/link, but it should be OK.</p>
+
+<h4>GNUstep</h4>
+
+<p>Cleaned up various @link GNUstep GNUstep @/link pieces here and there while putting the 64 bit stuff in.  Should build much cleaner now, with only a handful of warnings when compiling on a 64 bit platform for various hash functions, but this shouldn't be a problem in the real world.</p>
+
+<h4>RegexKit.framework <span class="file">Info.plist</span> version bug fix</h4>
+
+<p>The <span class="file">Info.plist</span> in RegexKit 0.2.0 had a bug in the <span class="file">Info.plist</span> file. The settings for the keys @link CFBundleShortVersionString CFBundleShortVersionString @/link and @link CFBundleVersion CFBundleVersion @/link where set to the variable ${REGEXKIT_CURRENT_VERSION} when they should have been set to <span class="xcode-setting">${PROJECT_CURRENT_VERSION}</span>.  Since the variable <span class="xcode-setting">${REGEXKIT_CURRENT_VERSION}</span> was undefined, this ended up expanding to nothing, so the correct version number is missing.  This should be a fairly trivial bug in the grand scheme of things.</p>
+
+<h4>Mac OS X Installer <span class="file">.dmg</span> distribution</h4>
+
+<p>RegexKit 0.3.0 marks the introduction of a Mac OS X Installer based distribution.  It bundles together the Mac OS X Binary executable RegexKit.framework, the Documentation, and the source code in to one convenient package. Each is grouped in to their own package, and by default RegexKit.framework and Documentation are selected to install while the source code package is not.  There's some javascript code to disable a package if the version that is already installed is newer than the version that is attempting to install.  Also, there's some logic so that the source code package will automatically default to selected if it detects that a previous install of the source code has been performed, thus auto upgrading without having to think about it.</p>
+
+<p>The Installer has a volume check script that requires 10.4 or later in order to install on a volume, and an installation check that checks to see if the file <span class="file">/Developer/Applications/Xcode.app</span> exists.  If it does not, it presents a warning that the Xcode Development Tools should be installed, but does not stop the installation.</p>
+
+<p>There's three main tuneables in the build configs:</p>
+
+<div class="table">
+<table class="standard" summary="Distribution Build Settings">
+<caption>Distribution Build Settings</caption>
+<tr><th>Build Setting</th><th>Default</th><th>Valid Values</tr>
+<tr><td><span class="xcode-setting">DISTRIBUTION_GZIP_PACKAGES</span></td><td><span class="code">NO</span></td><td><span class="code">YES</span> or <span class="code">NO</span></td></tr>
+<tr><td><span class="xcode-setting">DISTRIBUTION_INCLUDE_PCRE_PACKAGE</span></td><td><span class="code">NO</span></td><td><span class="code">YES</span> or <span class="code">NO</span></td></tr>
+<tr><td><span class="xcode-setting">DISTRIBUTION_DEFAULT_INSTALL_DIR</span></td><td><span class="file">/Developer/Local/RegexKit/</span></td><td> </td></tr>
+</table>
+</div>
+
+<p>Since the overall distribution package gets placed on to a <span class="file">.dmg</span> disk image, which is then BZip2 compressed (<span class="code">-format UDBZ</span>), compressing the packages with <span class="file">gzip</span> actually causes the final <span class="file">.dmg</span> size to grow by about ~60-70KB, or roughly 10% in size.  So, by default, we leave the packages uncompressed and let the disk image BZip2 deal with all the compression.</p>
+
+<p>The other option, <span class="xcode-setting">DISTRIBUTION_INCLUDE_PCRE_PACKAGE</span>, toggles whether or not the PCRE tarball used to build the framework is included in the Installer distribution.  By default the choice is <span class="code">NO</span> since this causes the final <span class="file">.dmg</span> disk image to nearly double in size.  There's some extra javascript logic so that the PCRE distribution is if and only if the source code package is selected to be installed.  If the user selects the source code package, the PCRE package then auto selects itself to be installed as well.  The PCRE package version is the PCRE Major.Minor, not the RegexKit version. Unlike the others it will allow an earlier version to be installed 'on top off' a newer version since this is largely harmless- Each PCRE tarball distribution is separate from the others.</p>
+
+<p>The file that creates the top level distribution package <span class="file">distribution.dist</span> file is in <span class="file">Source/Build/Scripts/packageDist.pl</span>.  It handles the logic of selectively inserting the PCRE choice depending on whether or not <span class="xcode-setting">DISTRIBUTION_INCLUDE_PCRE_PACKAGE</span> is set to <span class="code">YES</span>.  It also gathers some necessary information, such as a packages installed size, by using perls Objective-C / @link Foundation Foundation @/link bridge to read the individual packages <span class="file">Info.plist</span> files and extracting the appropriate keys.</p>
+
+<p>For each package (of which there are four, RegexKit.framework binary package, Documentation package, Source code package, and optionally the PCRE distribution package) there exists two <span class="file">.plist</span> files, one <span class="file">info.plist</span> and one <span class="file">desc.plist</span>.  The important one is the <span class="file">info.plist</span>, and it contains the bundle identification and version information.  The version information is replaced dynamically at build time by the <span class="file">Source/Build/Scripts/buildDistribution.sh</span> script.  That script makes a copy of the <span class="file">.plists</span> to a private build staging area.  Then, it calls the script <span class="file">Source/Build/Scripts/plistUtil.pl</span> which is a very simple perl script that again uses the Objective-C / @link Foundation Foundation @/link bridge to take three arguments: the <span class="file">.plist</span> file to operate on, the key to update, and the value to set the key to.  <span class="file">buildDistribution.sh</span> uses this to update all the <span class="file">.plists</span> to the current RegexKit version as required by the package <span class="file">.plist</span> format.  An additional <span class="file">.plist</span> file, <span class="file">RegexKit_mpkg.plist</span>, is largely for cosmetic purposes. It gets the version updated as well, but its sole purpose is to provide a version string to the finder when a <span class="menu-selection">Get Info</span> is performed and that's it.</p>
+
+<p>The text that's displayed during the installation process comes from four files, though only two are currently used.  These are located in <span class="file">Source/Build/Packagemaker/Resources/...</span>, which is a localized <span class="file">.lproj</span> style directory for localization purposes.  Currently only <span class="file">English.lproj</span> is present. The files are currently simple <span class="file">.rtf</span> files, but <span class="file">.rtfd</span> and <span class="file">.html</span> are supported as well.  Any changes to the file types would have to be updated in the <span class="file">packageDist.pl</span> file (it should be obvious where).  Only <span class="file">ReadMe.rtf</span> and <span class="file">License.rtf</span> are currently used, but both <span class="file">Welcome.rtf</span> and <span class="file">Conclusion.rtf</span> can be activated trivially by editing <span class="file">packageDist.pl</span>.  They get copied in to the distribution package right now, but the necessary lines in <span class="file">distribution.dist</span> that is created by <span class="file">packageDist.pl</span> are missing.</p>
+
+<p>The tuneable <span class="xcode-setting">DISTRIBUTION_DEFAULT_INSTALL_DIR</span> is self-explanatory.</p>
+
+<h4>Minor bug fixes</h4>
+
+<ul class="square">
+<li>There were a handful of very minor, single line changes to fix some trivial bugs.  These mostly had to do with inter-version differences between tools (ie, <span class="file">sqlite</span> 3.1.3 -> later versions tweaks, minor accommodations to make building from the installer distribution run clean)</li>
+</ul>
+
+<h4>Build system tweaks</h4>
+
+<p>Replaced the <span class="code">debug:</span> portion of various script status lines with <span class="code">note:</span> instead.  This is mostly cosmetic.  In the <span class="file">Makefile.pcre</span>, added the makefile file name and line number of the message so clicking on it will take you right to that line.  Updated most status messages to always output the filename and line number with the status indicator.</p>
+
+<p>The PCRE build target is largely driven by Makefiles.  The scripts that invoke `<span class="file">make</span>` were modified to set the <span class="code">-j</span> argument, or the number of jobs to run in parallel, and the <span class="code">-l</span> argument, or the load average where no new jobs can be started.  The values for these parameters are derived from the sysctl variable <span class="code">hw.activecpu</span>.  The <span class="code">-j</span> parameter is set to the number of active CPU's, and the max load is set to the number of active CPU's + 2.  This should allow those of you with multiple CPU's to build the PCRE target faster. However, sometimes building in parallel causes certain make dependency issues to crop up that don't happen when running sequentially.</p>
+
+<p>This can be disabled with the tuneable <span class="xcode-setting">PCRE_PARALLEL_BUILD</span> = <span class="code">NO</span>.</p>
+
+<p>The Distribution target was also partially parallel build enabled as well.</p>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+      <li><a href="ReleaseNotes.html#Release_0_3_0" class="section-link">Release Information - Release Notes for 0.3.0 Beta</a></li>
+  </ul>
+</div>
+
+</div> <!-- Release_0_3_0_Beta -->
+
+<div class="Release_0_2_0_Beta">
+<h2><a name="Release_0_2_0">Change Log for 0.2.0 Beta</a></h2>
+
+<h4>End User Framework Visible Changes</h4>
+
+<p>The nature of changes for this release are almost all documentation or build system related.  Only a handful of changes resulted in any API level changes, the largest probably being the PCRE 7.3 to 7.4 change.</p>
+
+<p>Only one change stands out that may impact existing users of the framework. The Alpha version did not contain an explicit version of the framework, and used the default of <span class="code">1</span> for the version that was used in the Mach-O library version information.</p>
+
+<p>This release begins the use of a framework versioning system. It is a standard "three point" version type system comprised of a Major, Minor, and Point version.  These versions are reflected in the Mach-O library version.</p>
+
+<p>Refer to the RegexKit Programming Guide section on Release Information or more information.</p>
+
+<h4>Distribution Bundles</h4>
+
+<p>The file bundles for a distribution release has changed.  There is now a Mac OS X oriented binary + documentation release and a no binaries, source only + documentation bundle.</p>
+
+<h4>PCRE Version Changed</h4>
+
+<p>The PCRE library that the framework builds against was updated to 7.4.</p>
+
+<h4><span class="code">const</span> Use Expanded</h4>
+
+<p>Where appropriate, the <span class="code">const</span> keyword was added.  Most of this was marking both the pointer and data pointed by the pointer as <span class="code">const</span>.</p>
+
+<p>For example:</p>
+
+<p><span class="code">const</span> @link NSRange NSRange @/link <span class="code">*matchRanges</span></p>
+
+<p>changed to</p>
+
+<p><span class="code">const</span> @link NSRange NSRange @/link <span class="code">* const matchRanges</span></p>
+
+<h4>Framework Initialization</h4>
+
+<p>Previously, initialization that was required at load time was performed with functions marked with the attribute <span class="code">constructor</span>.  This was replaced with the more portable, but functionally identical, Objective-C <span class="code">+load</span> method.</p>
+
+<h4>C99 <span class="code">restrict</span> Added</h4>
+
+<p>A new pre-processor macro, @link RK_C99 RK_C99()@/link, was added that causes the macros argument to either be replaced as-is, or removed depending on whether or not <span class="code">__STDC_VERSION__ >= 199901L</span> (ie, C99).  This is used to selectively allow the C99 <span class="code">restrict</span> qualifier through for various function / method prototypes.  This allows projects who are currently not using C99 to transparently use the framework without warnings/etc.</p>
+
+<h4>Framework Version</h4>
+
+<p>The build setting <span class="xcode-setting">${PROJECT_CURRENT_VERSION}</span> now contains the frameworks version.  It is composed as the dot separated form of <span class="xcode-setting">${PROJECT_VERSION_(MAJOR|MINOR|POINT)}</span>, ie <span class="code">0.2.0</span>.</p>
+
+<p>The version of the framework is now incorporated in to the Mach-O shared library version information.  The project build setting <span class="xcode-setting">${PROJECT_CURRENT_VERSION}</span> sets the dynamic libraries version, and <span class="xcode-setting">${PROJECT_COMPATIBLE_VERSION}</span> sets the compatibility version.</p>
+
+<h4>Project Build Settings</h4>
+
+<p>The various top-level project settings were moved out from the Xcode <span class="file">project.pbxproj</span> file and in to a separate <span class="file">.xcconfig</span> file.  The Xcode project build settings were then set to be 'based on' this file. The file is at <span class="file">Source/Build/Xcode/RegexKit Build Settings.xcconfig</span>. This makes it much easier to add and modify the build settings.  It also allows comments to be placed in the file, documenting the settings at the same time.</p>
+
+<p>These settings can then be easily over-ridden at either the project or per-target level within Xcode by selecting the appropriate <span class="menu-selection">Project > Edit ....</span> menu item and then simply entering the desired over-ride.</p>
+
+<p>A notable setting is <span class="xcode-setting">GCC_OPTIMIZATION_LEVEL</span>.  Xcode normally only allows for <span class="code">0|1|2|3|s</span> (ie, <span class="code">-O1</span>, etc).  However, the Apple branch of GCC also supports a '<span class="code">z</span>' level optimization which is loosely defined as 'Like <span class="code">-Os</span> (<span class="code">-O2</span>, preferring smaller code size to larger/faster code), but aggressively preferring smaller code size to any speed advantage.'.  There was approximately 24KB smaller executable size difference for each step in <span class="code">2</span> to <span class="code">s</span> to <span class="code">z</span> settings and no timing difference reported by the timing unit test, so <span class="code">z</span> was selected for a total executable size reduction of ~49KB.</p>
+
+<div class="table">
+<table class="standard" summary="Executable Size Reduction Table">
+<caption>Executable Size Reduction Table</caption>
+<tr><th>Optimization</th><th>Size</th><th>Dead Code Stripped</th><th>Difference</th><th>Optimization Difference</th></tr>
+<tr><td>-O2</td><td>495776 / 484KB</td><td>494608 / 483KB</td><td>1168 / 1KB</td><td></td></tr>
+<tr><td>-Os</td><td>475152 / 464KB</td><td>469884 / 458KB</td><td>5268 / 5KB</td><td>24724 / 24KB</td></tr>
+<tr><td>-Oz</td><td>450624 / 440KB</td><td>445356 / 434KB</td><td>5288 / 5KB</td><td>24528 / 24KB</td></tr>
+</table>
+</div>
+
+<p>Total Optimization plus Dead Code Stripping savings: 50420 / 49KB ([-O2] 495776 - [-Oz dcs] 445356)</p>
+
+<h4>PCRE Build Target</h4>
+
+<p>Substantial updates to the PCRE build target.  There is very little user visible changes, however.</p>
+
+<p>The PCRE target has a 'Run Script' build phase which executes the <span class="file">Source/Build/Scripts/buildPCRE.sh</span> script.  Since this is a target that is outside the control of Xcode, it must perform several dependency checks to ensure that what has been built is valid given the current build settings and target dependencies.  This script performs those checks manually by comparing the output of `<span class="file">env</span>`, <span class="file">Source/Build/Scripts/buildPCRE.sh</span>, and <span class="file">Source/Build/Makefiles/Makefile.pcre</span> to a copy of those settings / files that were used when the target was built.  Any change effectively causes the target to be rebuilt from scratch (ie, <span class="file">rm -rf</span> / <span class="file">untar</span>) to ensure any dependencies are accurately reflected in the built library.</p>
+
+<p>Altered the build system to place all temporary files used during the build process, including the untaring of the distribution, in to <span class="xcode-setting">${PCRE_TEMP_ROOT}</span>, which translates in to <span class="file">build/RegexKit.build/CONFIGURATION/PCRE.build/pcre-VERSION/</span>. <span class="xcode-setting">CONFIGURATION</span> being either Debug or Release.</p>
+
+<h4>Build System Changes</h4>
+
+<p>Numerous build system changes, too many to list and nearly all are not important to end users.  Examples are the more robust PCRE build subsystem, clean up of the documentation build system, clean up of the <span class="file">aspell</span> spell checking of documentation, clean up of <span class="file">tidy</span> checking of the HTML output, etc.</p>
+
+<h4>SVN at SourceForge.net </h4>
+
+<p>This release represents the first import to the SVN repository at <a href="sourceforge.net">SourceForge.net</a>.</p>
+
+<h4>File Encodings</h4>
+
+<p>Updated/converted all appropriate files to Unicode @link UTF8 UTF8 @/link encoding and updated the Xcode reference to reflect the new encoding.</p>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+      <li><a href="ReleaseNotes.html#Release_0_2_0" class="section-link">Release Information - Release Notes for 0.2.0 Beta</a></li>
+  </ul>
+</div>
+
+</div> <!-- Release_0_2_0_Beta -->
+
+<div class="Release_Alpha">
+<h2><a name="Release_Alpha">Change Log for Alpha</a></h2>
+
+<p><b><i>Everything.</i></b></p>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+      <li><a href="ReleaseNotes.html#Release_Alpha" class="section-link">Release Information - Release Notes for Alpha</a></li>
+  </ul>
+</div>
+
+</div> <!-- Release_Alpha -->
+
+
+</div> <!-- changeLog -->
+<script type="text/javascript" language="JavaScript" src="JavaScript/common.js"></script>
+</body>
+</html>
