@@ -237,7 +237,7 @@ ${PCRE_TEMP_DIR}/configure: ${PCRE_TEMP_DIR}
 
 ${PCRE_ARCH_MAKEFILES}: ${PCRE_TEMP_DIR}/configure
 	@BUILD_FOR_ARCH="$(patsubst ${PCRE_CONFIGURE_DIR}/%/Makefile,%, $@)"; \
-	HOST_ARCH="$${BUILD_FOR_ARCH}"; case $${HOST_ARCH} in i386 | x86_64 ) HOST_ARCH="i686"; ARCH_TUNE_FLAGS="-mtune=generic"; esac; \
+	HOST_ARCH="$${BUILD_FOR_ARCH}"; case $${HOST_ARCH} in i386 | x86_64 ) ARCH_TUNE_FLAGS="-mtune=generic"; esac; \
 	case $${BUILD_FOR_ARCH} in ppc | i386 ) ARCH_MACOSX_DEPLOYMENT_TARGET="10.4"; esac; \
 	case $${BUILD_FOR_ARCH} in ppc64 | x86_64 ) ARCH_MACOSX_DEPLOYMENT_TARGET="10.5"; esac; \
 	if [ "$${BUILD_FOR_ARCH}" == "ppc" ]; then ARCH_TUNE_FLAGS="-mtune=G4"; fi; \
