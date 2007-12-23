@@ -1,6 +1,7 @@
 //
 //  RKCache.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -33,7 +34,14 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
+*/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+#ifndef _REGEXKIT_RKCACHE_H_
+#define _REGEXKIT_RKCACHE_H_ 1
 
 /*!
  @header RKCache
@@ -45,10 +53,6 @@
 #import <dlfcn.h>
 
 @class RKReadWriteLock;
-
-#ifndef _RECACHE_H_
-#define _RECACHE_H_ 1
-
 
 /*!
  @class    RKCache
@@ -286,4 +290,8 @@
 
 @end
 
-#endif // _RECACHE_H_
+#endif // _REGEXKIT_RKCACHE_H_
+    
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

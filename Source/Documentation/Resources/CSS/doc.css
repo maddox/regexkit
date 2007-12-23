@@ -120,7 +120,7 @@ h5   { margin-top: 1.5em; margin-bottom: 0.5000em; font-size: 1.0834em; padding:
 .quotation .attribution:before { margin-left: 1.25ex; content:"-"; margin-right: 1.25ex; }
 .quotation .attribution {  }
 
-.pop-up_menu-selection, .pop-up_menu-name, .context-menu, .menu-selection, .checkbox-name, .tab-name, .button-name, .icon-button-name { white-space: pre-wrap; }
+.pop-up_menu-selection, .pop-up_menu-name, .context-menu, .menu-selection, .checkbox-name, .tab-name, .button-name, .icon-button-name { white-space: nowrap; white-space: pre-wrap !important; }
 
 .code              {        font:         0.9167em monaco, courier, monospace; }
 .regex             {        font:         0.8334em monaco, courier, monospace; white-space: nowrap; }
@@ -128,7 +128,7 @@ h5   { margin-top: 1.5em; margin-bottom: 0.5000em; font-size: 1.0834em; padding:
 .regex-textual     {        font:         0.9167em monaco, courier, monospace; white-space: nowrap; }
 .regex-def         {        font: italic  0.9167em monaco, courier, monospace; }
 .argument          {  font-style: italic; white-space: nowrap; }
-.section-link      {  font-style: italic; white-space: pre-wrap; }
+.section-link      {  font-style: italic; white-space: nowrap; white-space: pre-wrap !important; }
 .cpp_flag          { font-weight: bold; }
 .cpp_definition    { font-weight: bold; }
 .header_file       {        font:         0.9167em monaco, courier, monospace; white-space: nowrap; }

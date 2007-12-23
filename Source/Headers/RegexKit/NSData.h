@@ -1,6 +1,7 @@
 //
 //  NSData.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -33,18 +34,21 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
+*/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+#ifndef _REGEXKIT_NSDATA_H_
+#define _REGEXKIT_NSDATA_H_ 1
 
 /*!
  @header NSData
 */
 
-#ifndef _REGEXKIT_NSDATA_H_
-#define _REGEXKIT_NSDATA_H_ 1
-
 #import <Foundation/Foundation.h>
-#import <RegexKit/RKRegex.h>
-#import <RegexKit/NSObject.h>
+#import <RegexKit/RegexKit.h>
 #import <stdarg.h>
   
 /*!
@@ -67,13 +71,13 @@
  @tocgroup   NSData Testing Data
  @abstract   Returns a Boolean value that indicates whether the receiver is matched by <span class="argument">aRegex</span>.
  @seealso    @link NSData(RegexKitAdditions)/isMatchedByRegex:inRange: - isMatchedByRegex:inRange: @/link
- */
+*/
 - (BOOL)isMatchedByRegex:(id)aRegex;
 /*!
  @method     isMatchedByRegex:inRange:
  @tocgroup   NSData Testing Data
  @abstract   Returns a Boolean value that indicates whether the receiver is matched by <span class="argument">aRegex</span> within <span class="argument">range</span>.
- */
+*/
 - (BOOL)isMatchedByRegex:(id)aRegex inRange:(const NSRange)range;
 /*!
  @method     rangeOfRegex:
@@ -81,7 +85,7 @@
  @abstract   Returns the range of the first occurrence within the receiver of <span class="argument">aRegex</span>.
  @result     A @link NSRange NSRange @/link structure giving the location and length of the first match of <span class="argument">aRegex</span> in the receiver. Returns <span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span> if the receiver is not matched by <span class="argument">aRegex</span>.
  @seealso @link NSData(RegexKitAdditions)/rangeOfRegex:inRange:capture: - rangeOfRegex:inRange:capture: @/link
- */
+*/
 - (NSRange)rangeOfRegex:(id)aRegex;
 /*!
  @method     rangeOfRegex:inRange:capture:
@@ -92,7 +96,7 @@
  @param      capture The matching range of <span class="argument">aRegex</span> capture number to return. Use <span class="code">0</span> for the entire range that <span class="argument">aRegex</span> matched.
  @result     A @link NSRange NSRange @/link structure giving the location and length of <span class="argument">aRegex</span> capture number <span class="argument">capture</span> for the first match within <span class="argument">range</span> of the receiver. Returns <span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span> if the receiver is not matched by <span class="argument">aRegex</span>.
  @seealso @link NSData(RegexKitAdditions)/rangeOfRegex: - rangeOfRegex: @/link
- */
+*/
 - (NSRange)rangeOfRegex:(id)aRegex inRange:(const NSRange)range capture:(const RKUInteger)capture;
 /*!
  @method     rangesOfRegex:
@@ -102,7 +106,7 @@
  @result     Returns a pointer to an array of @link NSRange NSRange @/link structures of the capture subpatterns of <span class="argument">aRegex</span> for the first match in the receiver, or <span class="code">NULL</span> if <span class="argument">aRegex</span> does not match.
  @seealso @link NSData(RegexKitAdditions)/rangesOfRegex:inRange: - rangesOfRegex:inRange: @/link
  @seealso @link rangesForCharacters:length:inRange:options: - rangesForCharacters:length:inRange:options: @/link
- */
+*/
 - (NSRange *)rangesOfRegex:(id)aRegex;
 /*!
  @method     rangesOfRegex:inRange:
@@ -112,7 +116,7 @@
  @result     Returns a pointer to an array of @link NSRange NSRange @/link structures of the capture subpatterns of <span class="argument">aRegex</span> for the first match in the receiver within <span class="argument">range</span>, or <span class="code">NULL</span> if <span class="argument">aRegex</span> does not match.
  @seealso @link NSData(RegexKitAdditions)/rangeOfRegex:inRange:capture: - rangeOfRegex:inRange:capture: @/link
  @seealso @link rangesForCharacters:length:inRange:options: - rangesForCharacters:length:inRange:options: @/link
- */
+*/
 - (NSRange *)rangesOfRegex:(id)aRegex inRange:(const NSRange)range;
 
 /*!
@@ -120,16 +124,20 @@
  @tocgroup   NSData Accessing Data
  @abstract   Returns a @link NSData NSData @/link that contains the bytes of the first match by <span class="argument">aRegex</span>.
  @seealso    @link NSData(RegexKitAdditions)/subdataByMatching:inRange: - subdataByMatching:inRange: @/link
- */
+*/
 - (NSData *)subdataByMatching:(id)aRegex;
 /*!
  @method     subdataByMatching:inRange:
  @tocgroup   NSData Accessing Data
  @abstract   Returns a @link NSData NSData @/link that contains the bytes of the first match by <span class="argument">aRegex</span> within <span class="argument">range</span>.
  @seealso    @link NSData(RegexKitAdditions)/subdataByMatching: - subdataByMatching: @/link
- */
+*/
 - (NSData *)subdataByMatching:(id)aRegex inRange:(const NSRange)range;
 
 @end
 
 #endif // _REGEXKIT_NSDATA_H_
+    
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

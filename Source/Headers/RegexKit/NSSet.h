@@ -1,6 +1,7 @@
 //
 //  NSSet.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -33,18 +34,21 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
+*/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+#ifndef _REGEXKIT_NSSET_H_
+#define _REGEXKIT_NSSET_H_ 1
 
 /*!
  @header NSSet
 */
 
-#ifndef _REGEXKIT_NSSET_H_
-#define _REGEXKIT_NSSET_H_ 1
-
 #import <Foundation/Foundation.h>
-#import <RegexKit/RKRegex.h>
-#import <RegexKit/NSObject.h>
+#import <RegexKit/RegexKit.h>
 #import <stdarg.h>
   
 /*!
@@ -130,3 +134,7 @@
 @end
 
 #endif // _REGEXKIT_NSSET_H_
+    
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

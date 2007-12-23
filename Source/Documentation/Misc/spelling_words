@@ -1,4 +1,4 @@
-personal_ws-1.1 en 1590 
+personal_ws-1.1 en 1614 
 ABI
 APIs
 ARGS
@@ -9,8 +9,11 @@ BeginCacheAdd
 BeginCacheLookup
 BeginCacheRemove
 BeginRegexCompile
+BeginSortedRegexMatch
+BeginSortedRegexSort
 BOOL
 BZip
+CPUs
 CFAllocatorRef
 CFArray
 CFArrayCallBacks
@@ -77,6 +80,8 @@ EndCacheAdd
 EndCacheLookup
 EndCacheRemove
 EndRegexCompile
+EndSortedRegexMatch
+EndSortedRegexSort
 Engelhart
 ExpansionofCaptureSubpatternMatchReferencesinStrings
 FAQish
@@ -154,6 +159,7 @@ NSEndMapTableEnumeration
 NSEnumerateMapTable
 NSEnumerator
 NSEqualRanges
+NSError
 NSException
 NSExceptionLogging
 NSExceptionLoggingEnabled
@@ -169,6 +175,7 @@ NSInternalInconsistencyException
 NSInvalidArgumentException
 NSInvalidUnarchiveOperationException
 NSInvocation
+NSLocalizedString
 NSLog
 NSMakeRange
 NSMallocException
@@ -432,6 +439,7 @@ RKFastLock
 RKFastReadWriteLock
 RKFastReadWriteUnlock
 RKFastUnlock
+RKFrameworkBundle
 RKGetThreadLocalData
 RKGetThreadLocalNumberFormatter
 RKHashForStringAndCompileOption
@@ -440,6 +448,7 @@ RKInteger
 RKIntegerMax
 RKIntegerMin
 RKIsMainThread
+RKLocalizedStringForPCRECompileErrorCode
 RKLock
 RKLockDef
 RKMakeCopyInstructionsBuffer
@@ -485,6 +494,7 @@ RKMatchPartial
 RKMutableStringMatch
 RKParseReference
 RKPlaceholder
+RKPrettyObject
 RKPrettyObjectDescription
 RKPrettyObjectMethodString
 RKPrivate
@@ -499,6 +509,7 @@ RKRegexCoderDifferencesDictionary
 RKRegexDef
 RKRegexEncodeWithCoder
 RKRegexFromStringOrRegex
+RKRegexFromStringOrRegexWithError
 RKRegexGarbageCollect
 RKRegexInitWithCoder
 RKRegexLinkerInitialized
@@ -516,6 +527,7 @@ RKSetActionObjectOfFirstMatch
 RKSetActionRemoveMatches
 RKSetActionSetMaxAction
 RKSetActionSetOfMatchingObjects
+RKSortedRegexCollection
 RKStringBuffer
 RKStringBufferEncoding
 RKStringBufferWithString
@@ -557,6 +569,7 @@ STRASSE
 SUPERCLASSES
 SetFile
 Solaris
+SortedRegexCompare
 SourceForge
 Stra
 StraSSe
@@ -565,6 +578,7 @@ Strasse
 SysBreak
 TIMESTAMP
 ThreadDebug
+TODO
 ToUTF
 UDBZ
 UInt
@@ -615,6 +629,8 @@ amd
 anEnumerator
 anIndex
 anObject
+anyMatchingRegexInArray
+anyMatchingRegexInSet
 anyObject
 anyObjectMatchingRegex
 ap
@@ -799,6 +815,7 @@ cpp
 cpuTimeUsed
 createDocSet
 createMutableConvertedString
+css
 currentClass
 currentFormatterStyle
 currentRange
@@ -936,6 +953,7 @@ firstCell
 firstKey
 firstLast
 firstLastArray
+firstMatchingRegexInArray
 firstReference
 firstRow
 firstVisibleElement
@@ -953,6 +971,7 @@ formatStackBuffer
 formatString
 freeWhenDone
 fromIndex
+fstack
 fullText
 fullinfo
 func
@@ -960,6 +979,7 @@ functionString
 fus
 gauge
 gcc
+generalStartEnd
 generateHTML
 generatePCREToC
 getCapturesWithReferences
@@ -1045,6 +1065,8 @@ isEqual
 isEqualTo
 isEqualToString
 isKindOfClass
+isMatchedByAnyRegexInArray
+isMatchedByAnyRegexInSet
 isMatchedByRegex
 isMultiThreaded
 isMultithreaded
@@ -1288,6 +1310,7 @@ readWriteLock
 readme
 realloc
 receiversRegex
+redistributions
 redColor
 referenceBuffer
 referenceCountMinusOne
@@ -1545,6 +1568,7 @@ unsignedConversion
 untar
 untaring
 updateToNextMatch
+usdt
 useVarArgsList
 useable
 userCPUTime

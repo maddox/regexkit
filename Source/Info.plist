@@ -22,8 +22,21 @@
 	<string>ZanG</string>
 	<key>CFBundleVersion</key>
 	<string>${PROJECT_CURRENT_VERSION}</string>
+  <key>LSMinimumSystemVersion</key>
+  <string>10.4.0</string>
+  <key>LSMinimumSystemVersionByArchitecture</key>
+  <dict>
+    <key>ppc</key>
+    <string>10.4.0</string>
+    <key>i386</key>
+    <string>10.4.4</string>
+    <key>ppc64</key>
+    <string>10.5.0</string>
+    <key>x86_64</key>
+    <string>10.5.0</string>
+  </dict>
   <key>NSHumanReadableCopyright</key>
-  <string>© 2007, John Engelhart</string>
+  <string>Copyright © 2007, John Engelhart</string>
 	<key>NSPrincipalClass</key>
 	<string>RKRegex</string>
 </dict>

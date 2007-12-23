@@ -1,6 +1,7 @@
 //
 //  NSSet.m
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -56,10 +57,10 @@ static id RKDoSetAction(id self, SEL _cmd, id matchAgainstSet, id regexObject, c
   id returnObject = NULL, *setObjects = NULL, *matchedObjects = NULL;
   RKUInteger setCount = 0, atIndex = 0, matchedCount = 0, tempUIntegerResult = 0;
   
-  if(RK_EXPECTED(self == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"self == NULL.") userInfo:NULL] raise]; }
-  if(RK_EXPECTED(_cmd == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"_cmd == NULL.") userInfo:NULL] raise]; }
-  if(RK_EXPECTED(matchAgainstSet == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"matchAgainstSet == NULL.") userInfo:NULL] raise]; }
-  if(RK_EXPECTED(performAction > RKSetActionSetMaxAction, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"Unknown performAction = %lu.", (unsigned long)performAction) userInfo:NULL] raise]; }
+  if(RK_EXPECTED(self == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"self == NULL."] raise]; }
+  if(RK_EXPECTED(_cmd == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"_cmd == NULL."] raise]; }
+  if(RK_EXPECTED(matchAgainstSet == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"matchAgainstSet == NULL."] raise]; }
+  if(RK_EXPECTED(performAction > RKSetActionSetMaxAction, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"Unknown performAction = %lu.", (unsigned long)performAction] raise]; }
   
   if((RK_EXPECTED(self == matchAgainstSet, 0)) && (performAction == RKSetActionAddMatches)) { goto exitNow; } // Fast path bypass on unusual case.
 
@@ -138,13 +139,13 @@ exitNow:
 
 - (void)addObjectsFromArray:(NSArray *)otherArray matchingRegex:(id)aRegex
 {
-  if(RK_EXPECTED(otherArray == NULL, 0)) { [[NSException exceptionWithName:NSInvalidArgumentException reason:RKPrettyObjectMethodString(@"otherArray == NULL.") userInfo:NULL] raise]; }
+  if(RK_EXPECTED(otherArray == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"otherArray == NULL."] raise]; }
   RKDoSetAction(self, _cmd, [NSSet setWithArray:otherArray], aRegex, RKSetActionAddMatches, NULL);
 }
 
 - (void)addObjectsFromSet:(NSSet *)otherSet matchingRegex:(id)aRegex
 {
-  if(RK_EXPECTED(otherSet == NULL, 0)) { [[NSException exceptionWithName:NSInvalidArgumentException reason:RKPrettyObjectMethodString(@"otherSet == NULL.") userInfo:NULL] raise]; }
+  if(RK_EXPECTED(otherSet == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"otherSet == NULL."] raise]; }
   RKDoSetAction(self, _cmd, otherSet, aRegex, RKSetActionAddMatches, NULL);
 }
 

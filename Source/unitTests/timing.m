@@ -1,42 +1,57 @@
 //
 //  timing.m
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
+
+/*
+ Copyright © 2007, John Engelhart
+ 
+ All rights reserved.
+ 
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ 
+ * Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ 
+ * Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ 
+ * Neither the name of the Zang Industries nor the names of its
+ contributors may be used to endorse or promote products derived from
+ this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #import "timing.h"
 #import <objc/objc-auto.h>
 #import <objc/objc-runtime.h>
 
-#define RKPrettyObjectMethodString(stringArg, ...) ([NSString stringWithFormat:[NSString stringWithFormat:@"%p [%@ %@]: %@", self, NSStringFromClass([(id)self class]), NSStringFromSelector(_cmd), stringArg], ##__VA_ARGS__])
-
-static BOOL garbageCollectionEnabled = NO;
-void startGC(void);
 
 @implementation timing
 
 + (void)setUp
-{  
-  startGC();
+{
+  NSLog(@"timingEnvString = %@, %d, %d", timingEnvString, [timingEnvString intValue], [timingEnvString intValue]);
   NSLog(@"Cache status:\n%@", [RKRegex regexCache]);
 
   startAutoreleasedObjects = (([NSAutoreleasePool respondsToSelector:@selector(totalAutoreleasedObjects)]) ? [NSAutoreleasePool totalAutoreleasedObjects] : 0);
   startTopPool = [[NSAutoreleasePool alloc] init];
 
   timingResultsArray = [NSMutableArray array];
-  
-  if(getenv("LEAK_CHECK") != NULL) { leakEnvString = [[[NSString alloc] initWithCString:getenv("LEAK_CHECK") encoding:NSUTF8StringEncoding] autorelease]; }
-  if(getenv("DEBUG") != NULL) { debugEnvString = [[[NSString alloc] initWithCString:getenv("DEBUG") encoding:NSUTF8StringEncoding] autorelease]; }
-  if(getenv("TIMING") != NULL) { timingEnvString = [[[NSString alloc] initWithCString:getenv("TIMING") encoding:NSUTF8StringEncoding] autorelease]; }
-
-
-#ifdef ENABLE_MACOSX_GARBAGE_COLLECTION
-  if([objc_getClass("NSGarbageCollector") defaultCollector] != NULL) {
-    garbageCollectionEnabled = YES;
-    //[[NSGarbageCollector defaultCollector] disableCollectorForPointer:leakEnvString];
-    //[[NSGarbageCollector defaultCollector] disableCollectorForPointer:debugEnvString];
-    //[[NSGarbageCollector defaultCollector] disableCollectorForPointer:timingEnvString];
-  }
-#endif
 
   startLeakPool = [[NSAutoreleasePool alloc] init];
   
@@ -131,10 +146,6 @@ void startGC(void);
   NSLog(@"Elapsed CPU time: %@", [NSDate microSecondsStringFromCPUTime:testElapsedCPUTime]);
   NSLog(@"%@", RKPrettyObjectMethodString(@"Teardown complete\n"));
   fprintf(stderr, "-----------------------------------------\n\n");
-  //fprintf(stderr, "Forcing full collection.\n");
-  //objc_collect(OBJC_EXHAUSTIVE_COLLECTION | OBJC_WAIT_UNTIL_DONE);
-  //fprintf(stderr, "Sleeping.\n");
-  //while(1) { sleep(10); }
 }
 
 
@@ -145,11 +156,11 @@ void startGC(void);
   unsigned int x = 0;
 
   NSAutoreleasePool *loopPool = NULL;
-  if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+  if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
   for(x = 0; x < iterations; x++) {
     [[[RKRegex alloc] initWithRegexString:@".* (\\w+) .*" options:0] release];
   }
-  if(garbageCollectionEnabled == NO) { [loopPool release]; }
+  if(garbageCollectorEnabled == NO) { [loopPool release]; }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
   [timingResultsArray addObject:[NSString stringWithFormat:@"%-45.45s | CPU: %@  %u iterations, per: U %9.5fus, S %9.5fus, U+S %9.5fus", [NSStringFromSelector(_cmd) UTF8String], [NSDate stringFromCPUTime:elapsedTime], x, ((elapsedTime.userCPUTime / (double)x)), ((elapsedTime.systemCPUTime / (double)x)), ((elapsedTime.CPUTime / (double)x))]];
@@ -162,11 +173,11 @@ void startGC(void);
   unsigned int x = 0;
   
   NSAutoreleasePool *loopPool = NULL;
-  if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+  if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
   for(x = 0; x < iterations; x++) {
     [[[NSObject alloc] init] release];
   }
-  if(garbageCollectionEnabled == NO) { [loopPool release]; }
+  if(garbageCollectorEnabled == NO) { [loopPool release]; }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
   [timingResultsArray addObject:[NSString stringWithFormat:@"%-45.45s | CPU: %@  %u iterations, per: U %9.5fus, S %9.5fus, U+S %9.5fus", [NSStringFromSelector(_cmd) UTF8String], [NSDate stringFromCPUTime:elapsedTime], x, ((elapsedTime.userCPUTime / (double)x)), ((elapsedTime.systemCPUTime / (double)x)), ((elapsedTime.CPUTime / (double)x))]];
@@ -180,9 +191,9 @@ void startGC(void);
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
-    if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+    if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
     [[[NSObject alloc] init] release];
-    if(garbageCollectionEnabled == NO) { [loopPool release]; }
+    if(garbageCollectorEnabled == NO) { [loopPool release]; }
   }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -197,9 +208,9 @@ void startGC(void);
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
-    if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+    if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
     [[[NSObject alloc] init] autorelease];
-    if(garbageCollectionEnabled == NO) { [loopPool release]; }
+    if(garbageCollectorEnabled == NO) { [loopPool release]; }
   }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -214,9 +225,9 @@ void startGC(void);
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
-    if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+    if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
     [RKRegex regexWithRegexString:@".* (\\w+) .*" options:0];
-    if(garbageCollectionEnabled == NO) { [loopPool release]; }
+    if(garbageCollectorEnabled == NO) { [loopPool release]; }
   }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -234,12 +245,12 @@ void startGC(void);
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
-    if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+    if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
     
     NSString *subString0 = @"$0", *subString1 = @"$1", *subString2 = @"$2", *subString3 = @"$3", *subString4 = @"$4";
     if([namedSubjectString getCapturesWithRegexAndReferences:namedRegexString, @"${2}", &subString2, @"${4}", &subString4, @"${1}", &subString1, @"${0}", &subString0, @"${3}", &subString3, nil] == NO) { NSLog(@"FAILED TO MATCH!"); return; }
     
-    if(garbageCollectionEnabled == NO) { [loopPool release]; } //else { objc_collect(OBJC_GENERATIONAL_COLLECTION | OBJC_COLLECT_IF_NEEDED); }
+    if(garbageCollectorEnabled == NO) { [loopPool release]; }
   }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -258,7 +269,7 @@ void startGC(void);
 
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
-    if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+    if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
 
     NSString *subStringDate = @"${date}", *subStringDay = @"${day}", *subStringYear = @"${year}";
     NSString *subString0 = @"$0", *subString1 = @"$1", *subString2 = @"$2";
@@ -266,7 +277,7 @@ void startGC(void);
     //if([namedSubjectString getCapturesWithRegexAndReferences:namedRegexString, @"${day}", &subStringDay, @"${date}", &subStringDate, @"${2}", &subString2, @"${1}", &subString1, @"${year}", &subStringYear, nil] == NO) { NSLog(@"FAILED TO MATCH!"); return; }
     if([namedSubjectString getCapturesWithRegexAndReferences:namedRegexString, @"${year}", &subStringDay, @"${day}", &subStringDate, @"${1}", &subString2, @"${0}", &subString1, @"${month}", &subStringYear, nil] == NO) { NSLog(@"FAILED TO MATCH!"); return; }
 
-    if(garbageCollectionEnabled != 2) { [loopPool release]; } //else { objc_collect(OBJC_FULL_COLLECTION); }//objc_collect(OBJC_GENERATIONAL_COLLECTION | OBJC_COLLECT_IF_NEEDED); 
+    if(garbageCollectorEnabled != 2) { [loopPool release]; }
   }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -280,11 +291,11 @@ void startGC(void);
   unsigned int x = 0;
   
   NSAutoreleasePool *loopPool = NULL;
-  if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+  if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
   for(x = 0; x < iterations; x++) {
     [[[RKRegex alloc] initWithRegexString:@"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))" options:RKCompileDupNames] release];
   }
-  if(garbageCollectionEnabled == NO) { [loopPool release]; }
+  if(garbageCollectorEnabled == NO) { [loopPool release]; }
 
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
   [timingResultsArray addObject:[NSString stringWithFormat:@"%-45.45s | CPU: %@  %u iterations, per: U %9.5fus, S %9.5fus, U+S %9.5fus", [NSStringFromSelector(_cmd) UTF8String], [NSDate stringFromCPUTime:elapsedTime], x, ((elapsedTime.userCPUTime / (double)x)), ((elapsedTime.systemCPUTime / (double)x)), ((elapsedTime.CPUTime / (double)x))]];
@@ -298,9 +309,9 @@ void startGC(void);
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
-    if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+    if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
     [RKRegex regexWithRegexString:@"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))" options:RKCompileDupNames];
-    if(garbageCollectionEnabled == NO) { [loopPool release]; }
+    if(garbageCollectorEnabled == NO) { [loopPool release]; }
   }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -316,16 +327,16 @@ void startGC(void);
 
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
-    if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+    if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
     RKRegex *regex = [RKRegex regexWithRegexString:@"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))" options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)];
     NSRange *ranges = [subjectString rangesOfRegex:regex];
     if(ranges == NULL) {
       NSLog(@"regex: %@ regexString: %@", regex, [regex regexString]);
       NSLog(@"matches %@ ? %@", subjectString, [subjectString isMatchedByRegex:regex] == YES ? @"Yes":@"No");
-      if(garbageCollectionEnabled == NO) { [loopPool release]; }
+      if(garbageCollectorEnabled == NO) { [loopPool release]; }
       break;
     }
-    if(garbageCollectionEnabled == NO) { [loopPool release]; }
+    if(garbageCollectorEnabled == NO) { [loopPool release]; }
   }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -404,16 +415,16 @@ exitNow:
 
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
-    if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+    if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
     RKRegex *regex = [RKRegex regexWithRegexString:@"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))" options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)];
     NSRange *ranges = [subjectString rangesOfRegex:regex];
     if(ranges != NULL) {
       NSLog(@"regex: %@ regexString: %@", regex, [regex regexString]);
       NSLog(@"matches %@ ? %@", subjectString, [subjectString isMatchedByRegex:regex] == YES ? @"Yes":@"No");
-      if(garbageCollectionEnabled == NO) { [loopPool release]; }
+      if(garbageCollectorEnabled == NO) { [loopPool release]; }
       break;
     }
-    if(garbageCollectionEnabled == NO) { [loopPool release]; }
+    if(garbageCollectorEnabled == NO) { [loopPool release]; }
   }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -430,16 +441,16 @@ exitNow:
 
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
-    if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+    if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
     RKRegex *regex = [RKRegex regexWithRegexString:regexString options:(RKCompileUTF8 | RKCompileNoUTF8Check | RKCompileDupNames)];
     NSRange *ranges = [subjectString rangesOfRegex:regex];
     if(ranges == NULL) {
       NSLog(@"regex: %@ regexString: %@", regex, [regex regexString]);
       NSLog(@"matches %@ ? %@", subjectString, [subjectString isMatchedByRegex:regex] == YES ? @"Yes":@"No");
-      if(garbageCollectionEnabled == NO) { [loopPool release]; }
+      if(garbageCollectorEnabled == NO) { [loopPool release]; }
       break;
     }
-    if(garbageCollectionEnabled == NO) { [loopPool release]; }
+    if(garbageCollectorEnabled == NO) { [loopPool release]; }
   }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -456,15 +467,15 @@ exitNow:
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
-    if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+    if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
     int convertedInt = 0;
     [subjectString getCapturesWithRegexAndReferences:regexString, @"${1:%d}", &convertedInt, nil];
     if(convertedInt != 12345) {
       NSLog(@"Converte int not expected value of 12345, is %d", convertedInt);
-      if(garbageCollectionEnabled == NO) { [loopPool release]; }
+      if(garbageCollectorEnabled == NO) { [loopPool release]; }
       break;
     }
-    if(garbageCollectionEnabled == NO) { [loopPool release]; }
+    if(garbageCollectorEnabled == NO) { [loopPool release]; }
   }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -482,15 +493,15 @@ exitNow:
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
-    if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+    if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
     int convertedInt = 0;
     [subjectString getCapturesWithRegexAndReferences:regex, @"${1:%d}", &convertedInt, nil];
     if(convertedInt != 12345) {
       NSLog(@"Converte int not expected value of 12345, is %d", convertedInt);
-      if(garbageCollectionEnabled == NO) { [loopPool release]; }
+      if(garbageCollectorEnabled == NO) { [loopPool release]; }
       break;
     }
-    if(garbageCollectionEnabled == NO) { [loopPool release]; }
+    if(garbageCollectorEnabled == NO) { [loopPool release]; }
   }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -508,17 +519,17 @@ exitNow:
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
-    if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+    if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
     NSString *convertedString = nil;
     [subjectString getCapturesWithRegexAndReferences:regex, @"${1}", &convertedString, nil];
     int convertedInt = [convertedString intValue];
     if((convertedString == nil) || (convertedInt != 12345)) {
       NSLog(@"Converted string not expected value of != nil");
       NSLog(@"Converted int not expected value of 12345, is %d", convertedInt);
-      if(garbageCollectionEnabled == NO) { [loopPool release]; }
+      if(garbageCollectorEnabled == NO) { [loopPool release]; }
       break;
     }
-    if(garbageCollectionEnabled == NO) { [loopPool release]; }
+    if(garbageCollectorEnabled == NO) { [loopPool release]; }
   }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -536,15 +547,15 @@ exitNow:
   
   for(x = 0; x < iterations; x++) {
     NSAutoreleasePool *loopPool = NULL;
-    if(garbageCollectionEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
+    if(garbageCollectorEnabled == NO) { loopPool = [[NSAutoreleasePool alloc] init]; }
     NSNumber *convertedNumber = nil;
     [subjectString getCapturesWithRegexAndReferences:regex, @"${1:@n}", &convertedNumber, nil];
     if(convertedNumber == nil) {
       NSLog(@"Converted number not expected value of != nil");
-      if(garbageCollectionEnabled == NO) { [loopPool release]; }
+      if(garbageCollectorEnabled == NO) { [loopPool release]; }
       break;
     }
-    if(garbageCollectionEnabled == NO) { [loopPool release]; }
+    if(garbageCollectorEnabled == NO) { [loopPool release]; }
   }
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -662,6 +673,5 @@ exitNow:
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
   [timingResultsArray addObject:[NSString stringWithFormat:@"%-45.45s | CPU: %@  %u iterations, per: U %9.5fus, S %9.5fus, U+S %9.5fus", [NSStringFromSelector(_cmd) UTF8String], [NSDate stringFromCPUTime:elapsedTime], x, ((elapsedTime.userCPUTime / (double)x)), ((elapsedTime.systemCPUTime / (double)x)), ((elapsedTime.CPUTime / (double)x))]];
 }
-
 
 @end

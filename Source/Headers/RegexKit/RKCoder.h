@@ -1,8 +1,9 @@
 //
 //  RKCoder.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
-// NOT in RegexKit.framework/Headers
+//  PRIVATE HEADER -- NOT in RegexKit.framework/Headers
 //
 
 /*
@@ -35,7 +36,14 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
+*/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef _REGEXKIT_RKCODER_H_
+#define _REGEXKIT_RKCODER_H_ 1
 
 #import <Foundation/Foundation.h>
 #import <RegexKit/RegexKitDefines.h>
@@ -44,11 +52,12 @@
 #import <RegexKit/RKUtility.h>
 #import <RegexKit/RegexKitPrivate.h>
 
-#ifndef _RECODER_H_
-#define _RECODER_H_ 1
-
 NSDictionary *RKRegexCoderDifferencesDictionary(id self, const SEL _cmd, NSCoder * const coder, id codedRegexString, const RKCompileOption codedCompileOption) RK_ATTRIBUTES(nonnull(1, 2, 3, 4), used, visibility("hidden"));
 id RKRegexInitWithCoder(id self, const SEL _cmd, NSCoder * const coder)     RK_ATTRIBUTES(nonnull(1, 2, 3), used, visibility("hidden"));
 void RKRegexEncodeWithCoder(id self, const SEL _cmd, NSCoder * const coder) RK_ATTRIBUTES(nonnull(1, 2, 3), used, visibility("hidden"));
 
-#endif // _RECODER_H_
+#endif // _REGEXKIT_RKCODER_H_
+
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

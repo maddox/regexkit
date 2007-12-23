@@ -1,6 +1,7 @@
 //
 //  NSDictionary.m
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -63,10 +64,10 @@ static id RKDoDictionaryAction(id self, SEL _cmd, id matchAgainstDictionary, id 
   
   NSCParameterAssert(!((aKeyRegex == NULL) && (aObjectRegex == NULL)));
   
-  if(RK_EXPECTED(self == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"self == NULL.") userInfo:NULL] raise]; }
-  if(RK_EXPECTED(_cmd == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"_cmd == NULL.") userInfo:NULL] raise]; }
-  if(RK_EXPECTED(matchAgainstDictionary == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"matchAgainstDictionary == NULL.") userInfo:NULL] raise]; }
-  if(RK_EXPECTED(performAction > RKDictionaryActionDictionaryMaxAction, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"Unknown performAction = %lu.", (unsigned long)performAction) userInfo:NULL] raise]; }
+  if(RK_EXPECTED(self == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"self == NULL."] raise]; }
+  if(RK_EXPECTED(_cmd == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"_cmd == NULL."] raise]; }
+  if(RK_EXPECTED(matchAgainstDictionary == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"matchAgainstDictionary == NULL."] raise]; }
+  if(RK_EXPECTED(performAction > RKDictionaryActionDictionaryMaxAction, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"Unknown performAction = %lu.", (unsigned long)performAction] raise]; }
   
   if((RK_EXPECTED(self == matchAgainstDictionary, 0)) && (performAction == RKDictionaryActionAddMatches)) { goto exitNow; } // Fast path bypass on unusual case.
 
@@ -208,13 +209,13 @@ exitNow:
 
 - (void)addEntriesFromDictionary:(id)otherDictionary withKeysMatchingRegex:(id)aRegex
 {
-  if(RK_EXPECTED(otherDictionary == NULL, 0)) { [[NSException exceptionWithName:NSInvalidArgumentException reason:RKPrettyObjectMethodString(@"otherDictionary == NULL.") userInfo:NULL] raise]; }
+  if(RK_EXPECTED(otherDictionary == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"otherDictionary == NULL."] raise]; }
   RKDoDictionaryAction(self, _cmd, otherDictionary, aRegex, NULL, RKDictionaryActionAddMatches, NO);
 }
 
 - (void)addEntriesFromDictionary:(id)otherDictionary withObjectsMatchingRegex:(id)aRegex
 {
-  if(RK_EXPECTED(otherDictionary == NULL, 0)) { [[NSException exceptionWithName:NSInvalidArgumentException reason:RKPrettyObjectMethodString(@"otherDictionary == NULL.") userInfo:NULL] raise]; }
+  if(RK_EXPECTED(otherDictionary == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"otherDictionary == NULL."] raise]; }
   RKDoDictionaryAction(self, _cmd, otherDictionary, NULL, aRegex, RKDictionaryActionAddMatches, NO);
 }
 

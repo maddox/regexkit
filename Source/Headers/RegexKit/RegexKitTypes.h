@@ -1,6 +1,7 @@
 //
 //  RegexKitTypes.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -33,16 +34,19 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/ 
+*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+#ifndef _REGEXKIT_REGEXKITTYPES_H_
+#define _REGEXKIT_REGEXKITTYPES_H_ 1
 
 /*!
  @header   RegexKitTypes
  @abstract Defines constants and types used by the RegexKit.framework
 */
-
-#ifndef _REGEXKITTYPES_H_
-#define _REGEXKITTYPES_H_ 1
 
 @class NSString;
 
@@ -75,6 +79,33 @@ extern NSString * const RKRegexUnsupportedException;
  @abstract   Name of the exception that occurs when a capture reference (ie, <span class="regex">$1</span>) has an error.
 */
 extern NSString * const RKRegexCaptureReferenceException;
+
+extern NSString * const RKRegexPCRELibrary;
+
+extern NSString * const RKRegexPCRELibraryErrorDomain;
+extern NSString * const RKRegexErrorDomain;
+
+extern NSString * const RKRegexEngineErrorKey;
+extern NSString * const RKRegexEngineErrorStringErrorKey;
+
+extern NSString * const RKRegexStringErrorKey;
+extern NSString * const RKRegexStringErrorRangeErrorKey;
+extern NSString * const RKAttributedRegexStringErrorKey;
+
+extern NSString * const RKAbreviatedRegexStringErrorKey;
+extern NSString * const RKAbreviatedRegexStringErrorRangeErrorKey;
+extern NSString * const RKAbreviatedAttributedRegexStringErrorKey;
+
+extern NSString * const RKCompileOptionErrorKey;
+extern NSString * const RKCompileOptionArrayErrorKey;
+extern NSString * const RKCompileOptionArrayStringErrorKey;
+
+extern NSString * const RKCompileErrorCodeErrorKey;
+extern NSString * const RKCompileErrorCodeStringErrorKey;
+
+extern NSString * const RKArrayIndexErrorKey;
+extern NSString * const RKObjectErrorKey;
+extern NSString * const RKCollectionErrorKey;
 
 /*!
  @toc DataTypes
@@ -402,4 +433,8 @@ typedef enum {
   RKBuildConfigBackslashRUnicode = 1 << 24
 } RKBuildConfig;
 
-#endif // _REGEXKITTYPES_H_
+#endif // _REGEXKIT_REGEXKITTYPES_H_
+
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

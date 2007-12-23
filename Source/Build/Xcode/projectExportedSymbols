@@ -12,6 +12,30 @@ _RKRegexSyntaxErrorException
 _RKRegexUnsupportedException
 _RKRegexCaptureReferenceException
 #
+#
+#
+_RKRegexPCRELibrary
+_RKRegexPCRELibraryErrorDomain
+_RKRegexErrorDomain
+_RKRegexEngineErrorKey
+_RKRegexEngineErrorStringErrorKey
+_RKRegexStringErrorKey
+_RKRegexStringErrorRangeErrorKey
+_RKAttributedRegexStringErrorKey
+_RKAbreviatedRegexStringErrorKey
+_RKAbreviatedRegexStringErrorRangeErrorKey
+_RKAbreviatedAttributedRegexStringErrorKey
+_RKCompileOptionErrorKey
+_RKCompileOptionArrayErrorKey
+_RKCompileOptionArrayStringErrorKey
+_RKCompileErrorCodeErrorKey
+_RKCompileErrorCodeStringErrorKey
+_RKArrayIndexErrorKey
+_RKObjectErrorKey
+_RKCollectionErrorKey
+#
+#
+#
 # Functions
 #
 _RKArrayFromBuildConfig
@@ -25,6 +49,7 @@ _RKConvertUTF16ToUTF8RangeForString
 #
 # Objective C
 #
+.objc_class_name_RKSetList
 .objc_class_name_RKRegex
 .objc_class_name_RKCache
 .objc_class_name_RKEnumerator

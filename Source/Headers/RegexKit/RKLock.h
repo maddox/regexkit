@@ -1,8 +1,9 @@
 //
 //  RKLock.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
-// NOT in RegexKit.framework/Headers
+//  PRIVATE HEADER -- NOT in RegexKit.framework/Headers
 //
 
 /*
@@ -35,7 +36,14 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
+*/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef _REGEXKIT_RKLOCK_H_
+#define _REGEXKIT_RKLOCK_H_ 1
 
 #import <Foundation/Foundation.h>
 #import <RegexKit/RegexKitPrivate.h>
@@ -52,6 +60,8 @@
   BOOL            debuggingEnabled;
 }
 
++ (void)setMultithreaded:(const BOOL)enable;
+
 - (BOOL)lock;
 - (void)unlock;
 
@@ -65,16 +75,31 @@
 BOOL RKFastLock(  RKLock * const aLock) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
 void RKFastUnlock(RKLock * const aLock) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
 
+enum {
+  RKLockDidNotLock                     = -1,
+  RKLockForReading                     = 0,
+  RKLockForWriting                     = 1,
+  RKLockTryForReading                  = 2,
+  RKLockTryForWriting                  = 3,
+  RKLockTryForWritingThenForReading    = 4,
+  RKLockTryForWritingThenTryForReading = 5
+};
+
+typedef RKInteger RKReadWriteLockStrategy;
+
 @interface RKReadWriteLock : NSObject <NSLocking> {
   pthread_rwlock_t readWriteLock;
   RKUInteger       readBusyCount;
   RKUInteger       readSpinCount;
+  RKUInteger       readDowngradedFromWriteCount;
   RKUInteger       writeBusyCount;
   RKUInteger       writeSpinCount;
   RKUInteger       spuriousErrorsCount;
   RKUInteger       writeLocked:1;
   RKUInteger       debuggingEnabled:1;
 }
+
++ (void)setMultithreaded:(const BOOL)enable;
 
 - (BOOL)lock;
 - (BOOL)readLock;
@@ -84,11 +109,19 @@ void RKFastUnlock(RKLock * const aLock) RK_ATTRIBUTES(nonnull(1), used, visibili
 - (void)setDebug:(const BOOL)enable;
 - (RKUInteger)readBusyCount;
 - (RKUInteger)readSpinCount;
+- (RKUInteger)readDowngradedFromWriteCount;
 - (RKUInteger)writeBusyCount;
 - (RKUInteger)writeSpinCount;
 - (void)clearCounters;
 
 @end
 
+BOOL RKFastReadWriteLockWithStrategy(RKReadWriteLock * const self, const RKReadWriteLockStrategy lockStrategy, RKReadWriteLockStrategy *lockLevelAcquired) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
 BOOL RKFastReadWriteLock(  RKReadWriteLock * const aLock, const BOOL forWriting) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
 void RKFastReadWriteUnlock(RKReadWriteLock * const aLock)                        RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
+
+#endif // _REGEXKIT_RKLOCK_H_
+
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

@@ -1,6 +1,7 @@
 //
 //  NSString.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -33,20 +34,21 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
+*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+#ifndef _REGEXKIT_NSSTRING_H_
+#define _REGEXKIT_NSSTRING_H_ 1
 
 /*!
  @header NSString
 */
 
-#ifndef _REGEXKIT_NSSTRING_H_
-#define _REGEXKIT_NSSTRING_H_ 1
-
 #import <Foundation/Foundation.h>
-#import <RegexKit/RKRegex.h>
-#import <RegexKit/RKEnumerator.h>
-#import <RegexKit/NSObject.h>
+#import <RegexKit/RegexKit.h>
 #import <stdarg.h>
 
 /*!
@@ -54,14 +56,14 @@
  @tocgroup   Functions Unicode Character Index Conversions
  @abstract   Converts the UTF8 character index <span class="argument">range</span> for <span class="argument">string</span> to its UTF16 character index range equivalent.
  @discussion Used to convert the character index values from PCREs native UTF8 string encoding to Foundations native UTF16 encoding.
- */
+*/
 REGEXKIT_EXTERN NSRange RKConvertUTF8ToUTF16RangeForString(NSString *string, NSRange range);
 /*!
  @function  RKConvertUTF16ToUTF8RangeForString
  @tocgroup   Functions Unicode Character Index Conversions
  @abstract   Converts the UTF16 character index <span class="argument">range</span> for <span class="argument">string</span> to its UTF8 character index range equivalent.
  @discussion Used to convert the character index values from Foundations native UTF16 string encoding to PCREs native UTF8 encoding.
- */
+*/
 REGEXKIT_EXTERN NSRange RKConvertUTF16ToUTF8RangeForString(NSString *string, NSRange range);
   
 /*!
@@ -241,7 +243,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    <a href="NSString.html#OrderofFormatSpecifierArgumentSubstitutionandExpansionofCaptureSubpatternMatchReferences" class="section-link">Order of Format Specifier Argument Substitution and Expansion of Capture Subpattern Match References</a>
  @seealso    <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/Strings/Articles/FormatStrings.html#//apple_ref/doc/uid/20000943" class="section-link">Formatting String Objects</a>
  @seealso    <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/Strings/Articles/formatSpecifiers.html#//apple_ref/doc/uid/TP40004265" class="section-link">String Format Specifiers</a>
- */
+*/
 - (NSString *)stringByMatching:(id)aRegex withReferenceFormat:(NSString * const)referenceFormatString, ...;
 /*!
  @method     stringByMatching:inRange:withReferenceFormat:
@@ -252,7 +254,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    <a href="NSString.html#OrderofFormatSpecifierArgumentSubstitutionandExpansionofCaptureSubpatternMatchReferences" class="section-link">Order of Format Specifier Argument Substitution and Expansion of Capture Subpattern Match References</a>
  @seealso    <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/Strings/Articles/FormatStrings.html#//apple_ref/doc/uid/20000943" class="section-link">Formatting String Objects</a>
  @seealso    <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/Strings/Articles/formatSpecifiers.html#//apple_ref/doc/uid/TP40004265" class="section-link">String Format Specifiers</a>
- */
+*/
 - (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range withReferenceFormat:(NSString * const)referenceFormatString, ...;
 - (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range withReferenceFormat:(NSString * const)referenceFormatString arguments:(va_list)argList;
 //- (NSString *)stringByMatching:(id)aRegex fromIndex:(const RKUInteger)anIndex withReferenceFormat:(NSString * const)referenceFormatString, ...;
@@ -353,8 +355,10 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
 //- (RKUInteger)match:(id)aRegex fromIndex:(const RKUInteger)anIndex replace:(const RKUInteger)count withFormat:(NSString * const)formatString, ...;
 //- (RKUInteger)match:(id)aRegex toIndex:(const RKUInteger)anIndex replace:(const RKUInteger)count withFormat:(NSString * const)formatString, ...;
 
-
 @end
 
-
 #endif // _REGEXKIT_NSSTRING_H_
+    
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

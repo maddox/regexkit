@@ -1,8 +1,9 @@
 //
 //  RKAutoreleasedMemory.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
-// NOT in RegexKit.framework/Headers
+//  PRIVATE HEADER -- NOT in RegexKit.framework/Headers
 //
 
 /*
@@ -35,15 +36,19 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
+*/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+#ifndef _REGEXKIT_RKAUTORELEASEDMEMORY_H_
+#define _REGEXKIT_RKAUTORELEASEDMEMORY_H_ 1
 
 #import <Foundation/Foundation.h>
 #import <RegexKit/RKRegex.h>
 #import <RegexKit/RegexKitPrivate.h>
 
-#ifndef _REAUTORELEASEDMEMORY_H_
-#define _REAUTORELEASEDMEMORY_H_ 1
-  
 // defines the RKAutoreleasedMalloc macro which maps to the appropriate function
 
 #ifdef USE_AUTORELEASED_MALLOC
@@ -60,10 +65,13 @@ void *autoreleasedMalloc(const size_t length) RK_ATTRIBUTES(malloc, used, visibi
 #ifdef USE_CORE_FOUNDATION 
 #define RKAutoreleasedMalloc(x) (void *)CFDataGetMutableBytePtr((CFMutableDataRef)(RKMakeCollectableOrAutorelease(CFDataCreateMutable(NULL, (CFIndex)x))))
 #else
-#define RKAutoreleasedMalloc(x) [[NSMutableData dataWithLength:((NSUInteger))x] mutableBytes]
+#define RKAutoreleasedMalloc(x) [[NSMutableData dataWithLength:((RKUInteger))x] mutableBytes]
 #endif
 
 #endif //USE_AUTORELEASED_MALLOC
 
+#endif // _REGEXKIT_RKAUTORELEASEDMEMORY_H_
 
-#endif // _REAUTORELEASEDMEMORY_H_
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

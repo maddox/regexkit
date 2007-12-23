@@ -1,56 +1,51 @@
 //
 //  core.m
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
+
+/*
+ Copyright © 2007, John Engelhart
+ 
+ All rights reserved.
+ 
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ 
+ * Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ 
+ * Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ 
+ * Neither the name of the Zang Industries nor the names of its
+ contributors may be used to endorse or promote products derived from
+ this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 #import "core.h"
 #import <objc/objc-runtime.h>
 
-#define REPrettyObjectMethodString(stringArg, ...) ([NSString stringWithFormat:[NSString stringWithFormat:@"%p [%@ %@]: %@", self, NSStringFromClass([(id)self class]), NSStringFromSelector(_cmd), stringArg], ##__VA_ARGS__])
-
-#define RKYesOrNo(yesOrNo) ((yesOrNo == YES) ? @"Yes":@"No")
-
-void startGC(void);
-
-static int32_t gcThreadStarted = 0;
-
-#ifdef    __MACOSX_RUNTIME__
-
-void startGC(void) {
-  if(gcThreadStarted == 0) {
-    gcThreadStarted = 1;
-    if([objc_getClass("NSGarbageCollector") defaultCollector] != NULL) {
-      NSLog(@"Garbage Collection is ENABLED.  Starting background collector thread.\n");
-      
-      void (*objc_sct)(void);
-      if((objc_sct = dlsym(RTLD_DEFAULT, "objc_startCollectorThread")) != NULL) {
-        objc_sct();
-        NSLog(@"Thread started...");
-      }
-    } else { NSLog(@"Garbage Collection is DISABLED."); }
-  //} else { NSLog(@"NSGarbageCollector class does not exist, GC is disable."); }
-  }
-}
-
-#else  // __MACOSX_RUNTIME__
-
-void startGC(void) {
-  // NO-OP on GNUstep
-}
-
-#endif // __MACOSX_RUNTIME__
 
 @implementation core
 
-+ (void)setUp
-{
-  startGC();
-}
-
 + (void)tearDown
 {
-  NSLog(@"%@", REPrettyObjectMethodString(@"Cache status:\n%@", [RKRegex regexCache]));
-  NSLog(@"%@", REPrettyObjectMethodString(@"Teardown complete\n\n"));
+  NSLog(@"%@", RKPrettyObjectMethodString(@"Cache status:\n%@", [RKRegex regexCache]));
+  NSLog(@"%@", RKPrettyObjectMethodString(@"Teardown complete\n\n"));
   fprintf(stderr, "-----------------------------------------\n\n");
 }
   
@@ -189,7 +184,6 @@ void startGC(void) {
   STAssertNotNil([userInfo objectForKey:@"RKCompileErrorCodeString"], nil);
   STAssertNotNil([userInfo objectForKey:@"regexStringErrorLocation"], nil);
   STAssertNotNil([userInfo objectForKey:@"errorString"], nil);
-  
 }
 
 

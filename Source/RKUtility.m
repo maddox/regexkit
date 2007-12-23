@@ -1,6 +1,7 @@
 //
 //  RKUtility.m
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -59,7 +60,7 @@ NSString *RKStringFromNewlineOption(const int decodeNewlineOption, NSString *pre
   
   if(newlineOptionString != NULL) { newlineOptionString = [NSString stringWithFormat:@"%@%@", prefixString, newlineOptionString]; }
   
-  if((newlineOptionString == NULL) && (unknownNewline == YES)) { newlineOptionString = [NSString stringWithFormat:@"/*Unknown Newline Option: 0x%8.8x*/", (unsigned int)newlineOption]; }
+  if((newlineOptionString == NULL) && (unknownNewline == YES)) { newlineOptionString = RKLocalizedFormat(@"/*Unknown Newline Option: 0x%8.8x*/", (unsigned int)newlineOption); }
   
   return(newlineOptionString);
 }
@@ -88,7 +89,7 @@ NSArray *RKArrayFromMatchOption(const RKMatchOption decodeMatchOption) {
 
   decodedOptions ^= UINT_MAX;
   if((decodedOptions & decodeMatchOption) != 0) {
-    strings[atString] = [NSString stringWithFormat:@"/* Unknown match options remain: 0x%8.8x */", (unsigned int)(decodedOptions & decodeMatchOption)];
+    strings[atString] = RKLocalizedFormat(@"/* Unknown match options remain: 0x%8.8x */", (unsigned int)(decodedOptions & decodeMatchOption));
     atString++;
   }
   
@@ -132,7 +133,7 @@ NSArray *RKArrayFromCompileOption(const RKCompileOption decodeCompileOption) {
   
   decodedOptions ^= UINT_MAX;
   if((decodedOptions & decodeCompileOption) != 0) {
-    strings[atString] = [NSString stringWithFormat:@"/* Unknown compile options remain: 0x%8.8x */", (unsigned int)(decodedOptions & decodeCompileOption)];
+    strings[atString] = RKLocalizedFormat(@"/* Unknown compile options remain: 0x%8.8x */", (unsigned int)(decodedOptions & decodeCompileOption));
     atString++;
   }
   
@@ -163,7 +164,7 @@ NSArray *RKArrayFromBuildConfig(const RKBuildConfig decodeBuildConfig) {
 
   decodedBuildConfig ^= UINT_MAX;
   if((decodedBuildConfig & decodeBuildConfig) != 0) {
-    strings[atString] = [NSString stringWithFormat:@"/* Unknown build config options remain: 0x%8.8x */", (unsigned int)(decodedBuildConfig & decodeBuildConfig)];
+    strings[atString] = RKLocalizedFormat(@"/* Unknown build config options remain: 0x%8.8x */", (unsigned int)(decodedBuildConfig & decodeBuildConfig));
     atString++;
   }
   
@@ -234,7 +235,7 @@ NSString *RKStringFromCompileErrorCode(const RKCompileErrorCode decodeErrorCode)
     case RKCompileErrorInconsistentNewlineOptions:                  errorCodeString = @"RKCompileErrorInconsistentNewlineOptions";                  break;
     case RKCompileErrorReferenceMustBeNonZeroNumberOrBraced:        errorCodeString = @"RKCompileErrorReferenceMustBeNonZeroNumberOrBraced";        break;
     case RKCompileErrorRelativeSubpatternNumberMustNotBeZero:       errorCodeString = @"RKCompileErrorRelativeSubpatternNumberMustNotBeZero";       break;
-    default:                                                        errorCodeString = [NSString stringWithFormat:@"Unknown error code (#%d)", (int)decodeErrorCode]; break;
+    default:                                                        errorCodeString = RKLocalizedFormat(@"Unknown error code (#%d)", (int)decodeErrorCode); break;
   }
   
   return(errorCodeString);
@@ -265,7 +266,7 @@ NSString *RKStringFromMatchErrorCode(const RKMatchErrorCode decodeErrorCode) {
     case RKMatchErrorRecursionLimit:     errorCodeString = @"RKMatchErrorRecursionLimit";     break;
     case RKMatchErrorNullWorkSpaceLimit: errorCodeString = @"RKMatchErrorNullWorkSpaceLimit"; break;
     case RKMatchErrorBadNewline:         errorCodeString = @"RKMatchErrorBadNewline";         break;
-    default:                             errorCodeString = [NSString stringWithFormat:@"Unknown error code (#%d)", (int)decodeErrorCode]; break;
+    default:                             errorCodeString = RKLocalizedFormat(@"Unknown error code (#%d)", (int)decodeErrorCode); break;
   }
   
   return(errorCodeString);

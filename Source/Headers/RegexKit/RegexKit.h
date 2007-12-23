@@ -1,6 +1,7 @@
 //
 //  RegexKit.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -33,11 +34,14 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/ 
+*/
 
-
-#ifndef _REGEXKIT_H_
-#define _REGEXKIT_H_ 1
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+#ifndef _REGEXKIT_REGEXKIT_H_
+#define _REGEXKIT_REGEXKIT_H_ 1
 
 #import <RegexKit/RegexKitDefines.h>
 #import <RegexKit/RegexKitTypes.h>
@@ -75,4 +79,8 @@
 #import <RegexKit/NSString.h>
   
   
-#endif // _REGEXKIT_H_
+#endif // _REGEXKIT_REGEXKIT_H_
+    
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

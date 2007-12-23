@@ -1,6 +1,7 @@
 //
 //  RegexKitDefines.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -33,11 +34,14 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/ 
+*/
 
-
-#ifndef _REGEXKITDEFINES_H_
-#define _REGEXKITDEFINES_H_ 1
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+#ifndef _REGEXKIT_REGEXKITDEFINES_H_
+#define _REGEXKIT_REGEXKITDEFINES_H_ 1
 
 #define __REGEXKIT__
 
@@ -67,7 +71,7 @@
  @abstract Preprocessor definition for cross-platform @link NSInteger NSInteger @/link functionality.
  @discussion <p>On <span class="nobr">Mac OS X 10.5</span> this is defined to be @link NSInteger NSInteger@/link, otherwise it is defined as <span class="code">int</span>.</p>
  <p>This is done as a preprocessor macro so that it is rewritten in to the proper type for the environment for type checking.</p>
- */
+*/
 
 /*!
  @defined RKUInteger
@@ -75,28 +79,28 @@
  @abstract Preprocessor definition for cross-platform @link NSUInteger NSUInteger @/link functionality.
  @discussion <p>On <span class="nobr">Mac OS X 10.5</span> this is defined to be @link NSUInteger NSUInteger@/link, otherwise it is defined as <span class="code">unsigned int</span>.</p>
  <p>This is done as a preprocessor macro so that it is rewritten in to the proper type for the environment for type checking.</p>
- */
+*/
 
 /*!
  @defined RKIntegerMax
  @tocgroup Constants Preprocessor Macros
  @abstract Preprocessor definition for cross-platform @link NSIntegerMax NSIntegerMax @/link functionality.
  @discussion <p>On <span class="nobr">Mac OS X 10.5</span> this is defined to be @link NSIntegerMax NSIntegerMax@/link, otherwise it is defined as @link INT_MAX INT_MAX@/link.</p>
- */
+*/
 
 /*!
  @defined RKIntegerMin
  @tocgroup Constants Preprocessor Macros
  @abstract Preprocessor definition for cross-platform @link NSIntegerMin NSIntegerMin @/link functionality.
  @discussion <p>On <span class="nobr">Mac OS X 10.5</span> this is defined to be @link NSIntegerMin NSIntegerMin@/link, otherwise it is defined as @link INT_MIN INT_MIN@/link.</p>
- */
+*/
 
 /*!
  @defined RKUIntegerMax
  @tocgroup Constants Preprocessor Macros
  @abstract Preprocessor definition for cross-platform @link NSUIntegerMax NSUIntegerMax @/link functionality.
  @discussion <p>On <span class="nobr">Mac OS X 10.5</span> this is defined to be @link NSUIntegerMax NSUIntegerMax@/link, otherwise it is defined as @link UINT_MAX UINT_MAX@/link.</p>
- */
+*/
 
 #if defined(NSINTEGER_DEFINED)
 #define RKInteger     NSInteger
@@ -119,7 +123,7 @@
  @discussion <p>@link RKREGEX_STATIC_INLINE RKREGEX_STATIC_INLINE @/link is a wrapper around GCC 4+ directives to always static inline.</p>
 <p>Borrowed from <span class="nobr">Mac OS X</span> @link NSObjCRuntime.h NSObjCRuntime.h @/link @link FOUNDATION_STATIC_INLINE FOUNDATION_STATIC_INLINE @/link to be portable to @link GNUstep GNUstep@/link.</p>
 <p>Evaluates to <span class="nobr code">static __inline__</span> for compilers other than GCC 4+.</p>
- */
+*/
 
 /*!
 @defined RK_EXPECTED
@@ -142,10 +146,12 @@
 
 #if defined (__GNUC__) && (__GNUC__ >= 4)
 #define RKREGEX_STATIC_INLINE static __inline__ __attribute__((always_inline))
+#define RKREGEX_STATIC_PURE_INLINE static __inline__ __attribute__((always_inline, pure))
 #define RK_EXPECTED(cond, expect) __builtin_expect(cond, expect)
 #define RK_ATTRIBUTES(attr, ...) __attribute__((attr, ##__VA_ARGS__))
 #else
 #define RKREGEX_STATIC_INLINE static __inline__
+#define RKREGEX_STATIC_PURE_INLINE static __inline__
 #define RK_EXPECTED(cond, expect) cond
 #define RK_ATTRIBUTES(attr, ...)
 #endif
@@ -155,7 +161,7 @@
  @tocgroup Constants Preprocessor Macros
  @abstract Compile time check for functions and methods that support a varying number of arguments that must be terminated with a <span class="code">NULL</span> or <span class="code">nil</span> as the last argument.
  @discussion <p>Supported on <span class="nobr">Mac OS X 10.5</span> and later.</p>
- */
+*/
 
 #if defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5)
 #define RK_REQUIRES_NIL_TERMINATION NS_REQUIRES_NIL_TERMINATION
@@ -173,7 +179,7 @@
  @abstract Macro wrapper around <span class="code">C99</span> keywords.
  @discussion <p>@link RK_C99 RK_C99 @/link is a wrapper for <span class="code">C99</span> standard keywords that are not compatible with previous <span class="code">C</span> standards, such as <span class="code">C89</span>.</p>
 <p>This is used almost exclusively to wrap the <span class="code">C99</span> <span class="code">restrict</span> keyword.</p>
- */
+*/
 
 #if __STDC_VERSION__ >= 199901L
 #define RK_C99(keyword) keyword
@@ -193,7 +199,7 @@
 @defined RKReplaceAll
  @tocgroup Constants Constants
  @abstract Predefined <span class="argument">count</span> for use with <a href="NSString.html#ExpansionofCaptureSubpatternMatchReferencesinStrings" class="section-link">Search and Replace</a> methods to specify all matches are to be replaced.
- */
+*/
 #define RKReplaceAll RKIntegerMax
 
 // Used to size/check buffers when calling private RKRegex getRanges:count:withCharacters:length:inRange:options:
@@ -229,7 +235,7 @@
  @discussion <p>This preprocessor define enables support for <span class="nobr">Garbage Collection</span> on <span class="nobr">Mac OS X 10.5 (Leopard)</span>.  Traditional <span class="nobr">@link retain retain @/link / @link release release @/link</span> functionality remains allowing the framework to be used in either <span class="nobr">Garbage Collected</span> enabled applications or reference counting applications.  The framework dynamically picks which mode to use at run-time base on whether or not the <span class="nobr">Garbage Collection</span> system is active.</p>
  @seealso <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/GarbageCollection/index.html" class="section-link" target="_top">Garbage Collection Programming Guide</a>
  @seealso <a href="http://developer.apple.com/documentation/Cocoa/Reference/NSGarbageCollector_class/index.html" class="section-link" target="_top">NSGarbageCollector Class Reference</a>
- */
+*/
 
 #if defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5)
 #define ENABLE_MACOSX_GARBAGE_COLLECTION
@@ -251,7 +257,7 @@
  @discussion <p>This preprocessor define enables support for RegexKit specific DTrace probe points.</p>
  @seealso <a href="http://developer.apple.com/documentation/DeveloperTools/Conceptual/InstrumentsUserGuide/index.html" class="section-link" target="_top">Instruments User Guide</a>
  @seealso <a href="http://docs.sun.com/app/docs/doc/817-6223" class="section-link" target="_top">Solaris Dynamic Tracing Guide</a> <a href="http://dlc.sun.com/pdf/817-6223/817-6223.pdf" class="section-link" target="_top">(as .PDF)</a>
- */
+*/
 
 #if (defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5))
 #define ENABLE_DTRACE_INSTRUMENTATION
@@ -265,4 +271,8 @@
 
 /*************** END Feature and config knobs ***************/
 
-#endif //_REGEXKITDEFINES_H_
+#endif //_REGEXKIT_REGEXKITDEFINES_H_
+    
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

@@ -1,6 +1,7 @@
 //
 //  RKCache.m
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -64,7 +65,7 @@ static int32_t                 RKCacheLoadInitialized = 0;
 // NSHashMap object that uses NSPointerFunctionsZeroingWeakMemory, or in other words the GC system will
 // automatically remove a cached RKRegex object when it falls out of scope and is no longer reachable.
 // This means the cache is automatically trimmed to the working set.  The new class NSPointerFunctions
-// are used to perform the typicaly isEqual/Hash comparision primitives.  Since we use the computer
+// are used to perform the typicaly isEqual/Hash comparision primitives.  Since we use the computed
 // NSUInteger hash for a given regex for the map key, we don't need to store objects per se, so our
 // overhead is very low.  Unfortunatly, a pre-fabbed NSUInteger key based NSHashMap is not provided,
 // unlike it's predecesor (which we use if GC is not enabled).
@@ -121,7 +122,7 @@ RKUInteger  intPointerFunctionsSize(const void *item RK_ATTRIBUTES(unused)) { re
 - (id)init
 {
   RKAtomicMemoryBarrier(); // Extra cautious
-  if(RK_EXPECTED(cacheInitialized == 1, 0)) { [[NSException exceptionWithName:NSInvalidArgumentException reason:RKPrettyObjectMethodString(@"This cache is already initialized.") userInfo:NULL] raise]; }
+  if(RK_EXPECTED(cacheInitialized == 1, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"This cache is already initialized."] raise]; }
   
   if(RK_EXPECTED((self = [super init]) == NULL, 0)) { goto errorExit; }
 
@@ -159,7 +160,7 @@ const char *cacheUTF8String(RKCache *self) {
   if(RK_EXPECTED(self == NULL, 0)) { return("self == NULL"); }
   if(RK_EXPECTED(self->cacheDescriptionUTF8String == NULL, 0)) {
     RKStringBuffer cacheDescriptionStringBuffer = RKStringBufferWithString(self->cacheDescriptionString);
-    if(RK_EXPECTED((self->cacheDescriptionUTF8String = RK_MALLOC_NOT_SCANNED(cacheDescriptionStringBuffer.length + 1)) == NULL, 0)) { return("Unable to malloc memory for UTF8 string."); }
+    if(RK_EXPECTED((self->cacheDescriptionUTF8String = RKMallocNotScanned(cacheDescriptionStringBuffer.length + 1)) == NULL, 0)) { return("Unable to malloc memory for UTF8 string."); }
     memcpy(self->cacheDescriptionUTF8String, cacheDescriptionStringBuffer.characters, cacheDescriptionStringBuffer.length + 1);
   }
   
@@ -168,10 +169,10 @@ const char *cacheUTF8String(RKCache *self) {
 
 - (void)dealloc
 {
-  if(cacheRWLock)                { RKFastReadWriteLock(cacheRWLock, YES); RKRelease(cacheRWLock);    cacheRWLock            = NULL; }
-  if(cacheMapTable)              { if(RKRegexGarbageCollect == 0) { NSFreeMapTable(cacheMapTable); } cacheMapTable          = NULL; }
-  if(cacheDescriptionString)     { RKRelease(cacheDescriptionString);                                cacheDescriptionString = NULL; }
-  if(cacheDescriptionUTF8String) { RK_FREE_AND_NULL(cacheDescriptionUTF8String);                                                    }
+  if(cacheRWLock)                { RKFastReadWriteLockWithStrategy(cacheRWLock, RKLockForWriting, NULL); RKRelease(cacheRWLock); cacheRWLock            = NULL; }
+  if(cacheMapTable)              { if(RKRegexGarbageCollect == 0) { NSFreeMapTable(cacheMapTable); }                          cacheMapTable          = NULL; }
+  if(cacheDescriptionString)     { RKRelease(cacheDescriptionString);                                                         cacheDescriptionString = NULL; }
+  if(cacheDescriptionUTF8String) { RKFreeAndNULL(cacheDescriptionUTF8String);                                                                             }
 
   [super dealloc];
 }
@@ -180,7 +181,7 @@ const char *cacheUTF8String(RKCache *self) {
 - (void)finalize
 {
   if(cacheMapTable)              { if(RKRegexGarbageCollect == 0) { NSFreeMapTable(cacheMapTable); } cacheMapTable          = NULL; }
-  if(cacheDescriptionUTF8String) { RK_FREE_AND_NULL(cacheDescriptionUTF8String);                                                    }
+  if(cacheDescriptionUTF8String) { RKFreeAndNULL(cacheDescriptionUTF8String);                                                    }
   
   [super finalize];
 }
@@ -207,7 +208,7 @@ const char *cacheUTF8String(RKCache *self) {
 #endif
   { if(RK_EXPECTED((newMapTable = NSCreateMapTable(*cacheMapKeyCallBacks, NSObjectMapValueCallBacks, 256)) == NULL, 0)) { goto exitNow; } }
   
-  if(RK_EXPECTED(RKFastReadWriteLock(cacheRWLock, YES) == NO, 0)) { goto exitNow; } // Did not acquire lock for some reason
+  if(RK_EXPECTED(RKFastReadWriteLockWithStrategy(cacheRWLock, RKLockForWriting, NULL) == NO, 0)) { goto exitNow; } // Did not acquire lock for some reason
   // vvvvvvvvvvvv BEGIN LOCK CRITICAL PATH vvvvvvvvvvvv
   if(RK_EXPECTED((cacheMapTable != NULL), 1)) { oldMapTable = cacheMapTable; } 
   cacheMapTable = newMapTable;
@@ -246,7 +247,7 @@ exitNow:
 
 - (NSString *)description
 {
-  return([NSString stringWithFormat:@"<%@: %p>%s%@%s %@", [self className], self, (cacheDescriptionString != NULL) ? " \"":"", (cacheDescriptionString != NULL) ? cacheDescriptionString : (NSString *)@"", (cacheDescriptionString != NULL) ? "\"":"", [self status]]);
+  return([NSString stringWithFormat:@"<%@: %p>%s%@%s %@", [self className], self, (cacheDescriptionString != NULL) ? " \"":"", (cacheDescriptionString != NULL) ? cacheDescriptionString : @"", (cacheDescriptionString != NULL) ? "\"":"", [self status]]);
 }
 
 - (id)objectForHash:(const RKUInteger)objectHash description:(NSString * const)descriptionString
@@ -264,12 +265,12 @@ id RKFastCacheLookup(RKCache * const self, const SEL _cmd RK_ATTRIBUTES(unused),
 
   BOOL endCacheLookupProbeEnabled = RK_PROBE_ENABLED(ENDCACHELOOKUP);
   RK_STRONG_REF id returnObject = NULL;
-  char objectBuffer[4096];
+  char objectBuffer[1024];
   RKUInteger currentCount = 0;
   
-  RK_PROBE(BEGINCACHELOOKUP, self, (char *)cacheUTF8String(self), objectHash, RKGetUTF8String(objectString, objectBuffer, 4092), shouldAutorelease, self->cacheIsEnabled, self->cacheHits, self->cacheMisses);
+  RK_PROBE(BEGINCACHELOOKUP, self, (char *)cacheUTF8String(self), objectHash, RKGetUTF8String(objectString, objectBuffer, 1020), shouldAutorelease, self->cacheIsEnabled, self->cacheHits, self->cacheMisses);
   
-  if(RK_EXPECTED(RKFastReadWriteLock(self->cacheRWLock, NO) == NO, 0)) { goto exitNow; } // Did not acquire lock for some reason
+  if(RK_EXPECTED(RKFastReadWriteLockWithStrategy(self->cacheRWLock, RKLockForReading, NULL) == NO, 0)) { goto exitNow; } // Did not acquire lock for some reason
   // vvvvvvvvvvvv BEGIN LOCK CRITICAL PATH vvvvvvvvvvvv
   
   if(RK_EXPECTED((self->cacheIsEnabled == YES), 1) && RK_EXPECTED((self->cacheLookupIsEnabled == YES), 1)) {
@@ -297,7 +298,7 @@ id RKFastCacheLookup(RKCache * const self, const SEL _cmd RK_ATTRIBUTES(unused),
 exitNow:
   if(returnObject != NULL) { self->cacheHits++; if(shouldAutorelease == YES) { RKAutorelease(returnObject); } } else { self->cacheMisses++; }
 
-  RK_PROBE_CONDITIONAL(ENDCACHELOOKUP, endCacheLookupProbeEnabled, self, (char *)cacheUTF8String(self), objectHash, RKGetUTF8String(objectString, objectBuffer, 4092), shouldAutorelease, self->cacheIsEnabled, self->cacheHits, self->cacheMisses, currentCount, returnObject);
+  RK_PROBE_CONDITIONAL(ENDCACHELOOKUP, endCacheLookupProbeEnabled, self, (char *)cacheUTF8String(self), objectHash, RKGetUTF8String(objectString, objectBuffer, 1020), shouldAutorelease, self->cacheIsEnabled, self->cacheHits, self->cacheMisses, currentCount, returnObject);
   
   return(returnObject);
 }
@@ -318,7 +319,7 @@ exitNow:
   
   RK_PROBE(BEGINCACHEADD, self, (char *)cacheUTF8String(self), object, objectHash, (char *)regexUTF8String(object), cacheIsEnabled);
   
-  if(RK_EXPECTED(RKFastReadWriteLock(cacheRWLock, YES) == NO, 0)) { goto exitNow; } // Did not acquire lock for some reason
+  if(RK_EXPECTED(RKFastReadWriteLockWithStrategy(cacheRWLock, RKLockForWriting, NULL) == NO, 0)) { goto exitNow; } // Did not acquire lock for some reason
   // vvvvvvvvvvvv BEGIN LOCK CRITICAL PATH vvvvvvvvvvvv
   
   if(RK_EXPECTED((cacheAddingIsEnabled == YES), 1) && RK_EXPECTED((cacheIsEnabled == YES), 1)) {
@@ -359,7 +360,7 @@ exitNow:
   
   RK_PROBE(BEGINCACHEREMOVE, self, (char *)cacheUTF8String(self), objectHash, cacheIsEnabled);
   
-  if(RK_EXPECTED(RKFastReadWriteLock(cacheRWLock, YES) == NO, 0)) { goto exitNow; } // Did not acquire lock for some reason
+  if(RK_EXPECTED(RKFastReadWriteLockWithStrategy(cacheRWLock, RKLockForWriting, NULL) == NO, 0)) { goto exitNow; } // Did not acquire lock for some reason
   // vvvvvvvvvvvv BEGIN LOCK CRITICAL PATH vvvvvvvvvvvv
   
   if(RK_EXPECTED(cacheMapTable != NULL, 1)) {
@@ -395,7 +396,7 @@ exitNow:
 #ifdef ENABLE_MACOSX_GARBAGE_COLLECTION
   if(RK_EXPECTED(RKRegexGarbageCollect == 1, 0)) {
     NSMutableSet *currentCacheSet = [NSMutableSet set];
-    if(RK_EXPECTED(RKFastReadWriteLock(cacheRWLock, NO) == NO, 0)) { return(NULL); } // Did not acquire lock for some reason
+    if(RK_EXPECTED(RKFastReadWriteLockWithStrategy(cacheRWLock, RKLockForReading, NULL) == NO, 0)) { return(NULL); } // Did not acquire lock for some reason
     id cachedObject = NULL;
     NSEnumerator *cacheMapTableEnumerator = [cacheMapTable objectEnumerator];
     while(RK_EXPECTED((cachedObject = [cacheMapTableEnumerator nextObject]) != NULL, 1)) { [currentCacheSet addObject:cachedObject]; }
@@ -412,7 +413,7 @@ exitNow:
   void *tempKey = NULL;
   
   if(RK_EXPECTED(cacheMapTable == NULL,                                 0)) { return(NULL); } // Fast exit case.  Does not not an atomic compare on NULL.
-  if(RK_EXPECTED(RKFastReadWriteLock(cacheRWLock, NO) == NO,            0)) { return(NULL); } // Did not acquire lock for some reason
+  if(RK_EXPECTED(RKFastReadWriteLockWithStrategy(cacheRWLock, RKLockForReading, NULL) == NO,            0)) { return(NULL); } // Did not acquire lock for some reason
   // vvvvvvvvvvvv BEGIN LOCK CRITICAL PATH vvvvvvvvvvvv
   
   // On an error condition we goto unlockExitNow. Any resource acquisition inside here needs to ensure that the resources in question will remain valid once the lock is released.
@@ -458,7 +459,7 @@ unlockExitNow:
   RKUInteger returnCount = 0;
   
   if(cacheMapTable == NULL) { return(0); }
-  if(RKFastReadWriteLock(cacheRWLock, NO) == NO) { return(0); } // Did not acquire lock for some reason
+  if(RKFastReadWriteLockWithStrategy(cacheRWLock, RKLockForReading, NULL) == NO) { return(0); } // Did not acquire lock for some reason
   // vvvvvvvvvvvv BEGIN LOCK CRITICAL PATH vvvvvvvvvvvv
 
 #ifdef ENABLE_MACOSX_GARBAGE_COLLECTION

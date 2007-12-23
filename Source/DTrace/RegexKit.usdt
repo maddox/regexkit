@@ -131,9 +131,67 @@
       <field index="3" name="Hash"                     code="arg1"            type="%x" width="15" truncation="middle"/>
       <field index="4" name="Description"              code="copyinstr(arg2)" type="%s" width="25" truncation="right"/>
       <field index="5" name="Size"                     code="arg3"            type="%d" width="15" truncation="left"/>
-      <field index="6" name="generalStartEnd"          code="arg4"            type="%d" width="10" truncation="left"/>
-      <field index="7" name="Severity"                 code="arg5"            type="%d" width="10" truncation="left"/>
+      <field index="6" name="Severity"                 code="arg4"            type="%d" width="10" truncation="left"/>
+      <field index="7" name="generalStartEnd"          code="arg5"            type="%d" width="10" truncation="left"/>
       <field index="8" name="Note"                     code="copyinstr(arg6)" type="%s" width="40" truncation="right"/>
+    </probeName>
+    <probeName name="BeginLock" index="13">
+      <field index="0" name="RKLock Object"            code="arg0"            type="%x" width="15" truncation="right"/>
+      <field index="1" name="Acquire Lock Strategy"    code="(int)arg1"       type="%d" width="10" truncation="right"/>
+      <field index="2" name="Multithreading Enabled"   code="arg2"            type="%d" width="10" truncation="right"/>
+    </probeName>
+    <probeName name="EndLock" index="14">
+      <field index="0" name="RKLock Object"            code="arg0"            type="%x" width="15" truncation="right"/>
+      <field index="1" name="Acquired Lock Type"       code="(int)arg1"       type="%d" width="10" truncation="right"/>
+      <field index="2" name="Multithreading Enabled"   code="arg2"            type="%d" width="10" truncation="right"/>
+      <field index="3" name="Lock Acquired"            code="arg3"            type="%d" width="10" truncation="right"/>
+      <field index="3" name="Spin Count"               code="arg4"            type="%d" width="10" truncation="right"/>
+    </probeName>
+    <probeName name="Unlock" index="15">
+      <field index="0" name="RKLock Object"            code="arg0"            type="%x" width="15" truncation="right"/>
+      <field index="1" name="Acquire Lock Strategy"    code="(int)arg1"       type="%d" width="10" truncation="right"/>
+      <field index="2" name="Multithreading Enabled"   code="arg2"            type="%d" width="10" truncation="right"/>
+    </probeName>
+    <probeName name="BeginSortedRegexSort" index="16">
+      <field index="0" name="Sorted Regex Object"      code="arg0"            type="%x" width="15" truncation="right"/>
+      <field index="1" name="Hash"                     code="arg1"            type="%x" width="15" truncation="right"/>
+      <field index="2" name="Collection Count"         code="arg2"            type="%d" width="10" truncation="right"/>
+    </probeName>
+    <probeName name="EndSortedRegexSort" index="17">
+      <field index="0" name="Sorted Regex Object"      code="arg0"            type="%x" width="15" truncation="right"/>
+      <field index="1" name="Hash"                     code="arg1"            type="%x" width="15" truncation="right"/>
+      <field index="2" name="Collection Count"         code="arg2"            type="%d" width="10" truncation="right"/>
+      <field index="3" name="Successfully sorted"      code="arg3"            type="%d" width="10" truncation="right"/>
+    </probeName>
+    <probeName name="BeginSortedRegexMatch" index="18">
+      <field index="0" name="Sorted Regex Object"      code="arg0"            type="%x" width="15" truncation="right"/>
+      <field index="1" name="Hash"                     code="arg1"            type="%x" width="15" truncation="right"/>
+      <field index="2" name="Collection Count"         code="arg2"            type="%d" width="10" truncation="right"/>
+      <field index="3" name="Match Target"             code="copyinstr(arg3)" type="%s" width="25" truncation="right"/>
+    </probeName>
+    <probeName name="EndSortedRegexMatch" index="19">
+      <field index="0" name="Sorted Regex Object"      code="arg0"            type="%x" width="15" truncation="right"/>
+      <field index="1" name="Hash"                     code="arg1"            type="%x" width="15" truncation="right"/>
+      <field index="2" name="RKRegex Object"           code="arg2"            type="%x" width="15" truncation="right"/>
+      <field index="3" name="RKRegex Hash"             code="arg3"            type="%x" width="15" truncation="right"/>
+      <field index="4" name="Regex"                    code="copyinstr(arg4)" type="%s" width="20" truncation="middle"/>
+      <field index="5" name="Matches tried"            code="arg5"            type="%d" width="10" truncation="right"/>
+      <field index="6" name="Collection Count"         code="arg6"            type="%d" width="10" truncation="right"/>
+      <field index="7" name="Hit count for match"      code="arg7"            type="%d" width="10" truncation="right"/>
+      <field index="8" name="Index in Collection"      code="arg8"            type="%d" width="10" truncation="right"/>
+      <field index="9" name="Resort Required"          code="arg9"            type="%d" width="10" truncation="right"/>
+    </probeName>
+    <probeName name="SortedRegexCompare" index="20">
+      <field index="0" name="Sorted Regex Object"      code="arg0"            type="%x" width="15" truncation="right"/>
+      <field index="1" name="Hash"                     code="arg1"            type="%x" width="15" truncation="right"/>
+      <field index="2" name="RKRegex Object"           code="arg2"            type="%x" width="15" truncation="right"/>
+      <field index="3" name="RKRegex Hash"             code="arg3"            type="%x" width="15" truncation="right"/>
+      <field index="4" name="Regex"                    code="copyinstr(arg4)" type="%s" width="20" truncation="middle"/>
+      <field index="5" name="Matches tried"            code="arg5"            type="%d" width="10" truncation="right"/>
+      <field index="6" name="Collection Count"         code="arg6"            type="%d" width="10" truncation="right"/>
+      <field index="7" name="Hit count for match"      code="arg7"            type="%d" width="10" truncation="right"/>
+      <field index="8" name="Index in Collection"      code="arg8"            type="%d" width="10" truncation="right"/>
+      <field index="9" name="Match Result"             code="arg9"            type="%d" width="10" truncation="right"/>
     </probeName>
   </extension>
 </plugin>

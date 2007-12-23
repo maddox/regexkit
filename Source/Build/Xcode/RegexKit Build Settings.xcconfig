@@ -21,7 +21,7 @@ REGEXKIT_XCODE_CONFIG_FILE = ${BUILD_SOURCE_DIR}/Xcode/RegexKit\ Project.xcconfi
 // Project version information
 
 PROJECT_VERSION_MAJOR           = 0
-PROJECT_VERSION_MINOR           = 5
+PROJECT_VERSION_MINOR           = 6
 PROJECT_VERSION_POINT           = 0
 
 PROJECT_CURRENT_VERSION         = ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_POINT}
@@ -36,6 +36,16 @@ PARALLEL_BUILD                  = YES
 SDKROOT_1040                    = /Developer/SDKs/MacOSX10.4u.sdk
 SDKROOT_1050                    = /Developer/SDKs/MacOSX10.5.sdk
 SDKROOT                         = ${SDKROOT_${MAC_OS_X_VERSION_MAJOR}}
+
+// Compiler flags dependent on the current Mac OS X release
+
+XCODE_CFLAGS_1040               = 
+XCODE_CFLAGS_1050               = -fstack-protector-all
+XCODE_CFLAGS_FOR_OS             = ${XCODE_CFLAGS_${MAC_OS_X_VERSION_MAJOR}}
+
+PCRE_CFLAGS_1040                = 
+PCRE_CFLAGS_1050                = -fstack-protector-all
+PCRE_CFLAGS_FOR_OS              = ${PCRE_CFLAGS_${MAC_OS_X_VERSION_MAJOR}}
 
 // The architectures we build for for the current Mac OS X release
 
@@ -79,6 +89,7 @@ GCC_ENABLE_SYMBOL_SEPARATION            = NO
 
 GCC_OPTIMIZATION_LEVEL                  = z
 GCC_C_LANGUAGE_STANDARD                 = gnu99
+OTHER_CFLAGS                            = ${XCODE_CFLAGS_FOR_OS}
 
 GCC_ENABLE_CPP_EXCEPTIONS               = NO
 GCC_ENABLE_CPP_RTTI                     = NO
@@ -187,10 +198,12 @@ PCRE_UNTAR_COMMAND = ${TAR} xjf '${PCRE_TARBALL_FILE_PATH}'
 // Makefile.pcre also alters the final value of these settings.  It will attempt to synthesize the appropriate flags from the various Xcode
 // settings, such as GCC_OPTIMIZATION_LEVEL.
 
-PCRE_CONF_OPTIONS = --enable-utf8 --enable-unicode-properties --disable-cpp --disable-shared
+PCRE_CONF_OPTIONS        = --enable-utf8 --enable-unicode-properties --disable-cpp --disable-shared
 
-//PCRE_CONF_CFLAGS  =   // When these are set, they are passed to PCRE's ./configure script as you would expect
-//PCRE_CONF_LDFLAGS = 
+// PCRE_CONF_CFLAGS      =                                                     // When these are set, they are passed to PCRE's ./configure script as you would expect
+// PCRE_CONF_LDFLAGS     = 
+
+PCRE_CONF_CFLAGS         = ${PCRE_CFLAGS_FOR_OS}
 
 // Locations of important files.
 

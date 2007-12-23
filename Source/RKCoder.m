@@ -1,6 +1,7 @@
 //
 //  RKCoder.m
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -96,7 +97,7 @@ id RKRegexInitWithCoder(id self, const SEL _cmd RK_ATTRIBUTES(unused), NSCoder *
     decodedRegex = [self initWithRegexString:codedRegexString options:codedCompileOption];
   NS_HANDLER
     NSDictionary *extraInfoDictionary = RKRegexCoderDifferencesDictionary(self, _cmd, coder, codedRegexString, codedCompileOption);
-    [[NSException exceptionWithName:NSInvalidUnarchiveOperationException reason:[NSString stringWithFormat:@"Exception during initialization:\n%@%@", [localException reason], [extraInfoDictionary objectForKey:@"extraInfoString"]] userInfo:[NSDictionary dictionaryWithObject:localException forKey:@"exception"]] raise];
+    [[NSException rkException:NSInvalidUnarchiveOperationException userInfo:[NSDictionary dictionaryWithObject:localException forKey:@"exception"] localizeReason:@"Exception during initialization:\n%@%@", [localException reason], [extraInfoDictionary objectForKey:@"extraInfoString"]] raise];
   NS_ENDHANDLER
   
 #else // not macro exceptions, compiler -fobjc-exceptions
@@ -104,12 +105,12 @@ id RKRegexInitWithCoder(id self, const SEL _cmd RK_ATTRIBUTES(unused), NSCoder *
  @try { decodedRegex = [self initWithRegexString:codedRegexString options:codedCompileOption]; }
  @catch (NSException *localException) {
     NSDictionary *extraInfoDictionary = RKRegexCoderDifferencesDictionary(self, _cmd, coder, codedRegexString, codedCompileOption);
-    [[NSException exceptionWithName:NSInvalidUnarchiveOperationException reason:[NSString stringWithFormat:@"Exception during initialization:\n%@%@", [localException reason], [extraInfoDictionary objectForKey:@"extraInfoString"]] userInfo:[NSDictionary dictionaryWithObject:localException forKey:@"exception"]] raise];
+    [[NSException rkException:NSInvalidUnarchiveOperationException userInfo:[NSDictionary dictionaryWithObject:localException forKey:@"exception"] localizeReason:@"Exception during initialization:\n%@%@", [localException reason], [extraInfoDictionary objectForKey:@"extraInfoString"]] raise];
   }
   
 #endif //USE_MACRO_EXCEPTIONS
   
-  if(decodedRegex == NULL) { [[NSException exceptionWithName:NSInvalidUnarchiveOperationException reason:@"Failed to recreate regular expression." userInfo:[NSDictionary dictionaryWithObjectsAndKeys:(codedRegexString == NULL) ? (id)[NSNull null]:codedRegexString, @"regexString", [NSNumber numberWithInt:codedCompileOption], @"compileOption", NULL]] raise]; }
+  if(decodedRegex == NULL) { [[NSException rkException:NSInvalidUnarchiveOperationException userInfo:[NSDictionary dictionaryWithObjectsAndKeys:(codedRegexString == NULL) ? (id)[NSNull null]:codedRegexString, @"regexString", [NSNumber numberWithInt:codedCompileOption], @"compileOption", NULL] localizeReason:@"Failed to recreate regular expression."] raise]; }
   
   return(decodedRegex);
 }

@@ -1,6 +1,7 @@
 //
 //  NSDictionary.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -33,18 +34,21 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
+*/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+#ifndef _REGEXKIT_NSDICTIONARY_H_
+#define _REGEXKIT_NSDICTIONARY_H_ 1
 
 /*!
  @header NSDictionary
 */
 
-#ifndef _REGEXKIT_NSDICTIONARY_H_
-#define _REGEXKIT_NSDICTIONARY_H_ 1
-
 #import <Foundation/Foundation.h>
-#import <RegexKit/RKRegex.h>
-#import <RegexKit/NSObject.h>
+#import <RegexKit/RegexKit.h>
 
 /*!
  @category    NSDictionary (RegexKitAdditions)
@@ -110,7 +114,7 @@
  @seealso    @link keysMatchingRegex: - keysMatchingRegex: @/link
  @seealso    @link objectsForKeysMatchingRegex: - objectsForKeysMatchingRegex: @/link
  @seealso    @link objectsMatchingRegex: - objectsMatchingRegex: @/link
- */
+*/
 - (NSArray *)keysForObjectsMatchingRegex:(id)aRegex;
 
 /*!
@@ -121,7 +125,7 @@
  @seealso    @link keysForObjectsMatchingRegex: - keysForObjectsMatchingRegex: @/link
  @seealso    @link keysMatchingRegex: - keysMatchingRegex: @/link
  @seealso    @link objectsMatchingRegex: - objectsMatchingRegex: @/link
- */
+*/
 - (NSArray *)objectsForKeysMatchingRegex:(id)aRegex;
 /*!
  @method     objectsMatchingRegex:
@@ -131,7 +135,7 @@
  @seealso    @link keysForObjectsMatchingRegex: - keysForObjectsMatchingRegex: @/link
  @seealso    @link keysMatchingRegex: - keysMatchingRegex: @/link
  @seealso    @link objectsForKeysMatchingRegex: - objectsForKeysMatchingRegex: @/link
- */
+*/
 - (NSArray *)objectsMatchingRegex:(id)regexObject;
 
  @end
@@ -181,5 +185,8 @@
 
 @end
 
-
 #endif // _REGEXKIT_NSDICTIONARY_H_
+    
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

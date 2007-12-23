@@ -17,7 +17,7 @@ A:visited:hover	{ text-decoration: underline; color: #FF6600; }
 
 .topFrameSet { border-width: 50px; }
 
-.nobr { white-space: pre-wrap; }
+.nobr { white-space: nowrap; white-space: pre-wrap !important; }
 .hardNobr { white-space: nowrap; }
 
 .marginTopSpacer { margin-top: 1em !important; }
@@ -44,8 +44,10 @@ A:visited:hover	{ text-decoration: underline; color: #FF6600; }
 .box p + p { margin-top: 1em; }
 
 .box.sourcecode { margin-left: 0px; margin-right: 0px; padding: 1.0em 2ex; border: 1px solid #c7cfd5; background-color: #f1f5f9; }
-.box.sourcecode { white-space: pre-wrap; font: 0.9167em monaco, courier, monospace; }
+.box.sourcecode { white-space: pre; white-space: pre-wrap !important; font: 0.9167em monaco, courier, monospace; }
 
+
+.box.note, .box.important, .box.warning { -webkit-border-radius: 0.5em; -moz-border-radius: 0.5em; }
 /*.box.note      > p:before { content: "Note:";      font-weight: bold; margin-right: 1.5ex; }*/
 /*.box.important > p:before { content: "Important:"; font-weight: bold; margin-right: 1.5ex; }*/
 /*.box.warning   > p:before { content: "Warning:";   font-weight: bold; margin-right: 1.5ex; }*/
@@ -53,7 +55,7 @@ A:visited:hover	{ text-decoration: underline; color: #FF6600; }
 
 .box.important  { border-color: #111111; background-color: #e8e8e8; }
 .box.warning    { border-color: black;   background-color: white;   }
-.box.tip        { display: table; padding: 0.25em 1.0ex; border: 1px solid rgba(0,0,0,0.25); background-color: #e9e9e9; -webkit-border-radius: 1.5ex; -moz-border-radius: 1.5ex; }
+.box.tip        { display: table; padding: 0.25em 1.0ex; border: 1px solid #c3c3c3; background-color: #e9e9e9; -webkit-border-radius: 1.0em; -moz-border-radius: 1.0em; }
 .box.tip .label { padding-right: 1.0ex; }
 
 /* Scripts/common.js:fixupBoxRows() tidies all .box.hasRows so everything is tip top and good to go. */

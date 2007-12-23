@@ -1,6 +1,7 @@
 //
 //  NSArray.m
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -33,7 +34,7 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
+*/
 
 #import <RegexKit/NSArray.h>
 #import <RegexKit/RegexKitPrivate.h>
@@ -58,10 +59,10 @@ static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange
   id returnObject = NULL, *arrayObjects = NULL, *matchedObjects = NULL;
   NSRange matchRange = NSMakeRange(NSNotFound, 0);
 
-  if(RK_EXPECTED(self == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"self == NULL.") userInfo:NULL] raise]; }
-  if(RK_EXPECTED(_cmd == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"_cmd == NULL.") userInfo:NULL] raise]; }
-  if(RK_EXPECTED(matchAgainstArray == NULL, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"matchAgainstArray == NULL.") userInfo:NULL] raise]; }
-  if(RK_EXPECTED(performAction > RKArrayActionArrayMaxAction, 0)) { [[NSException exceptionWithName:NSInternalInconsistencyException reason:RKPrettyObjectMethodString(@"Unknown performAction = %lu.", (unsigned long)performAction) userInfo:NULL] raise]; }
+  if(RK_EXPECTED(self == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"self == NULL."] raise]; }
+  if(RK_EXPECTED(_cmd == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"_cmd == NULL."] raise]; }
+  if(RK_EXPECTED(matchAgainstArray == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"matchAgainstArray == NULL."] raise]; }
+  if(RK_EXPECTED(performAction > RKArrayActionArrayMaxAction, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"Unknown performAction = %lu.", (unsigned long)performAction] raise]; }
 
 #ifdef USE_CORE_FOUNDATION
   matchAgainstArrayCount = (RKUInteger)CFArrayGetCount((CFArrayRef)matchAgainstArray);
@@ -71,7 +72,7 @@ static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange
   
   if(againstRange == NULL) { matchRange = NSMakeRange(0, matchAgainstArrayCount); } else { matchRange = *againstRange; }
 
-  if((RK_EXPECTED(matchRange.location > matchAgainstArrayCount, 0)) || (RK_EXPECTED((matchRange.location + matchRange.length) > matchAgainstArrayCount, 0))) { [[NSException exceptionWithName:NSRangeException reason:RKPrettyObjectMethodString(@"Range %@ exceeds array length of %lu.", NSStringFromRange(matchRange), (unsigned long)matchAgainstArrayCount) userInfo:NULL] raise]; }
+  if((RK_EXPECTED(matchRange.location > matchAgainstArrayCount, 0)) || (RK_EXPECTED((matchRange.location + matchRange.length) > matchAgainstArrayCount, 0))) { [[NSException rkException:NSRangeException for:self selector:_cmd localizeReason:@"Range %@ exceeds array length of %lu.", NSStringFromRange(matchRange), (unsigned long)matchAgainstArrayCount] raise]; }
   
   if((arrayCount = matchRange.length) == 0) { goto doAction; }
 
@@ -192,7 +193,7 @@ exitNow:
 
 - (void)addObjectsFromArray:(NSArray *)otherArray matchingRegex:(id)aRegex;
 {
-  if(RK_EXPECTED(otherArray == NULL, 0)) { [[NSException exceptionWithName:NSInvalidArgumentException reason:RKPrettyObjectMethodString(@"otherArray == NULL.") userInfo:NULL] raise]; }
+  if(RK_EXPECTED(otherArray == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"otherArray == NULL."] raise]; }
   RKDoArrayAction(self, _cmd, otherArray, NULL, aRegex, RKArrayActionAddMatches, NULL);
 }
 

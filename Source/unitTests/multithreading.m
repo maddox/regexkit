@@ -1,15 +1,47 @@
 //
 //  multithreading.m
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
+/*
+ Copyright © 2007, John Engelhart
+ 
+ All rights reserved.
+ 
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ 
+ * Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ 
+ * Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ 
+ * Neither the name of the Zang Industries nor the names of its
+ contributors may be used to endorse or promote products derived from
+ this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+@class RKSortedRegexCollection;
+
 #import "multithreading.h"
+#import "RegexKitPrivateAtomic.h"
 #include <sys/time.h>
 #include <sys/resource.h>
-
-#define RKPrettyObjectMethodString(stringArg, ...) ([NSString stringWithFormat:[NSString stringWithFormat:@"%p [%@ %@]: %@", self, NSStringFromClass([(id)self class]), NSStringFromSelector(_cmd), stringArg], ##__VA_ARGS__])
-
-void startGC(void);
 
 @implementation multithreading
 
@@ -17,7 +49,6 @@ NSString *RKThreadWillExitNotification = @"RKThreadWillExitNotification";
 
 - (id) initWithInvocation:(NSInvocation *) anInvocation
 {
-  startGC();
   [self autorelease];  // In case anything goes wrong (ie, exception), we're guaranteed to be in the autorelease pool.  On successful initialization, we send ourselves a retain.
                        // If we create any ivars that are not autoreleased, they should release when the autorelease pool releases us and in turn we dealloc, releasing those resources.
 
@@ -29,33 +60,33 @@ NSString *RKThreadWillExitNotification = @"RKThreadWillExitNotification";
 
     startAutoreleasedObjects = [NSAutoreleasePool totalAutoreleasedObjects];
     
+    globalThreadLock          = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+    globalThreadConditionLock = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+    globalThreadCondition     = (pthread_cond_t)PTHREAD_COND_INITIALIZER;
+    globalLogLock             = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+    threadExitLock            = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+
     int pthread_err = 0;
 
-    if((pthread_err = pthread_mutex_init(&globalThreadLock, NULL)) != 0) { NSLog(@"pthread_mutex_init on globalThreadLock returned %d", pthread_err); exit(0); }
+    if((pthread_err = pthread_mutex_init(&globalThreadLock,          NULL)) != 0) { NSLog(@"pthread_mutex_init on globalThreadLock returned %d",          pthread_err); exit(0); }
     if((pthread_err = pthread_mutex_init(&globalThreadConditionLock, NULL)) != 0) { NSLog(@"pthread_mutex_init on globalThreadConditionLock returned %d", pthread_err); exit(0); }
-    if((pthread_err = pthread_cond_init(&globalThreadCondition, NULL)) != 0) { NSLog(@"pthread_cond_init on globalThreadCondition returned %d", pthread_err); exit(0); }
-    if((pthread_err = pthread_mutex_init(&globalLogLock, NULL)) != 0) { NSLog(@"pthread_mutex_init on globalLogLock returned %d", pthread_err); exit(0); }
-    if((pthread_err = pthread_mutex_init(&threadExitLock, NULL)) != 0) { NSLog(@"pthread_mutex_init on threadExitLock returned %d", pthread_err); exit(0); }
+    if((pthread_err = pthread_cond_init( &globalThreadCondition,     NULL)) != 0) { NSLog(@"pthread_cond_init on globalThreadCondition returned %d",      pthread_err); exit(0); }
+    if((pthread_err = pthread_mutex_init(&globalLogLock,             NULL)) != 0) { NSLog(@"pthread_mutex_init on globalLogLock returned %d",             pthread_err); exit(0); }
+    if((pthread_err = pthread_mutex_init(&threadExitLock,            NULL)) != 0) { NSLog(@"pthread_mutex_init on threadExitLock returned %d",            pthread_err); exit(0); }
 
-    logDateFormatter = [[NSDateFormatter alloc] initWithDateFormat:@"%Y/%m/%d %H:%M:%S.%F" allowNaturalLanguage:NO];
-    globalLogString = [[NSMutableString alloc] init];
-    globalLogArray = [[NSMutableArray alloc] init];
-    timingResultsArray = [[NSMutableArray alloc] init];
+    logDateFormatter   = [[NSDateFormatter alloc] initWithDateFormat:@"%Y/%m/%d %H:%M:%S.%F" allowNaturalLanguage:NO];
+    globalLogString    = [[NSMutableString alloc] init];
+    globalLogArray     = [[NSMutableArray  alloc] init];
+    timingResultsArray = [[NSMutableArray  alloc] init];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acceptNotification:) name:RKThreadWillExitNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acceptNotification:) name:RKThreadWillExitNotification          object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acceptNotification:) name:NSWillBecomeMultiThreadedNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acceptNotification:) name:SenTestSuiteDidStartNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acceptNotification:) name:SenTestSuiteDidStopNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acceptNotification:) name:SenTestSuiteDidStartNotification      object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(acceptNotification:) name:SenTestSuiteDidStopNotification       object:nil];
     
     [[RKRegex regexCache] clearCache];
     [[RKRegex regexCache] clearCounters];
   
-    if(getenv("DEBUG") != NULL) { debugEnvString = [[NSString alloc] initWithCString:getenv("DEBUG") encoding:NSUTF8StringEncoding]; }
-    if(getenv("LEAK_CHECK") != NULL) { leakEnvString = [[NSString alloc] initWithCString:getenv("LEAK_CHECK") encoding:NSUTF8StringEncoding]; }
-    if(getenv("TIMING") != NULL) { timingEnvString = [[NSString alloc] initWithCString:getenv("TIMING") encoding:NSUTF8StringEncoding]; }
-    if(getenv("MULTITHREADING") != NULL) { multithreadingEnvString = [[NSString alloc] initWithCString:getenv("MULTITHREADING") encoding:NSUTF8StringEncoding]; }
-    
-    NSLog(@"LEAK_CHECK = %@, DEBUG = %@, TIMING = %@, MULTITHREADING = %@", leakEnvString, debugEnvString, timingEnvString, multithreadingEnvString);
 
     [[RKRegex regexCache] setDebug:YES];
     
@@ -85,22 +116,7 @@ NSString *RKThreadWillExitNotification = @"RKThreadWillExitNotification";
     
     testStartCPUTime = [NSDate cpuTimeUsed];
   }
-/*
-#ifdef ENABLE_MACOSX_GARBAGE_COLLECTION
-  if([NSGarbageCollector defaultCollector] != NULL) {
-    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:logDateFormatter];
-    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:globalLogString];
-    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:globalLogArray];
-    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:timingResultsArray];
-    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:loggingTimer];
-    
-    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:leakEnvString];
-    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:debugEnvString];
-    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:timingEnvString];
-    [[NSGarbageCollector defaultCollector] disableCollectorForPointer:multithreadingEnvString];
-  }
-#endif
- */
+
   return([self retain]); // We have successfully initialized, so rescue ourselves from the autorelease pool.
 
 errorExit: // Catch point in case any clean up needs to be done.  Currently, none is neccesary.
@@ -163,11 +179,11 @@ errorExit: // Catch point in case any clean up needs to be done.  Currently, non
   }
     
   int pthread_err = 0;
-  if((pthread_err = pthread_mutex_destroy(&globalThreadLock)) != 0) { NSLog(@"pthread_mutex_destroy on globalThreadLock returned %d", pthread_err); }
+  if((pthread_err = pthread_mutex_destroy(&globalThreadLock))          != 0) { NSLog(@"pthread_mutex_destroy on globalThreadLock returned %d",          pthread_err); }
   if((pthread_err = pthread_mutex_destroy(&globalThreadConditionLock)) != 0) { NSLog(@"pthread_mutex_destroy on globalThreadConditionLock returned %d", pthread_err); }
-  if((pthread_err = pthread_cond_destroy(&globalThreadCondition)) != 0) { NSLog(@"pthread_cond_destroy on globalThreadCondition returned %d", pthread_err); }
-  if((pthread_err = pthread_mutex_destroy(&globalLogLock)) != 0) { NSLog(@"pthread_mutex_destroy on globalLogLock returned %d", pthread_err); }
-  if((pthread_err = pthread_mutex_destroy(&threadExitLock)) != 0) { NSLog(@"pthread_mutex_destroy on threadExitLock returned %d", pthread_err); }
+  if((pthread_err = pthread_cond_destroy( &globalThreadCondition))     != 0) { NSLog(@"pthread_cond_destroy on globalThreadCondition returned %d",      pthread_err); }
+  if((pthread_err = pthread_mutex_destroy(&globalLogLock))             != 0) { NSLog(@"pthread_mutex_destroy on globalLogLock returned %d",             pthread_err); }
+  if((pthread_err = pthread_mutex_destroy(&threadExitLock))            != 0) { NSLog(@"pthread_mutex_destroy on threadExitLock returned %d",            pthread_err); }
 
   if(globalLogString != nil) {
     if([globalLogString length] > 0) {
@@ -176,14 +192,11 @@ errorExit: // Catch point in case any clean up needs to be done.  Currently, non
     }
   }
   
-  if(globalLogString != nil) { [globalLogString release]; globalLogString = nil; }
-  if(globalLogArray != nil) { [globalLogArray release]; globalLogArray = nil; }
+  if(globalLogString    != nil) { [globalLogString    release]; globalLogString    = nil; }
+  if(globalLogArray     != nil) { [globalLogArray     release]; globalLogArray     = nil; }
   if(timingResultsArray != nil) { [timingResultsArray release]; timingResultsArray = nil; }
-  if(loggingTimer != nil) { [loggingTimer release]; loggingTimer = nil; }
-  if(logDateFormatter != nil) { [logDateFormatter release]; logDateFormatter = nil; }
-  if(leakEnvString != nil) { [leakEnvString release]; leakEnvString = nil; }
-  if(debugEnvString != nil) { [debugEnvString release]; debugEnvString = nil; }
-  if(timingEnvString != nil) { [timingEnvString release]; timingEnvString = nil; }
+  if(loggingTimer       != nil) { [loggingTimer       release]; loggingTimer       = nil; }
+  if(logDateFormatter   != nil) { [logDateFormatter   release]; logDateFormatter   = nil; }
   
   NSLog(@"starting autoreleased objects: %u  Now: %u  Diff: %u", startAutoreleasedObjects, [NSAutoreleasePool totalAutoreleasedObjects], [NSAutoreleasePool totalAutoreleasedObjects] - startAutoreleasedObjects);
   
@@ -224,14 +237,7 @@ errorExit: // Catch point in case any clean up needs to be done.  Currently, non
   if(isInitialized == NO) { NSLog(@"Notification: %@", [theNotification name]); goto exitNow; }
   
   [self thread:0 log:[NSString stringWithFormat:@"Notification: %@\n", [theNotification name]]];
-  
-  if([[theNotification name] isEqualToString:RKThreadWillExitNotification]) {
-    int pthread_err = 0;
-    if((pthread_err = pthread_mutex_lock(&threadExitLock)) != 0) { NSLog(@"pthread_mutex_lock on threadExitLock returned %d", pthread_err); }
-    threadExitCount++;
-    if((pthread_err = pthread_mutex_unlock(&threadExitLock)) != 0) { NSLog(@"pthread_mutex_unlock on threadExitLock returned %d", pthread_err); }
-  }
-  
+     
 exitNow:
     return;
 }
@@ -308,9 +314,11 @@ exitNow:
     NSTimeInterval currentTime = [NSDate timeIntervalSinceReferenceDate];
     
     if(((currentTime - lastRelease) > 1.0)) {
-      [self thread:0 log:[NSString stringWithFormat:@"Cache status: %@\n", [[RKRegex regexCache] status]]];
+      //[self thread:0 log:[NSString stringWithFormat:@"RKRegex Cache: %@\n", [[RKRegex regexCache] status]]];
+      //[self thread:0 log:[NSString stringWithFormat:@"RKSRCol Cache: %@\n", [[objc_getClass("RKSortedRegexCollection") sortedRegexCollectionCache] status]]];
       
       [[RKRegex regexCache] clearCache];
+      [[objc_getClass("RKSortedRegexCollection") sortedRegexCollectionCache] clearCache];
       [threadPool release];
       sched_yield();
       threadPool = [[NSAutoreleasePool alloc] init];      
@@ -380,9 +388,11 @@ exitNow:
 
   for(x = 0; x < 7; x++) {
     NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
-
-    [self thread:threadID log:[NSString stringWithFormat:@"Thread %3d, round %3d starting.. cacheCount: %3u cacheClearedCount: %5u read busy: %5u spin: %5u write busy: %5u totalAutoreleasedObjects: %8u\n", threadID, x, [[RKRegex regexCache] cacheCount], [[RKRegex regexCache] cacheClearedCount], [[RKRegex regexCache] readBusyCount], [[RKRegex regexCache] readSpinCount], [[RKRegex regexCache] writeBusyCount], [NSAutoreleasePool totalAutoreleasedObjects]]];
-    for(y = 0; y < 46; y++) {
+    RKCache *recache = [RKRegex regexCache];
+    RKCache *colcache = [objc_getClass("RKSortedRegexCollection") sortedRegexCollectionCache];
+        
+    [self thread:threadID log:[NSString stringWithFormat:@"Thread %3d, round %3d starting.. RKRegex [cnt:%3u clr:%5u r:%5u s:%5u wb:%5u] RKSRCol [cnt:%3u clr:%5u r:%5u s:%5u wb:%5u] auto: %8u\n", threadID, x, [recache cacheCount], [recache cacheClearedCount], [recache readBusyCount], [recache readSpinCount], [recache writeBusyCount], [colcache cacheCount], [colcache cacheClearedCount], [colcache readBusyCount], [colcache readSpinCount], [colcache writeBusyCount], [NSAutoreleasePool totalAutoreleasedObjects]]];
+    for(y = 0; y < 53; y++) {
       [self executeTest:y];
       [NSThread sleepUntilDate:[NSDate dateWithTimeIntervalSinceNow:sleepInterval]];
     }
@@ -396,6 +406,7 @@ exitNow:
   NSValue *threadValue = [NSValue valueWithPointer:pthread_self()];
   [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:RKThreadWillExitNotification object:threadValue userInfo:[NSDictionary dictionaryWithObject:threadValue forKey:@"threadValue"]]];
   [threadPool release];
+  RKAtomicIncrementIntBarrier(&((int)threadExitCount));
   return(0);
 }
 
@@ -426,7 +437,9 @@ exitNow:
     case 18: [self mt_time_1]; break;
     case 19: [self mt_cache_6]; break;
     case 20: [self mt_time_3]; break;
-    case 21: [self mt_time_4]; break;
+
+    case 21: [self mt_sortedRegex_wl1]; break;
+
     case 22: [self mt_cache_4]; break;
     case 23: [self mt_time_5]; break;
     case 24: [self mt_time_6]; break;
@@ -441,10 +454,10 @@ exitNow:
     case 33: [self mt_time_2]; break;
     case 34: [self mt_time_12]; break;
 
-    case 35: [self mt_test_17]; break;
+    case 35: [self mt_sortedRegex_wl1]; break;
     case 36: [self mt_test_18]; break;
     case 37: [self mt_test_19]; break;
-    case 38: [self mt_test_20]; break;
+    case 38: [self mt_sortedRegex_bl1]; break;
     case 39: [self mt_test_21]; break;
     case 40: [self mt_test_22]; break;
     case 41: [self mt_test_23]; break;
@@ -454,6 +467,16 @@ exitNow:
     case 44: [self mt_test_26]; break;
 
     case 45: [self mt_test_27]; break;
+
+    case 46: [self mt_sortedRegex_bl1]; break;
+    case 47: [self mt_sortedRegex_bl1]; break;
+    case 48: [self mt_sortedRegex_bl1]; break;
+    case 49: [self mt_sortedRegex_wl2]; break;
+
+    case 50: [self mt_test_17]; break;
+    case 51: [self mt_test_20]; break;
+
+    case 52: [self mt_time_4]; break;
 
     default: [self mt_time_3]; break;
   }
@@ -499,10 +522,24 @@ exitNow:
 {
   NSSet *regexCacheSet = [[RKRegex regexCache] cacheSet];
   regexCacheSet = nil;
+  
+  NSSet *sortedRegexCollectionCacheSet = [[objc_getClass("RKSortedRegexCollection") sortedRegexCollectionCache] cacheSet];
+  sortedRegexCollectionCacheSet = NULL;
+
 }
 
 - (void)mt_cache_5
 {
+  NSParameterAssert(blacklistArray != NULL);
+  @try {
+  NSAutoreleasePool *clearCachePool = [[NSAutoreleasePool alloc] init];
+  id rmObj = [objc_getClass("RKSortedRegexCollection") sortedRegexCollectionForCollection:blacklistArray];
+  if(rmObj != NULL) { [[objc_getClass("RKSortedRegexCollection") sortedRegexCollectionCache] removeObjectFromCache:rmObj]; }
+  [[objc_getClass("RKSortedRegexCollection") sortedRegexCollectionCache] clearCache];
+  [clearCachePool release];
+  sched_yield();
+    } @catch (NSException *exception) { }
+    
   RKRegex *regex = nil;
   
   STAssertNotNil((regex = [RKRegex regexWithRegexString:@"(?<date> (?<year>(\\d\\d)?\\d\\d) - (?<month>\\d\\d) - (?<day>\\d\\d) / (?<month>\\d\\d))" options:RKCompileDupNames]), nil);
@@ -2307,6 +2344,46 @@ exitNow:
   }
   return(NO);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+- (void)mt_sortedRegex_bl1
+{
+  return;
+  for(RKUInteger x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:blacklistArray]; } }
+}
+
+- (void)mt_sortedRegex_bl2
+{
+  return;
+  NSArray *localBlacklistArray = [[[NSArray alloc] initWithArray:blacklistArray copyItems:YES] autorelease];
+  for(RKUInteger x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:localBlacklistArray]; } }
+}
+
+- (void)mt_sortedRegex_wl1
+{
+  //return;
+  for(RKUInteger x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:whitelistArray]; } }
+}
+
+- (void)mt_sortedRegex_wl2
+{
+  //return;
+  NSArray *localWhitelistArray = [[[NSArray alloc] initWithArray:whitelistArray copyItems:YES] autorelease];
+  for(RKUInteger x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:localWhitelistArray]; } }
+}
+
 
 
 @end

@@ -1,8 +1,9 @@
 //
 //  RKPlaceholder.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
-// NOT in RegexKit.framework/Headers
+//  PRIVATE HEADER -- NOT in RegexKit.framework/Headers
 //
 
 /*
@@ -35,14 +36,17 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
+*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+#ifndef _REGEXKIT_RKPLACEHOLDER_H_
+#define _REGEXKIT_RKPLACEHOLDER_H_ 1
 
 #import <Foundation/Foundation.h>
 #import <RegexKit/RegexKitPrivate.h>
-
-#ifndef _REPLACEHOLDER_H_
-#define _REPLACEHOLDER_H_ 1
 
 #ifdef USE_PLACEHOLDER
   
@@ -52,10 +56,15 @@
 
 + (id)sharedObject;
 - (id)initWithRegexString:(NSString * const)regexString options:(const RKCompileOption)options;
+- (id)initWithRegexString:(NSString * const RK_C99(restrict))regexString library:(NSString * const RK_C99(restrict))libraryString options:(const RKCompileOption)libraryOptions error:(NSError **)outError;
 
 @end
 
-#endif //USE_PLACEHOLDER
+#endif // USE_PLACEHOLDER
 
 
-#endif // _REPLACEHOLDER_H_
+#endif // _REGEXKIT_RKPLACEHOLDER_H_
+
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

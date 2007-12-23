@@ -13,7 +13,7 @@
 
 		  <field index="0" name="Thread" code="tid" type="%x" width="15" truncation="middle"/>
 		  <field index="1" name="RKRegex Object" code="(unsigned long)this->regex[0]" type="%x" width="15" truncation="middle"/>
-		  <field index="2" name="Hash" code="(unsigned long)arg1" type=b width="15" truncation="middle"/>
+		  <field index="2" name="Hash" code="(unsigned long)arg1" type="%x" width="15" truncation="middle"/>
 		  <field index="3" name="Regex" code="copyinstr((user_addr_t)this->regex[1])" type="%s" width="20" truncation="middle"/>
 		  <field index="4" name="Compile Options" code="((unsigned int *)this->regex)[2]" type="%x" width="15" truncation="middle"/>
 		  <field index="5" name="Match Options" code="arg7" type="%x" width="15" truncation="middle"/>
@@ -26,7 +26,6 @@
 		  <field index="12" name="Matched Length" code="(int)arg8 == -1 ? -1 : (long)this->ranges[1]" type="%d" width="10" truncation="right"/>
 		  <field index="13" name="Matched String" code="this->matchString" type="%s" width="20" truncation="middle"/>
 		  <field index="14" name="uSec" code="this->matchElapsedTime" type="%d" width="10" truncation="right"/>
-
 		</probe_definition>
 
 	</extension>

@@ -2,6 +2,7 @@
 //
 //  RKAutoreleasedMemory.m
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 */
 
@@ -84,10 +85,26 @@ provider RegexKit {
 
   /* RKLock probes */
   
-  probe BeginLock(void *, int, int);
-  probe EndLock(  void *, int, int, int, NSUInteger); 
+  probe BeginLock(void *, NSInteger, int);
+  probe EndLock(  void *, NSInteger, int, int, NSUInteger); 
 
   probe Unlock(void *, int, int);
+  
+  /* object *, hash, collection count */
+  probe BeginSortedRegexSort(void *, NSUInteger, NSUInteger);
+  /* object *, hash, collection count, able to sort */
+  probe EndSortedRegexSort(  void *, NSUInteger, NSUInteger, int);
+
+  /* object *, hash, collection count, match target */
+  probe BeginSortedRegexMatch(void *, NSUInteger, NSUInteger, char *);
+  /* object *, hash, regex *, regex hash, regex char *, Sorted index, Collection count, Sorted index hit count, collection index, resort required */
+  probe EndSortedRegexMatch(  void *, NSUInteger, void *, NSUInteger, char *, NSUInteger, NSUInteger, NSUInteger, NSUInteger, int);
+  
+  /* object *, hash, regex *, regex hash, regex char *, Sorted index, Collection count, Sorted index hit count, collection index, match result */
+  probe SortedRegexCompare(void *, NSUInteger, void *, NSUInteger, char *, NSUInteger, NSUInteger, NSUInteger, NSUInteger, int);
+
+  /* object *, hash, hits, misses, not founds, hits %, misses %, not founds %*/
+  probe SortedRegexCache(void *, NSUInteger, NSUInteger, NSUInteger, NSUInteger, NSUInteger, double *, double *, double *);
 };
 
 #pragma D attributes Unstable/Unstable/Common provider RegexKit provider

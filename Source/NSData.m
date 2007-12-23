@@ -1,6 +1,7 @@
 //
 //  NSData.m
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*

@@ -9,7 +9,7 @@ ul.square li { margin-top: 0.5em; }
 ul.contents    { margin-top: 0em; margin-left: 4ex; list-style-type: none; }
 ul.contents li { margin-top: 0em; }
 
-.releaseNotes .releaseNotesContents ul, .changeLog .changeLogContents ul    { margin-top: 0em; margin-left: 4ex; list-style-type: none; }
+.releaseNotes .releaseNotesContents ul,    .changeLog .changeLogContents ul    { margin-top: 0em; margin-left: 4ex; list-style-type: none; }
 .releaseNotes .releaseNotesContents ul li, .changeLog .changeLogContents ul li { margin-top: 0em; }
 
 ul.seealso { margin: 0px; padding: 0px; list-style-type: none; }
@@ -19,3 +19,7 @@ ul.seealso > li { margin: 0px 0px 0px 6.25ex; }
 
 
 .guide .sourceLicense pre { white-space: pre; font-family: courier, monospace; margin: 2em 4ex; }
+.guide .sourceLicense { margin: 2em 4ex; max-width: 5.25in; }
+.guide .sourceLicense ul { list-style-type: disk; }
+.guide .sourceLicense li { margin-bottom: 0.75em; }
+.guide .sourceLicense .disclaimer { font-family: courier, monospace;  }

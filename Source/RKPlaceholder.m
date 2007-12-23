@@ -1,6 +1,7 @@
 //
 //  RKPlaceholder.m
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -86,6 +87,11 @@ static RKRegexPlaceholder *singletonRKRegexPlaceholder = NULL;
 - (id)initWithRegexString:(NSString * const)regexString options:(const RKCompileOption)options
 {
   return(RKRegexFromStringOrRegex(self, _cmd, regexString, options, NO));
+}
+
+- (id)initWithRegexString:(NSString * const RK_C99(restrict))regexString library:(NSString * const RK_C99(restrict))libraryString options:(const RKCompileOption)libraryOptions error:(NSError **)outError
+{
+  return(RKRegexFromStringOrRegexWithError(self, _cmd, regexString, libraryString, libraryOptions, outError, NO));
 }
 
 - (id)initWithCoder:(NSCoder *)coder

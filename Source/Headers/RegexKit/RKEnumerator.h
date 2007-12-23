@@ -1,6 +1,7 @@
 //
 //  RKEnumerator.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -33,8 +34,14 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
+*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+#ifndef _REGEXKIT_RKENUMERATOR_H_
+#define _REGEXKIT_RKENUMERATOR_H_ 1
 
 /*!
  @header RKEnumerator
@@ -61,10 +68,6 @@
 #import <Foundation/Foundation.h>
 #import <RegexKit/RKRegex.h>
 #import <stdarg.h>
-
-#ifndef _REENUMERATOR_H_
-#define _REENUMERATOR_H_ 1
-
 
 @interface RKEnumerator : NSEnumerator {
   RKRegex  *regex;
@@ -98,6 +101,8 @@
 */
 + (id)enumeratorWithRegex:(id)aRegex string:(NSString * const)string inRange:(const NSRange)range;
 
++ (id)enumeratorWithRegex:(id)initRegex string:(NSString * const)initString inRange:(const NSRange)initRange error:(NSError **)outError;
+
 /*!
  @method     initWithRegex:string:
  @tocgroup   RKEnumerator Creating Regular Expression Enumerators
@@ -125,6 +130,8 @@
  @seealso    @link nextRanges - nextRanges @/link
 */
 - (id)initWithRegex:(id)initRegex string:(NSString * const)initString inRange:(const NSRange)initRange;
+
+- (id)initWithRegex:(id)initRegex string:(NSString * const)initString inRange:(const NSRange)initRange error:(NSError **)outError;
 
 /*!
  @method     regex
@@ -280,4 +287,8 @@
 
 @end
 
-#endif // _REENUMERATOR_H_
+#endif // _REGEXKIT_RKENUMERATOR_H_
+    
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

@@ -59,8 +59,11 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		121140C50D139FE200EB8DF2 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 12BD45740CB6AA9400EBA014 /* LICENSE */; };
 		122401EC0CCD5D89006F56F9 /* timing.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5700C7A50100044B285 /* timing.m */; };
-		122401ED0CCD5E15006F56F9 /* multithreading.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D56C0C7A50100044B285 /* multithreading.m */; };
+		122401ED0CCD5E15006F56F9 /* multithreading.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D56C0C7A50100044B285 /* multithreading.m */; settings = {COMPILER_FLAGS = "-ISource/Headers/RegexKit"; }; };
+		122E89DF0D0DD2FA00FCC2CB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 122E89DD0D0DD2FA00FCC2CB /* Localizable.strings */; };
+		122E8A360D0DE1D100FCC2CB /* pcre.strings in Resources */ = {isa = PBXBuildFile; fileRef = 122E8A340D0DE1D100FCC2CB /* pcre.strings */; };
 		122F45CB0CE097D600B25051 /* unicode.m in Sources */ = {isa = PBXBuildFile; fileRef = 122F45CA0CE097D600B25051 /* unicode.m */; };
 		124F5D370CEC06DB00AD798D /* RegexKitProbes.d in Sources */ = {isa = PBXBuildFile; fileRef = 124F5D360CEC06DB00AD798D /* RegexKitProbes.d */; };
 		1264D7880C7A95F80044B285 /* NSDate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5640C7A50100044B285 /* NSDate.m */; };
@@ -68,8 +71,25 @@
 		1264D83B0C7A9D7D0044B285 /* collectionAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5680C7A50100044B285 /* collectionAdditions.m */; };
 		1264D8560C7A9DF90044B285 /* stringConversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D56E0C7A50100044B285 /* stringConversion.m */; };
 		1264D8580C7A9E0F0044B285 /* functionality.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D56A0C7A50100044B285 /* functionality.m */; };
-		1264D97B0C7AC50E0044B285 /* Unit Tests-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1264D5710C7A50100044B285 /* Unit Tests-Info.plist */; };
+		1279EA240D1D4262004B3F13 /* blacklist.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1279EA210D1D424F004B3F13 /* blacklist.txt */; };
+		1279EA250D1D4262004B3F13 /* url.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1279EA220D1D424F004B3F13 /* url.txt */; };
+		1279EA260D1D4262004B3F13 /* whitelist.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1279EA230D1D424F004B3F13 /* whitelist.txt */; };
+		127DE38D0D120B1000F1B037 /* RKSortedRegexCollection.h in Headers */ = {isa = PBXBuildFile; fileRef = 127DE38B0D120B1000F1B037 /* RKSortedRegexCollection.h */; };
+		127DE38E0D120B1100F1B037 /* RKSortedRegexCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = 127DE38C0D120B1000F1B037 /* RKSortedRegexCollection.m */; };
 		1299AEAB0C78AE4A007F3859 /* pcre.h in Headers */ = {isa = PBXBuildFile; fileRef = 1299AEAA0C78AE4A007F3859 /* pcre.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		12A012CF0D1616F900B751C9 /* sortedRegexCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = 12A012CE0D1616F900B751C9 /* sortedRegexCollection.m */; settings = {COMPILER_FLAGS = "-ISource/Headers/RegexKit"; }; };
+		12A012DE0D161A4600B751C9 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 122400F10CCD4587006F56F9 /* SenTestingKit.framework */; };
+		12A012F10D161A4E00B751C9 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		12A012F60D161A5B00B751C9 /* RegexKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* RegexKit.framework */; };
+		12A013160D161AB200B751C9 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1264D5710C7A50100044B285 /* Info.plist */; };
+		12A013280D161CC400B751C9 /* RKTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 12A013270D161CC400B751C9 /* RKTestCase.m */; settings = {COMPILER_FLAGS = "-ISource/Headers/RegexKit"; }; };
+		12A0132B0D16209E00B751C9 /* RegexKitPrivateAtomic.h in Headers */ = {isa = PBXBuildFile; fileRef = 12A0132A0D16209E00B751C9 /* RegexKitPrivateAtomic.h */; };
+		12A013320D162C1200B751C9 /* RegexKitPrivateMemory.h in Headers */ = {isa = PBXBuildFile; fileRef = 12A013310D162C1100B751C9 /* RegexKitPrivateMemory.h */; };
+		12A013340D162E4100B751C9 /* RegexKitPrivateDTrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 12A013330D162E4100B751C9 /* RegexKitPrivateDTrace.h */; };
+		12A013700D1633E400B751C9 /* RegexKitPrivateLocalization.h in Headers */ = {isa = PBXBuildFile; fileRef = 12A0136F0D1633E400B751C9 /* RegexKitPrivateLocalization.h */; };
+		12A0138C0D1638EE00B751C9 /* NSStringPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 12A0138B0D1638EE00B751C9 /* NSStringPrivate.h */; };
+		12D0764D0D1832350081AFD7 /* RKThreadPool.h in Headers */ = {isa = PBXBuildFile; fileRef = 12D0764B0D1832350081AFD7 /* RKThreadPool.h */; };
+		12D0764E0D1832350081AFD7 /* RKThreadPool.m in Sources */ = {isa = PBXBuildFile; fileRef = 12D0764C0D1832350081AFD7 /* RKThreadPool.m */; };
 		12D581810C80B75500674FA2 /* enumeration.m in Sources */ = {isa = PBXBuildFile; fileRef = 12D581800C80B75500674FA2 /* enumeration.m */; };
 		12DB19FC0C787E1700735165 /* NSArray.h in Headers */ = {isa = PBXBuildFile; fileRef = 12DB19EC0C787E1700735165 /* NSArray.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		12DB19FD0C787E1700735165 /* NSDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 12DB19ED0C787E1700735165 /* NSDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -167,11 +187,14 @@
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		120291BE0CD1CDAD0045B036 /* buildDocSet.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = buildDocSet.sh; path = Source/Documentation/Scripts/buildDocSet.sh; sourceTree = "<group>"; };
 		120DCD160CE4E3A600616CEA /* ReleaseNotes.html */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = ReleaseNotes.html; path = Source/Documentation/Static/ReleaseNotes.html; sourceTree = "<group>"; };
+		121141A70D14DABD00EB8DF2 /* RegexKit_sortedCollection_timing.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_sortedCollection_timing.instrument; sourceTree = "<group>"; };
 		12222BC60CBB7F98001F0231 /* fileCheck.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = fileCheck.pl; sourceTree = "<group>"; };
 		12222BCC0CBB8077001F0231 /* files.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = files.sql; sourceTree = "<group>"; };
 		122400F10CCD4587006F56F9 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = /System/Library/Frameworks/SenTestingKit.framework; sourceTree = "<absolute>"; };
-		122F45C90CE097D600B25051 /* unicode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = unicode.h; path = Source/unitTests/unicode.h; sourceTree = "<group>"; };
-		122F45CA0CE097D600B25051 /* unicode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = unicode.m; path = Source/unitTests/unicode.m; sourceTree = "<group>"; };
+		122E89DE0D0DD2FA00FCC2CB /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = Resources/English.lproj/Localizable.strings; sourceTree = "<group>"; };
+		122E8A350D0DE1D100FCC2CB /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = Resources/English.lproj/pcre.strings; sourceTree = "<group>"; };
+		122F45C90CE097D600B25051 /* unicode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unicode.h; sourceTree = "<group>"; };
+		122F45CA0CE097D600B25051 /* unicode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = unicode.m; sourceTree = "<group>"; };
 		123A83D00CEEBFDC009DF564 /* RegexKit_compile_error.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_compile_error.instrument; sourceTree = "<group>"; };
 		123A83D10CEEBFDC009DF564 /* RegexKit_compile_timing.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_compile_timing.instrument; sourceTree = "<group>"; };
 		123A83D20CEEBFDC009DF564 /* RegexKit_match_error.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_match_error.instrument; sourceTree = "<group>"; };
@@ -217,27 +240,33 @@
 		1264D54F0C7A4F5B0044B285 /* buildDistribution.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = buildDistribution.sh; sourceTree = "<group>"; };
 		1264D5530C7A4F5B0044B285 /* stripHeaderdoc.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = stripHeaderdoc.sh; sourceTree = "<group>"; };
 		1264D5560C7A4F8A0044B285 /* projectExportedSymbols */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = projectExportedSymbols; sourceTree = "<group>"; };
-		1264D5620C7A50100044B285 /* debug.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = debug.sh; path = Source/unitTests/debug.sh; sourceTree = "<group>"; };
-		1264D5630C7A50100044B285 /* NSDate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSDate.h; path = Source/unitTests/NSDate.h; sourceTree = "<group>"; };
-		1264D5640C7A50100044B285 /* NSDate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSDate.m; path = Source/unitTests/NSDate.m; sourceTree = "<group>"; };
-		1264D5650C7A50100044B285 /* core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = core.h; path = Source/unitTests/core.h; sourceTree = "<group>"; };
-		1264D5660C7A50100044B285 /* core.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = core.m; path = Source/unitTests/core.m; sourceTree = "<group>"; };
-		1264D5670C7A50100044B285 /* collectionAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = collectionAdditions.h; path = Source/unitTests/collectionAdditions.h; sourceTree = "<group>"; };
-		1264D5680C7A50100044B285 /* collectionAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = collectionAdditions.m; path = Source/unitTests/collectionAdditions.m; sourceTree = "<group>"; };
-		1264D5690C7A50100044B285 /* functionality.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = functionality.h; path = Source/unitTests/functionality.h; sourceTree = "<group>"; };
-		1264D56A0C7A50100044B285 /* functionality.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = functionality.m; path = Source/unitTests/functionality.m; sourceTree = "<group>"; };
-		1264D56B0C7A50100044B285 /* multithreading.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = multithreading.h; path = Source/unitTests/multithreading.h; sourceTree = "<group>"; };
-		1264D56C0C7A50100044B285 /* multithreading.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = multithreading.m; path = Source/unitTests/multithreading.m; sourceTree = "<group>"; };
-		1264D56D0C7A50100044B285 /* stringConversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = stringConversion.h; path = Source/unitTests/stringConversion.h; sourceTree = "<group>"; };
-		1264D56E0C7A50100044B285 /* stringConversion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = stringConversion.m; path = Source/unitTests/stringConversion.m; sourceTree = "<group>"; };
-		1264D56F0C7A50100044B285 /* timing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = timing.h; path = Source/unitTests/timing.h; sourceTree = "<group>"; };
-		1264D5700C7A50100044B285 /* timing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = timing.m; path = Source/unitTests/timing.m; sourceTree = "<group>"; };
-		1264D5710C7A50100044B285 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; name = "Unit Tests-Info.plist"; path = "Source/unitTests/Unit Tests-Info.plist"; sourceTree = "<group>"; };
+		1264D5620C7A50100044B285 /* debug.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = debug.sh; sourceTree = "<group>"; };
+		1264D5630C7A50100044B285 /* NSDate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDate.h; sourceTree = "<group>"; };
+		1264D5640C7A50100044B285 /* NSDate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDate.m; sourceTree = "<group>"; };
+		1264D5650C7A50100044B285 /* core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core.h; sourceTree = "<group>"; };
+		1264D5660C7A50100044B285 /* core.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = core.m; sourceTree = "<group>"; };
+		1264D5670C7A50100044B285 /* collectionAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = collectionAdditions.h; sourceTree = "<group>"; };
+		1264D5680C7A50100044B285 /* collectionAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = collectionAdditions.m; sourceTree = "<group>"; };
+		1264D5690C7A50100044B285 /* functionality.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = functionality.h; sourceTree = "<group>"; };
+		1264D56A0C7A50100044B285 /* functionality.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = functionality.m; sourceTree = "<group>"; };
+		1264D56B0C7A50100044B285 /* multithreading.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = multithreading.h; sourceTree = "<group>"; };
+		1264D56C0C7A50100044B285 /* multithreading.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = multithreading.m; sourceTree = "<group>"; };
+		1264D56D0C7A50100044B285 /* stringConversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stringConversion.h; sourceTree = "<group>"; };
+		1264D56E0C7A50100044B285 /* stringConversion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = stringConversion.m; sourceTree = "<group>"; };
+		1264D56F0C7A50100044B285 /* timing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = timing.h; sourceTree = "<group>"; };
+		1264D5700C7A50100044B285 /* timing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = timing.m; sourceTree = "<group>"; };
+		1264D5710C7A50100044B285 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1264D68C0C7A67960044B285 /* RegexKitProgrammingGuide.html */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = RegexKitProgrammingGuide.html; path = Source/Documentation/Static/RegexKitProgrammingGuide.html; sourceTree = "<group>"; };
 		1264D68D0C7A67960044B285 /* index.html */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = index.html; path = Source/Documentation/Static/index.html; sourceTree = "<group>"; };
 		1264D77F0C7A95B60044B285 /* Unit Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1264DC100C7B3BFA0044B285 /* RegexKitImplementationTopics.html */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = RegexKitImplementationTopics.html; path = Source/Documentation/Static/RegexKitImplementationTopics.html; sourceTree = "<group>"; };
+		1279E95E0D1D15C2004B3F13 /* RegexKit_sortedCollection_cache.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_sortedCollection_cache.instrument; sourceTree = "<group>"; };
+		1279EA210D1D424F004B3F13 /* blacklist.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = blacklist.txt; sourceTree = "<group>"; };
+		1279EA220D1D424F004B3F13 /* url.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = url.txt; sourceTree = "<group>"; };
+		1279EA230D1D424F004B3F13 /* whitelist.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = whitelist.txt; sourceTree = "<group>"; };
 		127B94390CC6EF92003E7257 /* Makefile.dist */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; path = Makefile.dist; sourceTree = "<group>"; };
+		127DE38B0D120B1000F1B037 /* RKSortedRegexCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RKSortedRegexCollection.h; sourceTree = "<group>"; };
+		127DE38C0D120B1000F1B037 /* RKSortedRegexCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKSortedRegexCollection.m; sourceTree = "<group>"; };
 		1299AE850C78AC97007F3859 /* Makefile.pcre */ = {isa = PBXFileReference; explicitFileType = sourcecode.make; fileEncoding = 4; path = Makefile.pcre; sourceTree = "<group>"; };
 		1299AEAA0C78AE4A007F3859 /* pcre.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = pcre.h; sourceTree = "<group>"; };
 		1299AFAA0C78C14F007F3859 /* Constants.tmpl */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = Constants.tmpl; path = Source/Documentation/Templates/Constants.tmpl; sourceTree = "<group>"; };
@@ -257,6 +286,16 @@
 		1299AFB80C78C14F007F3859 /* RKEnumerator.tmpl */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = RKEnumerator.tmpl; path = Source/Documentation/Templates/RKEnumerator.tmpl; sourceTree = "<group>"; };
 		1299AFB90C78C14F007F3859 /* RKRegex.tmpl */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = RKRegex.tmpl; path = Source/Documentation/Templates/RKRegex.tmpl; sourceTree = "<group>"; };
 		1299AFBA0C78C14F007F3859 /* toc.tmpl */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = toc.tmpl; path = Source/Documentation/Templates/toc.tmpl; sourceTree = "<group>"; };
+		12A012CD0D1616F900B751C9 /* sortedRegexCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sortedRegexCollection.h; sourceTree = "<group>"; };
+		12A012CE0D1616F900B751C9 /* sortedRegexCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = sortedRegexCollection.m; sourceTree = "<group>"; };
+		12A013260D161CC400B751C9 /* RKTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RKTestCase.h; sourceTree = "<group>"; };
+		12A013270D161CC400B751C9 /* RKTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKTestCase.m; sourceTree = "<group>"; };
+		12A0132A0D16209E00B751C9 /* RegexKitPrivateAtomic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitPrivateAtomic.h; sourceTree = "<group>"; };
+		12A0132F0D1628FA00B751C9 /* RegexKitPrivateThreads.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitPrivateThreads.h; sourceTree = "<group>"; };
+		12A013310D162C1100B751C9 /* RegexKitPrivateMemory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitPrivateMemory.h; sourceTree = "<group>"; };
+		12A013330D162E4100B751C9 /* RegexKitPrivateDTrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitPrivateDTrace.h; sourceTree = "<group>"; };
+		12A0136F0D1633E400B751C9 /* RegexKitPrivateLocalization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitPrivateLocalization.h; sourceTree = "<group>"; };
+		12A0138B0D1638EE00B751C9 /* NSStringPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSStringPrivate.h; sourceTree = "<group>"; };
 		12B8D2D40CC4BBBE00B47ECD /* pcre_desc.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = pcre_desc.plist; sourceTree = "<group>"; };
 		12B8D2D50CC4BBBE00B47ECD /* pcre_info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = pcre_info.plist; sourceTree = "<group>"; };
 		12BA3EA20CB86EE300F82B79 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
@@ -265,8 +304,10 @@
 		12BD45740CB6AA9400EBA014 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		12BD48300CB6CD4B00EBA014 /* ChangeLog */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ChangeLog; sourceTree = "<group>"; };
 		12BD49A30CB75A6900EBA014 /* ReleaseNotes */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ReleaseNotes; sourceTree = "<group>"; };
-		12D5817F0C80B75500674FA2 /* enumeration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = enumeration.h; path = Source/unitTests/enumeration.h; sourceTree = "<group>"; };
-		12D581800C80B75500674FA2 /* enumeration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = enumeration.m; path = Source/unitTests/enumeration.m; sourceTree = "<group>"; };
+		12D0764B0D1832350081AFD7 /* RKThreadPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RKThreadPool.h; sourceTree = "<group>"; };
+		12D0764C0D1832350081AFD7 /* RKThreadPool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKThreadPool.m; sourceTree = "<group>"; };
+		12D5817F0C80B75500674FA2 /* enumeration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = enumeration.h; sourceTree = "<group>"; };
+		12D581800C80B75500674FA2 /* enumeration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = enumeration.m; sourceTree = "<group>"; };
 		12DB19EC0C787E1700735165 /* NSArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSArray.h; sourceTree = "<group>"; };
 		12DB19ED0C787E1700735165 /* NSDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDictionary.h; sourceTree = "<group>"; };
 		12DB19EE0C787E1700735165 /* NSObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSObject.h; sourceTree = "<group>"; };
@@ -337,6 +378,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12A012F10D161A4E00B751C9 /* Cocoa.framework in Frameworks */,
+				12A012DE0D161A4600B751C9 /* SenTestingKit.framework in Frameworks */,
+				12A012F60D161A5B00B751C9 /* RegexKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -372,7 +416,7 @@
 				1299AFA80C78C118007F3859 /* Documentation */,
 				12EACB470CBC153F00175505 /* GNUstep */,
 				12DB19EA0C787DE700735165 /* RegexKit */,
-				1264D5610C7A4FDE0044B285 /* Unit Tests */,
+				1264D5610C7A4FDE0044B285 /* unitTests */,
 				32C88DFF0371C24200C91783 /* Other Sources */,
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
 				034768DFFF38A50411DB9C8B /* Products */,
@@ -394,6 +438,8 @@
 			children = (
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
 				089C1666FE841158C02AAC07 /* InfoPlist.strings */,
+				122E89DD0D0DD2FA00FCC2CB /* Localizable.strings */,
+				122E8A340D0DE1D100FCC2CB /* pcre.strings */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -458,6 +504,8 @@
 				123A83D30CEEBFDC009DF564 /* RegexKit_match_timinig.instrument */,
 				123A86AF0CF157D0009DF564 /* RegexKit_per_second.instrument */,
 				123A86310CEFD04E009DF564 /* RegexKit_performance_notes.instrument */,
+				1279E95E0D1D15C2004B3F13 /* RegexKit_sortedCollection_cache.instrument */,
+				121141A70D14DABD00EB8DF2 /* RegexKit_sortedCollection_timing.instrument */,
 			);
 			path = DTrace;
 			sourceTree = "<group>";
@@ -582,47 +630,55 @@
 			path = Source/Build/Xcode;
 			sourceTree = "<group>";
 		};
-		1264D5610C7A4FDE0044B285 /* Unit Tests */ = {
+		1264D5610C7A4FDE0044B285 /* unitTests */ = {
 			isa = PBXGroup;
 			children = (
 				1264D5730C7A50480044B285 /* Resources */,
+				12A013290D161D6F00B751C9 /* Scripts */,
 				1264D5720C7A50160044B285 /* Headers */,
-				1264D5620C7A50100044B285 /* debug.sh */,
 				1264D5640C7A50100044B285 /* NSDate.m */,
+				12A013270D161CC400B751C9 /* RKTestCase.m */,
 				1264D5680C7A50100044B285 /* collectionAdditions.m */,
 				1264D5660C7A50100044B285 /* core.m */,
 				12D581800C80B75500674FA2 /* enumeration.m */,
 				1264D56A0C7A50100044B285 /* functionality.m */,
 				1264D56C0C7A50100044B285 /* multithreading.m */,
+				12A012CE0D1616F900B751C9 /* sortedRegexCollection.m */,
 				1264D56E0C7A50100044B285 /* stringConversion.m */,
 				1264D5700C7A50100044B285 /* timing.m */,
 				122F45CA0CE097D600B25051 /* unicode.m */,
 			);
-			name = "Unit Tests";
+			name = unitTests;
+			path = Source/unitTests;
 			sourceTree = "<group>";
 		};
 		1264D5720C7A50160044B285 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
 				1264D5630C7A50100044B285 /* NSDate.h */,
+				12A013260D161CC400B751C9 /* RKTestCase.h */,
 				1264D5670C7A50100044B285 /* collectionAdditions.h */,
 				1264D5650C7A50100044B285 /* core.h */,
 				12D5817F0C80B75500674FA2 /* enumeration.h */,
 				1264D5690C7A50100044B285 /* functionality.h */,
 				1264D56B0C7A50100044B285 /* multithreading.h */,
+				12A012CD0D1616F900B751C9 /* sortedRegexCollection.h */,
 				1264D56D0C7A50100044B285 /* stringConversion.h */,
 				1264D56F0C7A50100044B285 /* timing.h */,
 				122F45C90CE097D600B25051 /* unicode.h */,
 			);
-			name = Headers;
+			path = Headers;
 			sourceTree = "<group>";
 		};
 		1264D5730C7A50480044B285 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				1264D5710C7A50100044B285 /* Unit Tests-Info.plist */,
+				1279EA210D1D424F004B3F13 /* blacklist.txt */,
+				1279EA220D1D424F004B3F13 /* url.txt */,
+				1279EA230D1D424F004B3F13 /* whitelist.txt */,
+				1264D5710C7A50100044B285 /* Info.plist */,
 			);
-			name = Resources;
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		1264D6890C7A677C0044B285 /* Static */ = {
@@ -699,6 +755,14 @@
 			name = Templates;
 			sourceTree = "<group>";
 		};
+		12A013290D161D6F00B751C9 /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				1264D5620C7A50100044B285 /* debug.sh */,
+			);
+			path = Scripts;
+			sourceTree = "<group>";
+		};
 		12DB19EA0C787DE700735165 /* RegexKit */ = {
 			isa = PBXGroup;
 			children = (
@@ -714,6 +778,8 @@
 				12DB1A160C787E3D00735165 /* RKPlaceholder.m */,
 				12DB1A170C787E3D00735165 /* RKPrivate.m */,
 				12DB1A180C787E3D00735165 /* RKRegex.m */,
+				127DE38C0D120B1000F1B037 /* RKSortedRegexCollection.m */,
+				12D0764C0D1832350081AFD7 /* RKThreadPool.m */,
 				12DB1A190C787E3D00735165 /* RKUtility.m */,
 			);
 			name = RegexKit;
@@ -735,7 +801,6 @@
 			children = (
 				12DB19F20C787E1700735165 /* RKCache.h */,
 				12DB19F40C787E1700735165 /* RKEnumerator.h */,
-				12DB19F70C787E1700735165 /* RKPlaceholder.h */,
 				12DB19F90C787E1700735165 /* RKRegex.h */,
 				12DB19FB0C787E1700735165 /* RKUtility.h */,
 				12DB19F50C787E1700735165 /* RegexKit.h */,
@@ -749,10 +814,19 @@
 		12DB1B110C78960600735165 /* Private */ = {
 			isa = PBXGroup;
 			children = (
+				12A0138B0D1638EE00B751C9 /* NSStringPrivate.h */,
 				12DB19F10C787E1700735165 /* RKAutoreleasedMemory.h */,
-				12DB19F60C787E1700735165 /* RKLock.h */,
 				12DB19F30C787E1700735165 /* RKCoder.h */,
+				12DB19F60C787E1700735165 /* RKLock.h */,
+				12DB19F70C787E1700735165 /* RKPlaceholder.h */,
+				127DE38B0D120B1000F1B037 /* RKSortedRegexCollection.h */,
+				12D0764B0D1832350081AFD7 /* RKThreadPool.h */,
 				12DB19F80C787E1700735165 /* RegexKitPrivate.h */,
+				12A0132A0D16209E00B751C9 /* RegexKitPrivateAtomic.h */,
+				12A013330D162E4100B751C9 /* RegexKitPrivateDTrace.h */,
+				12A0136F0D1633E400B751C9 /* RegexKitPrivateLocalization.h */,
+				12A013310D162C1100B751C9 /* RegexKitPrivateMemory.h */,
+				12A0132F0D1628FA00B751C9 /* RegexKitPrivateThreads.h */,
 			);
 			name = Private;
 			sourceTree = "<group>";
@@ -844,12 +918,19 @@
 				12DB1A060C787E1700735165 /* RKLock.h in Headers */,
 				12DB1A070C787E1700735165 /* RKPlaceholder.h in Headers */,
 				12DB1A090C787E1700735165 /* RKRegex.h in Headers */,
+				127DE38D0D120B1000F1B037 /* RKSortedRegexCollection.h in Headers */,
+				12D0764D0D1832350081AFD7 /* RKThreadPool.h in Headers */,
 				12DB1A0B0C787E1700735165 /* RKUtility.h in Headers */,
 				12DB1A050C787E1700735165 /* RegexKit.h in Headers */,
 				12DB1A9C0C788DBB00735165 /* RegexKitDefines.h in Headers */,
 				12DB1A080C787E1700735165 /* RegexKitPrivate.h in Headers */,
 				12DB1A0A0C787E1700735165 /* RegexKitTypes.h in Headers */,
 				1299AEAB0C78AE4A007F3859 /* pcre.h in Headers */,
+				12A0132B0D16209E00B751C9 /* RegexKitPrivateAtomic.h in Headers */,
+				12A013320D162C1200B751C9 /* RegexKitPrivateMemory.h in Headers */,
+				12A013340D162E4100B751C9 /* RegexKitPrivateDTrace.h in Headers */,
+				12A013700D1633E400B751C9 /* RegexKitPrivateLocalization.h in Headers */,
+				12A0138C0D1638EE00B751C9 /* NSStringPrivate.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -927,7 +1008,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1264D97B0C7AC50E0044B285 /* Unit Tests-Info.plist in Resources */,
+				1279EA240D1D4262004B3F13 /* blacklist.txt in Resources */,
+				1279EA250D1D4262004B3F13 /* url.txt in Resources */,
+				1279EA260D1D4262004B3F13 /* whitelist.txt in Resources */,
+				12A013160D161AB200B751C9 /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -935,7 +1019,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				121140C50D139FE200EB8DF2 /* LICENSE in Resources */,
 				8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */,
+				122E89DF0D0DD2FA00FCC2CB /* Localizable.strings in Resources */,
+				122E8A360D0DE1D100FCC2CB /* pcre.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1009,7 +1096,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#\n# The source to this script can be found at:\n# Right click on Targets > Unit Tests > Run Script and choose Get Info\n#\n\n# Run the unit tests in this test bundle.\nif [ -x \"Source/unitTests/debug.sh\" ]; then\n  source \"Source/unitTests/debug.sh\"\nfi\n\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+			shellScript = "#\n# The source to this script can be found at:\n# Right click on Targets > Unit Tests > Run Script and choose Get Info\n#\n\n# Run the unit tests in this test bundle.\nif [ -x \"Source/unitTests/Scripts/debug.sh\" ]; then\n  source \"Source/unitTests/Scripts/debug.sh\"\nfi\n\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
 		};
 		1299AE690C78AB9C007F3859 /* buildPCRE.sh */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1033,11 +1120,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				1264D7880C7A95F80044B285 /* NSDate.m in Sources */,
+				12A013280D161CC400B751C9 /* RKTestCase.m in Sources */,
 				1264D83B0C7A9D7D0044B285 /* collectionAdditions.m in Sources */,
 				1264D7890C7A95F80044B285 /* core.m in Sources */,
 				12D581810C80B75500674FA2 /* enumeration.m in Sources */,
 				1264D8580C7A9E0F0044B285 /* functionality.m in Sources */,
 				122401ED0CCD5E15006F56F9 /* multithreading.m in Sources */,
+				12A012CF0D1616F900B751C9 /* sortedRegexCollection.m in Sources */,
 				1264D8560C7A9DF90044B285 /* stringConversion.m in Sources */,
 				122401EC0CCD5D89006F56F9 /* timing.m in Sources */,
 				122F45CB0CE097D600B25051 /* unicode.m in Sources */,
@@ -1048,6 +1137,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				124F5D370CEC06DB00AD798D /* RegexKitProbes.d in Sources */,
 				12DB1A1A0C787E3D00735165 /* NSArray.m in Sources */,
 				12E04CDC0CF551A600794477 /* NSData.m in Sources */,
 				12DB1A1B0C787E3D00735165 /* NSDictionary.m in Sources */,
@@ -1062,8 +1152,9 @@
 				12DB1A240C787E3D00735165 /* RKPlaceholder.m in Sources */,
 				12DB1A250C787E3D00735165 /* RKPrivate.m in Sources */,
 				12DB1A260C787E3D00735165 /* RKRegex.m in Sources */,
+				127DE38E0D120B1100F1B037 /* RKSortedRegexCollection.m in Sources */,
+				12D0764E0D1832350081AFD7 /* RKThreadPool.m in Sources */,
 				12DB1A270C787E3D00735165 /* RKUtility.m in Sources */,
-				124F5D370CEC06DB00AD798D /* RegexKitProbes.d in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1114,6 +1205,22 @@
 				089C1667FE841158C02AAC07 /* InfoPlist.strings */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		122E89DD0D0DD2FA00FCC2CB /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				122E89DE0D0DD2FA00FCC2CB /* English */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		122E8A340D0DE1D100FCC2CB /* pcre.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				122E8A350D0DE1D100FCC2CB /* English */,
+			);
+			name = pcre.strings;
 			sourceTree = "<group>";
 		};
 		12EB3D610CC1707000162FCC /* Conclusion.rtf */ = {
@@ -1199,20 +1306,17 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"${BUILD_DIR}/${CONFIGURATION}",
 					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
+				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(DEVELOPER_FRAMEWORKS_DIR)\"";
 				GCC_ENABLE_OBJC_GC = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				INFOPLIST_FILE = "Source/unitTests/Unit Tests-Info.plist";
+				HEADER_SEARCH_PATHS = Source/unitTests/Headers;
+				INFOPLIST_FILE = Source/unitTests/Resources/Info.plist;
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-framework",
-					Cocoa,
-					"-framework",
-					SenTestingKit,
-					"-framework",
-					RegexKit,
 					"${PCRE_TARGET_LIB_FILE}",
 				);
 				PRODUCT_NAME = "Unit Tests";
@@ -1226,20 +1330,17 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"${BUILD_DIR}/${CONFIGURATION}",
 					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
+				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(DEVELOPER_FRAMEWORKS_DIR)\"";
 				GCC_ENABLE_OBJC_GC = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				INFOPLIST_FILE = "Source/unitTests/Unit Tests-Info.plist";
+				HEADER_SEARCH_PATHS = Source/unitTests/Headers;
+				INFOPLIST_FILE = Source/unitTests/Resources/Info.plist;
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
-					"-framework",
-					Cocoa,
-					"-framework",
-					SenTestingKit,
-					"-framework",
-					RegexKit,
 					"${PCRE_TARGET_LIB_FILE}",
 				);
 				PRODUCT_NAME = "Unit Tests";
@@ -1269,6 +1370,7 @@
 				EXPORTED_SYMBOLS_FILE = "${PROJECT_EXPORTED_SYMBOLS_FILE}";
 				FRAMEWORK_VERSION = A;
 				GCC_ENABLE_OBJC_GC = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = "${inherited}";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"${PROJECT_HEADERS_ROOT}",
@@ -1276,6 +1378,11 @@
 				INFOPLIST_FILE = Source/Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"${XCODE_CFLAGS_FOR_OS}",
+					"-gfull",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"${PCRE_TARGET_LIB_FILE}",
@@ -1307,6 +1414,11 @@
 				INFOPLIST_FILE = Source/Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"${XCODE_CFLAGS_FOR_OS}",
+					"-gfull",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"${PCRE_TARGET_LIB_FILE}",

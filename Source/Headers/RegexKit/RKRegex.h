@@ -1,6 +1,7 @@
 //
 //  RKRegex.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -33,15 +34,19 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
+*/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+#ifndef _REGEXKIT_RKREGEX_H_
+#define _REGEXKIT_RKREGEX_H_ 1
 
 /*!
  @header   RKRegex
  @abstract An Objective-C Framework for Regular Expressions using the PCRE Library
 */
-
-#ifndef _RKREGEX_H_
-#define _RKREGEX_H_ 1
 
 #import <RegexKit/RegexKitDefines.h>
 #import <RegexKit/RegexKitTypes.h>
@@ -183,7 +188,11 @@
    <div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">Raises a @link RKRegexSyntaxErrorException RKRegexSyntaxErrorException @/link if <span class="argument">regexString</span> in combination with <span class="argument">options</span> is not a valid regular expression.</div></div></div></div>
  @result Returns a @link RKRegex RKRegex @/link object if successful, <span class="code">nil</span> otherwise.
 */
-- (id)initWithRegexString:(NSString * const)regexString options:(const RKCompileOption)options;
+- (id)initWithRegexString:(NSString * const RK_C99(restrict))regexString options:(const RKCompileOption)options;
+
++ (id)regexWithRegexString:(NSString * const RK_C99(restrict))regexString library:(NSString * const RK_C99(restrict))libraryString options:(const RKCompileOption)libraryOptions error:(NSError **)outError;
+
+- (id)initWithRegexString:(NSString * const RK_C99(restrict))regexString library:(NSString * const RK_C99(restrict))libraryString options:(const RKCompileOption)libraryOptions error:(NSError **)outError;
 
 /*!
  @method     regexString
@@ -256,6 +265,8 @@
  @result     The first capture index that matched in <span class="argument">matchedRanges</span> for <span class="argument">captureNameString</span>, otherwise @link NSNotFound NSNotFound @/link is returned if there were no successful matches for any of the captures indexes of <span class="argument">captureNameString</span>.
 */
 - (RKUInteger)captureIndexForCaptureName:(NSString * const RK_C99(restrict))captureNameString inMatchedRanges:(const NSRange * const RK_C99(restrict))matchedRanges;
+
+- (RKUInteger)captureIndexForCaptureName:(NSString * const RK_C99(restrict))captureNameString inMatchedRanges:(const NSRange * const RK_C99(restrict))matchedRanges error:(NSError **)outError;
 
 /*!
  @method     matchesCharacters:length:inRange:options:
@@ -338,4 +349,8 @@ if(captureRanges != NULL) {
 
 @end
 
-#endif // _RKREGEX_H_
+#endif // _REGEXKIT_RKREGEX_H_
+    
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif

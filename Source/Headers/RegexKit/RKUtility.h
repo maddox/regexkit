@@ -1,6 +1,7 @@
 //
 //  RKUtility.h
 //  RegexKit
+//  http://regexkit.sourceforge.net/
 //
 
 /*
@@ -33,8 +34,14 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/ 
+*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+#ifndef _REGEXKIT_RKUTILITY_H_
+#define _REGEXKIT_RKUTILITY_H_ 1
 
 /*!
  @header RKUtility
@@ -43,9 +50,6 @@
 #import <Foundation/Foundation.h>
 #import <RegexKit/RegexKitDefines.h>
 #import <RegexKit/RegexKitTypes.h>
-
-#ifndef _REUTILITY_H_
-#define _REUTILITY_H_ 1
 
 /*!
  @toc Functions
@@ -124,4 +128,8 @@ REGEXKIT_EXTERN NSString *RKStringFromCompileErrorCode(const RKCompileErrorCode 
 */
 REGEXKIT_EXTERN NSString *RKStringFromMatchErrorCode(const RKMatchErrorCode decodeErrorCode) RK_ATTRIBUTES(used);
   
-#endif // _REUTILITY_H_
+#endif // _REGEXKIT_RKUTILITY_H_
+    
+#ifdef __cplusplus
+  }  /* extern "C" */
+#endif
