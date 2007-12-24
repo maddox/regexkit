@@ -44,11 +44,43 @@
 */
 
 #import <RegexKit/RKLock.h>
+#import <sys/time.h>
 
 static int globalIsMultiThreaded = 0;
 
-static void releaseRKLockResources(     RKLock          * const self, SEL _cmd) RK_ATTRIBUTES(nonnull(1), used);
-static void releaseRKReadWriteResources(RKReadWriteLock * const self, SEL _cmd) RK_ATTRIBUTES(nonnull(1), used);
+static void releaseRKLockResources(         RKLock          * const self, SEL _cmd) RK_ATTRIBUTES(nonnull(1), used);
+static void releaseRKReadWriteResources(    RKReadWriteLock * const self, SEL _cmd) RK_ATTRIBUTES(nonnull(1), used);
+static void releaseRKConditionLockResources(RKConditionLock * const self, SEL _cmd) RK_ATTRIBUTES(nonnull(1), used);
+
+BOOL RKFastMutexLock(id const self, SEL _cmd, pthread_mutex_t *pthreadMutex, RKMutexLockStrategy mutexLockStrategy) {
+  BOOL lazyLock = ((mutexLockStrategy == RKMutexTryLazyLock) || (mutexLockStrategy == RKMutexLazyLock))    ? YES : NO;
+  BOOL tryLock  = ((mutexLockStrategy == RKMutexTryLazyLock) || (mutexLockStrategy == RKMutexTryFullLock)) ? YES : NO;
+  BOOL didLock  = NO;
+  
+  RK_PROBE(BEGINLOCK, self, 0, globalIsMultiThreaded);
+  
+  if((globalIsMultiThreaded == 0) && (lazyLock == YES)) {
+    if(RK_EXPECTED([NSThread isMultiThreaded] == NO, 1)) { RK_PROBE(ENDLOCK, self, 0, globalIsMultiThreaded, 1, 0); return(YES); }
+    RKAtomicCompareAndSwapInt(0, 1, &globalIsMultiThreaded);
+  }
+  
+  switch((tryLock == YES) ? pthread_mutex_trylock(pthreadMutex) : pthread_mutex_lock(pthreadMutex)) {
+    case 0: didLock = YES; break;
+    case EINVAL:  [[NSException rkException:@"RKLockingException" for:self selector:_cmd localizeReason:@"Lock attempt returned EINVAL error."] raise]; break;
+    case EDEADLK: [[NSException rkException:@"RKLockingException" for:self selector:_cmd localizeReason:@"Lock attempt returned EDEADLK error."] raise]; break;
+  }
+  
+  RK_PROBE(ENDLOCK, self, 0, globalIsMultiThreaded, didLock, 0 /*spinCount*/); 
+  return(didLock);
+}
+
+void RKFastMutexUnlock(id const self, SEL _cmd, pthread_mutex_t *pthreadMutex) {
+  switch(pthread_mutex_unlock(pthreadMutex)) {
+    case EINVAL: [[NSException rkException:@"RKLockingException" for:self selector:_cmd localizeReason:@"Lock attempt returned EINVAL error."] raise]; break;
+    case EPERM:  [[NSException rkException:@"RKLockingException" for:self selector:_cmd localizeReason:@"Lock attempt returned EPERM error."] raise]; break;
+  }
+  RK_PROBE(UNLOCK, self, 0, globalIsMultiThreaded); 
+}
 
 @implementation RKLock
 
@@ -59,55 +91,31 @@ static void releaseRKReadWriteResources(RKReadWriteLock * const self, SEL _cmd) 
 
 - (id)init
 {
-  int pthreadError = 0, initTryCount = 0, spuriousErrors = 0;
   pthread_mutexattr_t threadMutexAttribute;
+  int pthreadError = 0, initTryCount = 0;
   BOOL mutexAttributeInitialized = NO;
 
   if((self = [super init]) == NULL) { goto errorExit; }
-
   RKAutorelease(self);
+
+  lock = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
 
   if((pthreadError = pthread_mutexattr_init(&threadMutexAttribute))                              != 0) { NSLog(@"pthread_mutexattr_init returned #%d, %s.",    pthreadError, strerror(pthreadError)); goto errorExit; }
   mutexAttributeInitialized = YES;
   if((pthreadError = pthread_mutexattr_settype(&threadMutexAttribute, PTHREAD_MUTEX_ERRORCHECK)) != 0) { NSLog(@"pthread_mutexattr_settype returned #%d, %s.", pthreadError, strerror(pthreadError)); goto errorExit; }
-
-  lock = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
   
   while((pthreadError = pthread_mutex_init(&lock, &threadMutexAttribute)) != 0) {
-    if(pthreadError == EAGAIN) {
-      initTryCount++;
-      if(initTryCount > 5) { NSLog(@"pthread_mutex_init returned EAGAIN 5 times, giving up."); goto errorExit; }
-      RKThreadYield();
-      continue;
-    }
+    if(pthreadError == EAGAIN)  { initTryCount++; if(initTryCount > 5) { NSLog(@"pthread_mutex_init returned EAGAIN 5 times, giving up."); goto errorExit; } RKThreadYield(); continue; }
     if(pthreadError == EINVAL)  { NSLog(@"pthread_mutex_init returned EINVAL.");  goto errorExit; }
     if(pthreadError == EDEADLK) { NSLog(@"pthread_mutex_init returned EDEADLK."); goto errorExit; }
     if(pthreadError == ENOMEM)  { NSLog(@"pthread_mutex_init returned ENOMEM.");  goto errorExit; }
-    
-    if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
-      spuriousErrors++;
-      RKAtomicIncrementInteger(&spuriousErrorsCount);
-      NSLog(@"pthread_mutex_init returned an unknown error code #%d, %s. This may be a spurious error, retry %d of %d.", pthreadError, strerror(pthreadError), spuriousErrors, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
-    } else {
-      NSLog(@"pthread_mutex_init returned an unknown error code #%d, %s. Giving up after %d attempts.", pthreadError, strerror(pthreadError), RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
-      goto errorExit;
-    }
   }
 
-  if(mutexAttributeInitialized == YES) {
-    mutexAttributeInitialized = NO;
-    if((pthreadError = pthread_mutexattr_destroy(&threadMutexAttribute)) != 0) { NSLog(@"pthread_mutexattr_destroy returned #%d, %s.", pthreadError, strerror(pthreadError)); goto errorExit; }
-  }
-
+  if(mutexAttributeInitialized == YES) { mutexAttributeInitialized = NO; pthread_mutexattr_destroy(&threadMutexAttribute); }
   return(RKRetain(self));
 
 errorExit:
-
-  if(mutexAttributeInitialized == YES) {
-    mutexAttributeInitialized = NO;
-    if((pthreadError = pthread_mutexattr_destroy(&threadMutexAttribute)) != 0) { NSLog(@"pthread_mutexattr_destroy returned #%d, %s.", pthreadError, strerror(pthreadError)); goto errorExit; }
-  }
-
+  if(mutexAttributeInitialized == YES) { mutexAttributeInitialized = NO; pthread_mutexattr_destroy(&threadMutexAttribute); }
   return(NULL);
 }
 
@@ -129,14 +137,8 @@ static void releaseRKLockResources(RKLock * const self, SEL _cmd RK_ATTRIBUTES(u
   int pthreadError = 0, destroyTryCount = 0;
 
   while((pthreadError = pthread_mutex_destroy(&self->lock)) != 0) {
-    if(pthreadError == EBUSY) {
-      usleep(50);
-      destroyTryCount++;
-      if(destroyTryCount > 100) { NSLog(@"pthread_mutex_destroy returned EAGAIN 100 times, giving up."); goto errorExit; }
-      RKThreadYield();
-      continue;
-    }
-    if(pthreadError == EINVAL)  { NSLog(@"pthread_mutex_destroy returned EINVAL.");  goto errorExit; }
+    if(pthreadError == EBUSY)  { usleep(50); if(++destroyTryCount > 100) { NSLog(@"pthread_mutex_destroy returned EAGAIN 100 times, giving up."); goto errorExit; } continue; }
+    if(pthreadError == EINVAL) { NSLog(@"pthread_mutex_destroy returned EINVAL."); goto errorExit; }
   }
 
 errorExit:
@@ -155,98 +157,22 @@ errorExit:
 
 - (BOOL)lock
 {
-  return(RKFastLock(self));
+  return(RKFastMutexLock(self, _cmd, &lock, RKMutexLazyLock));
 }
 
 - (void)unlock
 {
-  RKFastUnlock(self);
-}
-
-- (void)setDebug:(const BOOL)enable
-{
-  debuggingEnabled = enable;
-}
-
-- (RKUInteger)busyCount
-{
-  return(busyCount);
-}
-
-- (RKUInteger)spinCount
-{
-  return(spinCount);
-}
-
-- (void)clearCounters
-{
-  busyCount = 0;
-  spinCount = 0;
+  return(RKFastMutexUnlock(self, _cmd, &lock));
 }
 
 BOOL RKFastLock(RKLock * const self) {
-  int pthreadError = 0, spuriousErrors = 0, spinCount = 0;
-  NSString * RK_C99(restrict) functionString = @"pthread_mutex_trylock";
-  BOOL didLock = NO;
-
-  RK_PROBE(BEGINLOCK, self, 0, globalIsMultiThreaded);
-
-  if(globalIsMultiThreaded == 0) {
-    if(RK_EXPECTED([NSThread isMultiThreaded] == NO, 1)) { RK_PROBE(ENDLOCK, self, 0, globalIsMultiThreaded, 1, 0); return(YES); }
-    RKAtomicCompareAndSwapInt(0, 1, &globalIsMultiThreaded);
-  }
-
-  if(RK_EXPECTED((pthreadError = pthread_mutex_trylock(&self->lock)) == 0, 1)) { return(YES); } // Fast exit on the common acquired lock case.
-  
-  switch(pthreadError) {
-    case 0:                                               didLock = YES; goto exitNow; break; // Lock was acquired
-    case EBUSY:  spinCount++; if(self->debuggingEnabled == YES) { self->busyCount++; } break; // Do nothing, we need to wait on the lock, which we do after the switch
-    case EINVAL: NSLog(@"%@ returned EINVAL.", functionString);          goto exitNow; break; // XXX Hopeless?
-    default:
-      if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
-        spuriousErrors++;
-        RKAtomicIncrementInteger(&self->spuriousErrorsCount);
-        NSLog(@"%@ returned an unknown error code %d. This may be a spurious error, retry %d of %d.", functionString, pthreadError, spuriousErrors, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
-      } else { NSLog(@"%@ returned an unknown error code %d. Giving up after %d attempts.", functionString, pthreadError, spuriousErrors); goto exitNow; }
-      break;
-  }
-  
-  functionString = (self->debuggingEnabled == YES) ? @"pthread_mutex_trylock":@"pthread_mutex_lock";
-  
-  do {
-    if(self->debuggingEnabled == YES) { pthreadError = pthread_mutex_trylock(&self->lock); } else { pthreadError = pthread_mutex_lock(&self->lock); }
-      
-    switch(pthreadError) {
-      case 0:                                                                                    didLock = YES; goto exitNow; break; // Lock was acquired
-      case EBUSY:   spinCount++; if(self->debuggingEnabled == YES) { self->spinCount++; }                    RKThreadYield(); break; // Yield and then try again
-      case EINVAL:  NSLog(@"%@ returned EINVAL after a trylock succeeded without any error.", functionString);  goto exitNow; break; // XXX Hopeless?
-      case EDEADLK: NSLog(@"%@ returned EDEADLK after a trylock succeeded without any error.", functionString); goto exitNow; break; // XXX Hopeless?
-      default:
-        if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
-          spuriousErrors++;
-          RKAtomicIncrementInteger(&self->spuriousErrorsCount);
-          NSLog(@"%@ returned an unknown error code %d. This may be a spurious error, retry %d of %d.", functionString, pthreadError, spuriousErrors, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
-        } else { NSLog(@"%@ returned an unknown error code %d. Giving up after %d attempts.", functionString, pthreadError, spuriousErrors); goto exitNow; }
-        break;
-    }    
-  } while(pthreadError != 0);
-
-exitNow:
-  RK_PROBE(ENDLOCK, self, 0, globalIsMultiThreaded, didLock, spinCount); 
-  return(didLock);
+  return(RKFastMutexLock(self, @selector(lock), &self->lock, RKMutexLazyLock));
 }
 
 void RKFastUnlock(RKLock * const self) {
-  int pthreadError = 0;
-  
-  RK_PROBE(UNLOCK, self, 0, globalIsMultiThreaded); 
-
-  if(globalIsMultiThreaded == 0) { return; }
-  if(RK_EXPECTED((pthreadError = pthread_mutex_unlock(&self->lock)) != 0, 0)) {
-    if(pthreadError == EINVAL) { NSLog(@"pthread_mutex_unlock returned EINVAL.");           return; }
-    if(pthreadError == EPERM)  { NSLog(@"pthread_mutex_unlock returned EPERM, not owner? Current thread: %@, main thread? %@", [NSThread currentThread], RKYesOrNo([NSThread isMainThread])); sleep(10); return; }
-  }
+  return(RKFastMutexUnlock(self, @selector(unlock), &self->lock));
 }
+
 
 @end
 
@@ -259,30 +185,18 @@ void RKFastUnlock(RKLock * const self) {
 
 - (id)init
 {
-  RKAutorelease(self);
+  int pthreadError = 0, initTryCount = 0;
   
   if((self = [super init]) == NULL) { goto errorExit; }
-  
-  int pthreadError = 0, initTryCount = 0, spuriousErrors = 0;
+  RKAutorelease(self);
 
   readWriteLock = (pthread_rwlock_t)PTHREAD_RWLOCK_INITIALIZER;
   
   while((pthreadError = pthread_rwlock_init(&readWriteLock, NULL)) != 0) {
-    if(pthreadError == EAGAIN) {
-      initTryCount++;
-      if(initTryCount > 5) { NSLog(@"pthread_rwlock_init returned EAGAIN 5 times, giving up."); goto errorExit; }
-      RKThreadYield();
-      continue;
-    }
+    if(pthreadError == EAGAIN)  { if(++initTryCount > 5) { NSLog(@"pthread_rwlock_init returned EAGAIN 5 times, giving up."); goto errorExit; } RKThreadYield(); continue; }
     if(pthreadError == EINVAL)  { NSLog(@"pthread_rwlock_init returned EINVAL.");  goto errorExit; }
     if(pthreadError == EDEADLK) { NSLog(@"pthread_rwlock_init returned EDEADLK."); goto errorExit; }
     if(pthreadError == ENOMEM)  { NSLog(@"pthread_rwlock_init returned ENOMEM.");  goto errorExit; }
-    
-    if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
-      spuriousErrors++;
-      RKAtomicIncrementInteger(&spuriousErrorsCount);
-      NSLog(@"pthread_rwlock_init returned an unknown error code %d. This may be a spurious error, retry %d of %d.", pthreadError, spuriousErrors, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
-    } else { NSLog(@"pthread_rwlock_init returned an unknown error code %d. Giving up after %d attempts.", pthreadError, spuriousErrors); goto errorExit; }
   }
   
   return(RKRetain(self));
@@ -309,13 +223,7 @@ static void releaseRKReadWriteResources(RKReadWriteLock * const self, SEL _cmd R
   int pthreadError = 0, destroyTryCount = 0;
   
   while((pthreadError = pthread_rwlock_destroy(&self->readWriteLock)) != 0) {
-    if(pthreadError == EBUSY) {
-      usleep(50);
-      destroyTryCount++;
-      if(destroyTryCount > 100) { NSLog(@"pthread_rwlock_destroy returned EAGAIN 100 times, giving up."); goto errorExit; }
-      RKThreadYield();
-      continue;
-    }
+    if(pthreadError == EBUSY)  { usleep(50); if(++destroyTryCount > 100) { NSLog(@"pthread_rwlock_destroy returned EAGAIN 100 times, giving up."); goto errorExit; } continue; }
     if(pthreadError == EPERM)  { NSLog(@"pthread_rwlock_destroy returned EPERM.");  goto errorExit; }
     if(pthreadError == EINVAL) { NSLog(@"pthread_rwlock_destroy returned EINVAL."); goto errorExit; }
   }
@@ -433,7 +341,7 @@ BOOL RKFastReadWriteLockWithStrategy(RKReadWriteLock * const self, const RKReadW
       default:
         if((spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) || (lockStrategy == RKLockTryForWriting)) {
           spuriousErrors++;
-          RKAtomicIncrementInteger(&self->spuriousErrorsCount);
+          RKAtomicIncrementIntegerBarrier(&self->spuriousErrorsCount);
           NSLog(@"%@ returned an unknown error code %d. This may be a spurious error, retry %d of %d.", functionString, pthreadError, spuriousErrors, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
         } else { NSLog(@"%@ returned an unknown error code %d. Giving up after %d attempts.", functionString, pthreadError, spuriousErrors); goto exitNow; }
         break;
@@ -455,7 +363,7 @@ BOOL RKFastReadWriteLockWithStrategy(RKReadWriteLock * const self, const RKReadW
         default:
           if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
             spuriousErrors++;
-            RKAtomicIncrementInteger(&self->spuriousErrorsCount);
+            RKAtomicIncrementIntegerBarrier(&self->spuriousErrorsCount);
             NSLog(@"%@ returned an unknown error code %d. This may be a spurious error, retry %d of %d.", functionString, pthreadError, spuriousErrors, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
           } else { NSLog(@"%@ returned an unknown error code %d. Giving up after %d attempts.", functionString, pthreadError, spuriousErrors); goto exitNow; }
           break;
@@ -476,7 +384,7 @@ BOOL RKFastReadWriteLockWithStrategy(RKReadWriteLock * const self, const RKReadW
       default:
         if((spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) || (lockStrategy == RKLockTryForReading)){
           spuriousErrors++;
-          RKAtomicIncrementInteger(&self->spuriousErrorsCount);
+          RKAtomicIncrementIntegerBarrier(&self->spuriousErrorsCount);
           NSLog(@"%@ returned an unknown error code %d. This may be a spurious error, retry %d of %d.", functionString, pthreadError, spuriousErrors, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
         } else { NSLog(@"%@ returned an unknown error code %d. Giving up after %d attempts.", functionString, pthreadError, spuriousErrors); goto exitNow; }
         break;
@@ -486,8 +394,9 @@ BOOL RKFastReadWriteLockWithStrategy(RKReadWriteLock * const self, const RKReadW
     functionString = (self->debuggingEnabled == YES) ? @"pthread_rwlock_tryrdlock":@"pthread_rwlock_rdlock";
     
     do {
-      if(self->debuggingEnabled == YES) { pthreadError = pthread_rwlock_tryrdlock(&self->readWriteLock); } else { pthreadError = pthread_rwlock_rdlock(&self->readWriteLock); }
-      
+      //if(self->debuggingEnabled == YES) { pthreadError = pthread_rwlock_tryrdlock(&self->readWriteLock); } else { pthreadError = pthread_rwlock_rdlock(&self->readWriteLock); }
+      pthreadError = pthread_rwlock_rdlock(&self->readWriteLock);
+
       switch(pthreadError) {
         case 0:                                                                                    didLock = YES; goto exitNow; break; // Lock was acquired
         case EAGAIN:                                                                                                                   // drop through
@@ -498,7 +407,7 @@ BOOL RKFastReadWriteLockWithStrategy(RKReadWriteLock * const self, const RKReadW
         default:
           if(spuriousErrors < RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS) {
             spuriousErrors++;
-            RKAtomicIncrementInteger(&self->spuriousErrorsCount);
+            RKAtomicIncrementIntegerBarrier(&self->spuriousErrorsCount);
             NSLog(@"%@ returned an unknown error code %d. This may be a spurious error, retry %d of %d.", functionString, pthreadError, spuriousErrors, RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS);
           } else { NSLog(@"%@ returned an unknown error code %d. Giving up after %d attempts.", functionString, pthreadError, spuriousErrors); goto exitNow; }
           break;
@@ -524,5 +433,248 @@ void RKFastReadWriteUnlock(RKReadWriteLock * const self) {
     if(pthreadError == EPERM)  { NSLog(@"pthread_mutex_unlock returned EPERM, not owner?"); return; }
   }
 }
+
+@end
+
+
+
+
+
+
+@implementation RKConditionLock
+
++ (void)setMultithreaded:(const BOOL)enable
+{
+  if(enable == YES) { globalIsMultiThreaded = YES; }
+}
+
+- (id)initWithCondition:(RKInteger)initCondition
+{
+  pthread_mutexattr_t threadMutexAttribute;
+  int pthreadError = 0, initTryCount = 0;
+  BOOL mutexAttributeInitialized = NO;
+  
+  if((self = [self init]) == NULL) { goto errorExit; }
+  RKAutorelease(self);
+  
+  pthreadMutex     = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+  pthreadCondition = (pthread_cond_t)PTHREAD_COND_INITIALIZER;
+
+  if((pthreadError = pthread_mutexattr_init(&threadMutexAttribute))                              != 0) { NSLog(@"pthread_mutexattr_init returned #%d, %s.",    pthreadError, strerror(pthreadError)); goto errorExit; }
+  mutexAttributeInitialized = YES;
+  if((pthreadError = pthread_mutexattr_settype(&threadMutexAttribute, PTHREAD_MUTEX_ERRORCHECK)) != 0) { NSLog(@"pthread_mutexattr_settype returned #%d, %s.", pthreadError, strerror(pthreadError)); goto errorExit; }
+  
+  while((pthreadError = pthread_mutex_init(&pthreadMutex, &threadMutexAttribute)) != 0) {
+    if(pthreadError == EAGAIN) { initTryCount++; if(initTryCount > 5) { NSLog(@"pthread_mutex_init returned EAGAIN 5 times, giving up."); goto errorExit; } RKThreadYield(); continue; }
+    if(pthreadError == EINVAL) { NSLog(@"pthread_mutex_init returned EINVAL."); goto errorExit; }
+    if(pthreadError == ENOMEM) { NSLog(@"pthread_mutex_init returned ENOMEM."); goto errorExit; }
+  }
+
+  if(mutexAttributeInitialized == YES) { mutexAttributeInitialized = NO; pthread_mutexattr_destroy(&threadMutexAttribute); }
+
+  initTryCount = 0;
+  while((pthreadError = pthread_cond_init(&pthreadCondition, NULL)) != 0) {
+    if(pthreadError == EAGAIN) { if(++initTryCount > 5) { NSLog(@"pthread_cond_init returned EAGAIN 5 times, giving up."); goto errorExit; } RKThreadYield(); continue; }
+    if(pthreadError == EINVAL) { NSLog(@"pthread_cond_init returned EINVAL.");  goto errorExit; }
+    if(pthreadError == ENOMEM) { NSLog(@"pthread_cond_init returned ENOMEM.");  goto errorExit; }
+  }
+    
+  currentLockCondition = initCondition;
+  
+  return(RKRetain(self));
+  
+errorExit:
+  if(mutexAttributeInitialized == YES) { mutexAttributeInitialized = NO; pthread_mutexattr_destroy(&threadMutexAttribute); }
+  return(NULL);
+}
+
+- (void)dealloc
+{
+  releaseRKConditionLockResources(self, _cmd);
+  [super dealloc];
+}
+
+#ifdef    ENABLE_MACOSX_GARBAGE_COLLECTION
+- (void)finalize
+{
+  releaseRKConditionLockResources(self, _cmd);
+  [super finalize];
+}
+#endif // ENABLE_MACOSX_GARBAGE_COLLECTION
+
+static void releaseRKConditionLockResources(RKConditionLock * const self, SEL _cmd RK_ATTRIBUTES(unused)) {
+  int pthreadError = 0, destroyTryCount = 0;
+  
+  while((pthreadError = pthread_cond_destroy(&self->pthreadCondition)) != 0) {
+    if(pthreadError == EBUSY)  { usleep(50); if(++destroyTryCount > 100) { NSLog(@"pthread_cond_destroy returned EAGAIN 100 times, giving up."); goto errorExit; } continue; }
+    if(pthreadError == EINVAL) { NSLog(@"pthread_cond_destroy returned EINVAL.");  goto errorExit; }
+  }
+  
+  destroyTryCount = 0;
+  while((pthreadError = pthread_mutex_destroy(&self->pthreadMutex)) != 0) {
+    if(pthreadError == EBUSY)  { usleep(50); if(++destroyTryCount > 100) { NSLog(@"pthread_mutex_destroy returned EAGAIN 100 times, giving up."); goto errorExit; } continue; }
+    if(pthreadError == EINVAL) { NSLog(@"pthread_mutex_destroy returned EINVAL.");  goto errorExit; }
+  }
+  
+errorExit:
+  return;
+}
+
+- (RKUInteger)hash
+{
+  return((RKUInteger)self);
+}
+
+- (BOOL)isEqual:(id)anObject
+{
+  if(self == anObject) { return(YES); } else { return(NO); }
+}
+
+- (RKInteger)condition
+{
+  return(currentLockCondition);
+}
+
+- (void)lockWhenCondition:(RKInteger)condition
+{
+  RKFastConditionLock(self, _cmd, condition, RKConditionLockWhenCondition, 0.0);
+}
+
+- (BOOL)tryLock
+{
+  return(RKFastConditionLock(self, _cmd, 0, RKConditionLockAnyCondition, 0.0));
+}
+
+- (BOOL)tryLockWhenCondition:(RKInteger)condition
+{
+  return(RKFastConditionLock(self, _cmd, condition, RKConditionLockTryWhenCondition, 0.0));
+}
+
+- (void)unlockWithCondition:(RKInteger)condition
+{
+  RKFastConditionUnlock(self, _cmd, condition);
+}
+
+- (BOOL)lockBeforeDate:(NSDate *)limit
+{
+  return(RKFastConditionLock(self, _cmd, 0, RKConditionLockTryAnyConditionUntilTime, [limit timeIntervalSince1970]));
+}
+
+- (BOOL)lockWhenCondition:(RKInteger)condition beforeDate:(NSDate *)limit
+{
+  return(RKFastConditionLock(self, _cmd, condition, RKConditionLockTryWhenConditionUntilTime, [limit timeIntervalSince1970]));
+}
+
+- (BOOL)lockBeforeTimeIntervalSinceNow:(NSTimeInterval)seconds
+{
+  return(RKFastConditionLock(self, _cmd, 0, RKConditionLockTryAnyConditionUntilTime, seconds));
+}
+
+- (BOOL)lockWhenCondition:(RKInteger)condition beforeTimeIntervalSinceNow:(NSTimeInterval)seconds
+{
+  return(RKFastConditionLock(self, _cmd, condition, RKConditionLockTryWhenConditionUntilTime, seconds));
+}
+
+- (BOOL)isLocked
+{
+  return(conditionIsLocked);
+}
+
+- (BOOL)isLockedByCurrentThread
+{
+  return(((conditionIsLocked == YES) && [[NSThread currentThread] isEqual:lockOwnerThread]));
+}
+
+- (BOOL)isLockedByThread:(NSThread *)thread
+{
+  return([thread isEqual:lockOwnerThread]);
+}
+
+- (NSThread *)lockOwnerThread
+{
+  return(RKAutorelease(RKRetain(lockOwnerThread)));
+}
+
+- (void)lock
+{
+  RKFastConditionLock(self, _cmd, 0, RKConditionLockAnyCondition, 0.0);  
+}
+
+- (void)unlock
+{
+  RKFastConditionUnlock(self, _cmd, currentLockCondition);
+}
+
+BOOL RKFastConditionLock(RKConditionLock * const self, SEL _cmd, RKInteger lockOnCondition, RKConditionLockStrategy conditionLockStrategy, NSTimeInterval relativeTime) {
+  BOOL didLock = NO, lockOnAnyCondition = NO, tryToLock = NO, isRelativeTime = NO, canTimeOut = NO, lockTimedOut = NO;
+  double relativeTimeIntegralPart, relativeTimeFractionalPart;
+  struct timespec pthreadConditionTimeSpec;
+  struct timeval nowTimeVal;
+  int pthreadError = 0;
+
+  switch(conditionLockStrategy) {
+    case RKConditionLockAnyCondition:                 lockOnAnyCondition = YES;                                         break;
+    case RKConditionLockWhenCondition:                                                                                  break;
+    case RKConditionLockTryAnyCondition:              lockOnAnyCondition = YES;                   tryToLock      = YES; break;
+    case RKConditionLockTryWhenCondition:                                                         tryToLock      = YES; break;
+    case RKConditionLockTryAnyConditionUntilTime:     lockOnAnyCondition = YES; canTimeOut = YES;                       break;
+    case RKConditionLockTryWhenConditionUntilTime:                              canTimeOut = YES;                       break;
+    case RKConditionLockTryAnyConditionRelativeTime:  lockOnAnyCondition = YES; canTimeOut = YES; isRelativeTime = YES; break;
+    case RKConditionLockTryWhenConditionRelativeTime:                           canTimeOut = YES; isRelativeTime = YES; break;
+    default: break;
+  }
+  
+  if(isRelativeTime == YES) { gettimeofday(&nowTimeVal, NULL); relativeTime += (NSTimeInterval)((double)nowTimeVal.tv_sec + (1.0E-6 * (double)nowTimeVal.tv_usec)); }
+  
+  if(canTimeOut == YES) {
+    relativeTimeFractionalPart       = modf(relativeTime, &relativeTimeIntegralPart);
+    pthreadConditionTimeSpec.tv_sec  = (long)relativeTimeIntegralPart;
+    pthreadConditionTimeSpec.tv_nsec = (long)(relativeTimeFractionalPart * 1.0E9);
+  }
+  
+  BOOL mutexLocked = RKFastMutexLock(self, _cmd, &self->pthreadMutex, (tryToLock == YES) ? RKMutexTryFullLock : RKMutexFullLock);
+
+  if(    (mutexLocked == NO) && (tryToLock == YES)) { goto exitNow; }
+  else if(mutexLocked == NO) { [[NSException rkException:@"RKConditionLockException" for:self selector:_cmd localizeReason:@"Mutex did not lock as expected."] raise]; }
+  
+  if((self->conditionIsLocked == YES) && pthread_equal(self->lockOwner, pthread_self())) { [[NSException rkException:@"RKConditionLockException" for:self selector:_cmd localizeReason:@"This RKConditionLock is already locked by this thread."] raise]; }
+  
+  while((((self->currentLockCondition != lockOnCondition) && (lockOnAnyCondition == NO)) || (self->conditionIsLocked == YES)) && (lockTimedOut == NO)) {
+    if(canTimeOut == YES) { pthreadError = pthread_cond_timedwait(&self->pthreadCondition, &self->pthreadMutex, &pthreadConditionTimeSpec); }
+    else {                  pthreadError = pthread_cond_wait(     &self->pthreadCondition, &self->pthreadMutex); }
+    
+    if((pthreadError == ETIMEDOUT) || ((pthreadError == EINVAL) && (canTimeOut == YES))) { lockTimedOut = YES; }
+    else if(pthreadError != 0) { [[NSException rkException:@"RKConditionLockException" for:self selector:_cmd localizeReason:@"pthread_cond != 0, is %d '%s'.", pthreadError, strerror(pthreadError)] raise]; }
+  }
+  NSCParameterAssert((pthreadError == ETIMEDOUT) ? (canTimeOut == YES) : YES);
+  NSCParameterAssert((lockTimedOut == YES) ? ((pthreadError == ETIMEDOUT) || (pthreadError == EINVAL)) : YES);
+
+  if(lockTimedOut == NO) {
+    NSCParameterAssert(self->conditionIsLocked == NO);
+    NSCParameterAssert((self->currentLockCondition == lockOnCondition) || (lockOnAnyCondition == YES));
+    
+    self->conditionIsLocked    = YES;
+    self->lockOwner            = pthread_self();
+    self->lockOwnerThread      = [NSThread currentThread];
+    self->currentLockCondition = (lockOnAnyCondition == YES) ? self->currentLockCondition : lockOnCondition;
+    didLock                    = YES;
+  }
+  RKFastMutexUnlock(self, _cmd, &self->pthreadMutex);
+
+exitNow:
+  RK_PROBE(ENDLOCK, self, 0, globalIsMultiThreaded, didLock, 0);
+  return(didLock);
+}
+
+void RKFastConditionUnlock(RKConditionLock * const self, SEL _cmd, RKInteger unlockWithCondition) {
+  if(RKFastMutexLock(self, _cmd, &self->pthreadMutex, RKMutexFullLock) == NO) { [[NSException rkException:@"RKConditionLockException" for:self selector:_cmd localizeReason:@"Mutex did not lock as expected."] raise]; }
+  if((self->conditionIsLocked == NO) || (pthread_equal(self->lockOwner, pthread_self()) == 0)) { [[NSException rkException:@"RKConditionLockException" for:self selector:_cmd localizeReason:@"Illegal unlock attempt. conditionIsLocked: %@, thread is lock owner: %@.", RKYesOrNo(self->conditionIsLocked), RKYesOrNo(pthread_equal(self->lockOwner, pthread_self()))] raise]; }
+  
+  self->conditionIsLocked    = NO;
+  self->currentLockCondition = unlockWithCondition;
+  pthread_cond_broadcast(&self->pthreadCondition);
+  RKFastMutexUnlock(self, _cmd, &self->pthreadMutex);
+}
+
 
 @end

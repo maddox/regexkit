@@ -104,7 +104,7 @@ provider RegexKit {
   probe SortedRegexCompare(void *, NSUInteger, void *, NSUInteger, char *, NSUInteger, NSUInteger, NSUInteger, NSUInteger, int);
 
   /* object *, hash, hits, misses, not founds, hits %, misses %, not founds %*/
-  probe SortedRegexCache(void *, NSUInteger, NSUInteger, NSUInteger, NSUInteger, NSUInteger, double *, double *, double *);
+  probe SortedRegexCache(void *, NSUInteger, NSUInteger, NSUInteger, NSUInteger, double *, double *);
 };
 
 #pragma D attributes Unstable/Unstable/Common provider RegexKit provider

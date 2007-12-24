@@ -7,10 +7,10 @@
 		<targetType launched="true" existing="true" all="true" />
 		<brush name="Default"/>
 		<stack ustack="true" kstack="false" jstack="false" />
-		<probe_definition index="0" event_name="Begin Match" probe="RegexKit*:::BeginSortedRegexMatch" silent_script="self->compileStartTime = vtimestamp;\nnself->matchTargetString = (arg3 == 0) ? \'&lt;NULL&gt;\' : copyinstr(arg3);" predicate="" attach_debugger="">
+		<probe_definition index="0" event_name="Begin Match" probe="RegexKit*:::BeginSortedRegexMatch" silent_script="self->sortedRegexMatchStartTime = vtimestamp;\nnself->matchTargetString = (arg3 == 0) ? \'&lt;NULL&gt;\' : copyinstr(arg3);" predicate="" attach_debugger="">
 		</probe_definition>
 
-		<probe_definition index="1" event_name="End Match" probe="RegexKit*:::EndSortedRegexMatch" silent_script="self->compileElapsedTime = (vtimestamp - self->compileStartTime);\nnself->regexString = ((arg2 == 0) || (arg4 == 0)) ? \'\' : copyinstr(arg4);\nnself->resortRequiredString = ((arg9 &amp; 0x01) == 0) ? \'No\' : \'Yes\';\nnself->didMatchString = (arg2 == 0) ? \'No\' : \'Yes\';\nnself->cachedLookupString = ((arg9 &amp; 0x02) == 0) ? \'regex\' : \'cache\';\nnself->lowestIndexString = ((arg9 &amp; 0x04) == 0) ? \'No\' : \'Yes\';" predicate="" attach_debugger="">
+		<probe_definition index="1" event_name="End Match" probe="RegexKit*:::EndSortedRegexMatch" silent_script="self->compileElapsedTime = (vtimestamp - self->sortedRegexMatchStartTime);\nnself->regexString = ((arg2 == 0) || (arg4 == 0)) ? \'\' : copyinstr(arg4);\nnself->resortRequiredString = ((arg9 &amp; 0x01) == 0) ? \'No\' : \'Yes\';\nnself->didMatchString = (arg2 == 0) ? \'No\' : \'Yes\';\nnself->cachedLookupString = ((arg9 &amp; 0x02) == 0) ? \'regex\' : \'cache\';\nnself->lowestIndexString = ((arg9 &amp; 0x04) == 0) ? \'No\' : \'Yes\';" predicate="" attach_debugger="">
 		  <field index="0" name="Thread" code="tid" type="%x" width="15" truncation="middle"/>
 		  <field index="1" name="RKSortedRegexCollection Object" code="arg0" type="%x" width="15" truncation="middle"/>
 		  <field index="2" name="Hash" code="arg1" type="%x" width="15" truncation="middle"/>

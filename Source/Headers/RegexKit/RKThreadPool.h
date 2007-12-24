@@ -52,8 +52,9 @@ extern "C" {
 #import <Foundation/Foundation.h>
 #import <RegexKit/RegexKit.h>
 #import <pthread.h>
+#import <RegexKit/RKLock.h>
 
-@class RKLock;
+@class RKLock, RKConditionLock;
 
 #define RKAtomicTestAndSetBit(bit, ptr) if(RKAtomicTestAndSetBarrier((bit),   (ptr)) == 1) { NSLog(@"[%s : %5d] Bit was already set.  Bit: " #bit " Ptr: " #ptr, __FILE__, __LINE__); }
 #define RKAtomicTestAndClrBit(bit, ptr) if(RKAtomicTestAndClearBarrier((bit), (ptr)) == 0) { NSLog(@"[%s : %5d] Bit was already cleared.  Bit: " #bit " Ptr: " #ptr, __FILE__, __LINE__); }
@@ -98,7 +99,7 @@ enum {
 
 struct threadPoolJob {
   unsigned char    jobStatus;
-  NSConditionLock *jobLock;
+  RKConditionLock *jobLock;
   RKUInteger       activeThreadsCount;
   
   int (*jobFunction)(void *);
@@ -117,7 +118,7 @@ typedef struct threadPoolJob RK_STRONG_REF RKThreadPoolJob;
                 unsigned char     threadPoolControl;
   
                 NSThread        **threads;
-                NSConditionLock **locks;
+                RKConditionLock **locks;
   RK_STRONG_REF unsigned char    *threadStatus;
   RK_STRONG_REF unsigned char    *lockStatus;
 

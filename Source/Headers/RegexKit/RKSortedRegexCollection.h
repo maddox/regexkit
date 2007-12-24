@@ -62,7 +62,6 @@ struct collectionElement {
 
 typedef struct collectionElement RK_STRONG_REF RKCollectionElement;
 
-
 enum {
   RKUnknownCollection    = 0,
   RKArrayCollection      = 1,
@@ -107,11 +106,9 @@ typedef struct _sortedRegexCollectionThreadMatchState RK_STRONG_REF RKSortedRege
   RK_STRONG_REF RKCollectionElement **sortedElements;
   RKUInteger            elementsCount;
 
-  RK_STRONG_REF RKUInteger           *cacheElementsHash;
-  RK_STRONG_REF unsigned char        *cacheElementsStatus;
-  RK_STRONG_REF RKCollectionElement **cacheElements;
+  RK_STRONG_REF RKUInteger           *cacheObjectHash;
   
-  RKUInteger cacheHits, cacheMisses, cacheNotFound;
+  RKUInteger cacheHits, cacheMisses;
 }
 
 + (RKCache *)sortedRegexCollectionCache;

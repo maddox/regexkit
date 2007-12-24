@@ -52,12 +52,21 @@ extern "C" {
 
 #define RKLOCK_MAX_SPURIOUS_ERROR_ATTEMPTS 2
 
+enum {
+  RKMutexDidNotLock  = -1,
+  RKMutexTryLazyLock = 0,
+  RKMutexTryFullLock = 1,
+  RKMutexLazyLock    = 2,
+  RKMutexFullLock    = 3,
+};
+
+typedef RKInteger RKMutexLockStrategy;
+
+BOOL RKFastMutexLock(  id const self, SEL _cmd, pthread_mutex_t *pthreadMutex, RKMutexLockStrategy mutexLockStrategy) RK_ATTRIBUTES(nonnull(1,3), used, visibility("hidden"));
+void RKFastMutexUnlock(id const self, SEL _cmd, pthread_mutex_t *pthreadMutex) RK_ATTRIBUTES(nonnull(1,3), used, visibility("hidden"));
+
 @interface RKLock : NSObject <NSLocking> {
   pthread_mutex_t lock;
-  RKUInteger      busyCount;
-  RKUInteger      spinCount;
-  RKUInteger      spuriousErrorsCount;
-  BOOL            debuggingEnabled;
 }
 
 + (void)setMultithreaded:(const BOOL)enable;
@@ -65,15 +74,10 @@ extern "C" {
 - (BOOL)lock;
 - (void)unlock;
 
-- (void)setDebug:(const BOOL)enable;
-- (RKUInteger)busyCount;
-- (RKUInteger)spinCount;
-- (void)clearCounters;
+BOOL RKFastLock(  RKLock * const self) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
+void RKFastUnlock(RKLock * const self) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
 
 @end
-
-BOOL RKFastLock(  RKLock * const aLock) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
-void RKFastUnlock(RKLock * const aLock) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
 
 enum {
   RKLockDidNotLock                     = -1,
@@ -114,12 +118,62 @@ typedef RKInteger RKReadWriteLockStrategy;
 - (RKUInteger)writeSpinCount;
 - (void)clearCounters;
 
+BOOL RKFastReadWriteLockWithStrategy(RKReadWriteLock * const self, const RKReadWriteLockStrategy lockStrategy, RKReadWriteLockStrategy *lockLevelAcquired) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
+BOOL RKFastReadWriteLock(  RKReadWriteLock * const self, const BOOL forWriting) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
+void RKFastReadWriteUnlock(RKReadWriteLock * const self)                        RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
+
 @end
 
-BOOL RKFastReadWriteLockWithStrategy(RKReadWriteLock * const self, const RKReadWriteLockStrategy lockStrategy, RKReadWriteLockStrategy *lockLevelAcquired) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
-BOOL RKFastReadWriteLock(  RKReadWriteLock * const aLock, const BOOL forWriting) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
-void RKFastReadWriteUnlock(RKReadWriteLock * const aLock)                        RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
 
+enum {
+  RKConditionLockAnyCondition                 = 0,
+  RKConditionLockWhenCondition                = 1,
+  RKConditionLockTryAnyCondition              = 2,
+  RKConditionLockTryWhenCondition             = 3,
+  RKConditionLockTryAnyConditionUntilTime     = 4,
+  RKConditionLockTryWhenConditionUntilTime    = 5,
+  RKConditionLockTryAnyConditionRelativeTime  = 6,
+  RKConditionLockTryWhenConditionRelativeTime = 7
+};
+
+typedef RKUInteger RKConditionLockStrategy;
+
+@interface RKConditionLock : NSObject <NSLocking> {
+  pthread_mutex_t pthreadMutex;
+  pthread_cond_t  pthreadCondition;
+  
+  BOOL            conditionIsLocked;
+  pthread_t       lockOwner;
+  NSThread       *lockOwnerThread;
+  RKInteger       currentLockCondition;
+}
+
++ (void)setMultithreaded:(const BOOL)enable;
+
+- (id)initWithCondition:(RKInteger)condition;
+
+- (BOOL)isLocked;
+- (BOOL)isLockedByCurrentThread;
+- (BOOL)isLockedByThread:(NSThread *)thread;
+- (NSThread *)lockOwnerThread;
+
+- (RKInteger)condition;
+
+- (void)lockWhenCondition:(RKInteger)condition;
+- (BOOL)tryLock;
+- (BOOL)tryLockWhenCondition:(RKInteger)condition;
+- (void)unlockWithCondition:(RKInteger)condition;
+- (BOOL)lockBeforeDate:(NSDate *)limit;
+- (BOOL)lockWhenCondition:(RKInteger)condition beforeDate:(NSDate *)limit;
+- (BOOL)lockBeforeTimeIntervalSinceNow:(NSTimeInterval)seconds;
+- (BOOL)lockWhenCondition:(RKInteger)condition beforeTimeIntervalSinceNow:(NSTimeInterval)seconds;
+
+BOOL RKFastConditionLock(  RKConditionLock * const self, SEL _cmd, RKInteger lockOnCondition,   RKConditionLockStrategy conditionLockStrategy, NSTimeInterval relativeTime) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
+void RKFastConditionUnlock(RKConditionLock * const self, SEL _cmd, RKInteger unlockWithCondition) RK_ATTRIBUTES(nonnull(1), used, visibility("hidden"));
+
+@end
+
+  
 #endif // _REGEXKIT_RKLOCK_H_
 
 #ifdef __cplusplus

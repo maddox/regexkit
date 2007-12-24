@@ -160,9 +160,7 @@ errorExit:
   
   if((readWriteLock = [[RKReadWriteLock alloc] init]) == NULL) { initError = [NSError rkErrorWithDomain:NSCocoaErrorDomain code:-1 localizeDescription:@"Unable to instantiate multithreading lock."]; goto errorExit; }
 
-  if(RK_EXPECTED((cacheElementsHash   = RKCallocNotScanned(sizeof(RKUInteger)         * RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS)) == NULL, 0)) { [[NSException rkException:NSMallocException for:self selector:_cmd localizeReason:@"Unable to allocate memory for cacheElementsHash."]   raise]; goto errorExit; }
-  if(RK_EXPECTED((cacheElementsStatus = RKCallocNotScanned(sizeof(unsigned char )     * RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS)) == NULL, 0)) { [[NSException rkException:NSMallocException for:self selector:_cmd localizeReason:@"Unable to allocate memory for cacheElementsStatus."] raise]; goto errorExit; }
-  if(RK_EXPECTED((cacheElements       = RKCallocScanned(sizeof(RKCollectionElement *) * RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS)) == NULL, 0)) { [[NSException rkException:NSMallocException for:self selector:_cmd localizeReason:@"Unable to allocate memory for cacheElements."]       raise]; goto errorExit; }
+  if(RK_EXPECTED((cacheObjectHash = RKCallocNotScanned(sizeof(RKUInteger)         * RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS)) == NULL, 0)) { [[NSException rkException:NSMallocException for:self selector:_cmd localizeReason:@"Unable to allocate memory for cacheObjectHash."] raise]; goto errorExit; }
 
   libraryString             = RKRetain(initRegexEngineString);
   regexEngineCompileOptions = initRegexEngineOptions;
@@ -236,9 +234,7 @@ errorExit:
   
   if(elements             != NULL) { RKFreeAndNULL(elements);                                      }
   if(sortedElements       != NULL) { RKFreeAndNULL(sortedElements);                                }
-  if(cacheElementsHash    != NULL) { RKFreeAndNULL(cacheElementsHash);                             }
-  if(cacheElementsStatus  != NULL) { RKFreeAndNULL(cacheElementsStatus);                           }
-  if(cacheElements        != NULL) { RKFreeAndNULL(cacheElements);                                 }
+  if(cacheObjectHash      != NULL) { RKFreeAndNULL(cacheObjectHash);                               }
   
   [super dealloc];
 }
@@ -298,43 +294,23 @@ exitNow:
   char matchObjectCString[64];
   RK_PROBE(BEGINSORTEDREGEXMATCH, self, sortedRegexCollectionHash, collectionCount, RKGetUTF8String([matchObject description], matchObjectCString, 60));
 
-                RKUInteger           matchObjectHash      = [matchObject hash];
-                RKUInteger           matchObjectCacheHash = (matchObjectHash % RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS);
-  RK_STRONG_REF RKCollectionElement *matchedElement       = cacheElements[matchObjectCacheHash];
-                unsigned char        matchedStatus        = cacheElementsStatus[matchObjectCacheHash];
-                RKUInteger           matchedHash          = cacheElementsHash[matchObjectCacheHash];
-  
-  if(matchedHash == matchObjectHash) {
-    BOOL cacheHit    = ((matchedStatus & 0x01) == 0x01) ? YES : NO;
-    BOOL lowestMatch = ((matchedStatus & 0x03) == 0x03) ? YES : NO;
-    BOOL validHit    = ((cacheHit == YES) && ((lowestIndex == YES) ? lowestMatch : YES));
+  RKUInteger matchObjectHash      = [matchObject hash];
+  RKUInteger matchObjectCacheHash = (matchObjectHash % RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS);
 
-    RKUInteger matchingSortedIndex = 0, matchingCollectionIndex = (matchedElement == NULL) ? 0 : (matchedElement - elements);
-    if(validHit == YES) {
-      RKAtomicIncrementInteger(&cacheHits);
-      for(matchingSortedIndex = 0; matchingSortedIndex < collectionCount; matchingSortedIndex++) { if(sortedElements[matchingSortedIndex] == matchedElement) { break; } }
-      RKAtomicIncrementInteger(&matchedElement->hitCount);
-      if((matchingSortedIndex > 0) && (matchedElement->hitCount > sortedElements[(matchingSortedIndex + 1)]->hitCount)) { resortRequired = 1; }
-    } else { RKAtomicIncrementInteger(&cacheMisses); }
-    
+  if(cacheObjectHash[matchObjectCacheHash] == matchObjectHash) {
     RKFastReadWriteUnlock(readWriteLock);
-
-    RK_PROBE(ENDSORTEDREGEXMATCH, self, sortedRegexCollectionHash, (validHit == YES) ? matchedElement->regex : NULL, (validHit == YES) ? [matchedElement->regex hash] : 0, (validHit == YES) ? (char *)regexUTF8String(matchedElement->regex) : "", (validHit == YES) ? matchingSortedIndex : 0, collectionCount, (validHit == YES) ? matchedElement->hitCount : 0, (validHit == YES) ? matchingCollectionIndex : 0, (((resortRequired == NO) ? 0x00 : 0x01) | (0x02) | (((validHit == YES) && (lowestIndex == YES)) ? 0x04 : 0x00)));
-
+    RK_PROBE(ENDSORTEDREGEXMATCH, self, sortedRegexCollectionHash, NULL, 0, "", 0, collectionCount, 0, 0, 0x02);
+    cacheHits++;
     BOOL sortedRegexCacheProbeEnabled = RK_PROBE_ENABLED(SORTEDREGEXCACHE);
     if(RK_EXPECTED(sortedRegexCacheProbeEnabled != 0, 0)) {
-      double cacheTotal      = (double)(cacheHits + cacheMisses + cacheNotFound);
-      double hitsPercent     = (((double)cacheHits     / cacheTotal) * 100.0);
-      double missesPercent   = (((double)cacheMisses   / cacheTotal) * 100.0);
-      double notFoundPercent = (((double)cacheNotFound / cacheTotal) * 100.0);
-      
-      RK_PROBE_CONDITIONAL(SORTEDREGEXCACHE, sortedRegexCacheProbeEnabled, self, sortedRegexCollectionHash, collectionCount, cacheHits, cacheMisses, cacheNotFound, &hitsPercent, &missesPercent, &notFoundPercent);
+      double hitsPercent   = (((double)cacheHits   / ((double)(cacheHits + cacheMisses))) * 100.0);
+      double missesPercent = (((double)cacheMisses / ((double)(cacheHits + cacheMisses))) * 100.0);
+      RK_PROBE_CONDITIONAL(SORTEDREGEXCACHE, sortedRegexCacheProbeEnabled, self, sortedRegexCollectionHash, collectionCount, cacheHits, cacheMisses, &hitsPercent, &missesPercent);
     }
-
-    return((validHit == YES) ? matchedElement->regex : NULL);
+    return(NULL);
   }
 
-  RKAtomicIncrementInteger(&cacheNotFound);
+  cacheMisses++;
 
   RK_STRONG_REF RKSortedRegexCollectionThreadMatchState threadMatchState;
   memset(&threadMatchState, 0, sizeof(RKSortedRegexCollectionThreadMatchState));
@@ -363,13 +339,7 @@ exitNow:
   
   RK_PROBE(ENDSORTEDREGEXMATCH, self, sortedRegexCollectionHash, (matchHit == YES) ? threadMatchState.matchedRegex : NULL, (matchHit == YES) ? [threadMatchState.matchedRegex hash] : 0, (matchHit == YES) ? (char *)regexUTF8String(threadMatchState.matchedRegex) : "", (matchHit == YES) ? threadMatchState.matchingSortedIndex : 0, collectionCount, (matchHit == YES) ? sortedElements[threadMatchState.matchingSortedIndex]->hitCount : 0, (matchHit == YES) ? threadMatchState.matchingCollectionIndex : 0, (((resortRequired == NO) ? 0x00 : 0x01) | (((matchHit == YES) && (lowestIndex == YES)) ? 0x04 : 0x00)));
 
-  if(RK_EXPECTED(RKFastReadWriteLockWithStrategy(readWriteLock, RKLockForWriting, &acquiredLockLevel) == NO, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"Unable to acquire cache update write lock."] raise]; }
-  else {
-    cacheElementsHash[matchObjectCacheHash]   = matchObjectHash;
-    cacheElementsStatus[matchObjectCacheHash] = (((matchHit == YES) ? 0x01 : 0x00) | (((matchHit == YES) && (lowestIndex == YES)) ? 0x02 : 0x00));
-    cacheElements[matchObjectCacheHash]       = (matchHit == NO) ? NULL : sortedElements[threadMatchState.matchingSortedIndex];
-    RKFastReadWriteUnlock(readWriteLock);
-  }
+  if(matchHit == NO) { cacheObjectHash[matchObjectCacheHash] = matchObjectHash; }
 
   return(threadMatchState.matchedRegex);
 }
