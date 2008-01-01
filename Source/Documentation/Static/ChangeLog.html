@@ -103,6 +103,7 @@
 
   <li>Split the header file <span class="file">RegexKitPrivate.h</span> in to several files, <span class="file">RegexKitPrivateAtomic.h</span>, <span class="file">RegexKitPrivateDTrace.h</span>, <span class="file">RegexKitPrivateLocalization.h</span>, <span class="file">RegexKitPrivateMemory.h</span>, <span class="file">RegexKitPrivateThreads.h</span>, and <span class="file">NSStringPrivate.h</span>.</li>
   
+  <li>Changed @link RKRegex RKRegex @/link so that all of the class initialization takes place in the @link initialize +initialize @/link method.  Previously, some initialization took place in the @link load +load @/link method which meant it was executed even if the class was ultimately not used.  Also added guard checks at some function entry points since calling a function would not trigger the @link initalize +initalize @/link behavior.</li>
 </ul>
 
 <h3>Bug fixes</h3>

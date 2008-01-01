@@ -51,35 +51,22 @@ extern "C" {
 
 #import <Foundation/Foundation.h>
 #import <RegexKit/RegexKit.h>
-#import <pthread.h>
 #import <RegexKit/RKLock.h>
-
+#import <pthread.h>
+#import <sys/time.h>
+#import <stdlib.h>
+#import <sys/sysctl.h>
+#if       MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#import <mach/thread_act.h>
+#import <mach/thread_policy.h>
+#endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+  
 @class RKLock, RKConditionLock;
 
-#define RKAtomicTestAndSetBit(bit, ptr) if(RKAtomicTestAndSetBarrier((bit),   (ptr)) == 1) { NSLog(@"[%s : %5d] Bit was already set.  Bit: " #bit " Ptr: " #ptr, __FILE__, __LINE__); }
-#define RKAtomicTestAndClrBit(bit, ptr) if(RKAtomicTestAndClearBarrier((bit), (ptr)) == 0) { NSLog(@"[%s : %5d] Bit was already cleared.  Bit: " #bit " Ptr: " #ptr, __FILE__, __LINE__); }
-
 enum {
-  RKThreadPoolStopBit            = 0,
-  RKThreadPoolReapingThreadsBit  = 1,
-  RKThreadPoolThreadsReapedBit   = 2
+  RKThreadPoolStop           = (1 << 0),
+  RKThreadPoolThreadsReaped  = (1 << 1)
 };
-
-enum {
-  RKThreadPoolStopMask           = (0x80 >> (RKThreadPoolStopBit           & 7)),
-  RKThreadPoolReapingThreadsMask = (0x80 >> (RKThreadPoolReapingThreadsBit & 7)),
-  RKThreadPoolThreadsReapedMask  = (0x80 >> (RKThreadPoolThreadsReapedBit  & 7))
-};
-
-
-enum {
-  RKThreadPoolJobFinishedBit  = 0
-};
-
-enum {
-  RKThreadPoolJobFinishedMask = (0x80 >> (RKThreadPoolJobFinishedBit & 7)),
-};
-
 
 enum {
   RKThreadConditionNotRunning  = 0,
@@ -98,7 +85,6 @@ enum {
 };
 
 struct threadPoolJob {
-  unsigned char    jobStatus;
   RKConditionLock *jobLock;
   RKUInteger       activeThreadsCount;
   
@@ -112,21 +98,18 @@ typedef struct threadPoolJob RK_STRONG_REF RKThreadPoolJob;
                 NSArray          *objectsArray;
                 RKUInteger        threadCount;
                 RKUInteger        liveThreads;
-  
-                RKUInteger        cpuCores;
-  
-                unsigned char     threadPoolControl;
+                
+                RKUInteger        threadPoolControl;
   
                 NSThread        **threads;
                 RKConditionLock **locks;
-  RK_STRONG_REF unsigned char    *threadStatus;
-  RK_STRONG_REF unsigned char    *lockStatus;
 
   RK_STRONG_REF RKThreadPoolJob  *jobs;
   RK_STRONG_REF RKThreadPoolJob **threadQueue;
 }
 
-- (id)initWithError:(NSError **)outError;
++ (id)defaultThreadPool;
+- (id)initWithThreadCount:(RKUInteger)initThreadCount error:(NSError **)outError;
 - (void)reapThreads;
 - (BOOL)wakeThread:(RKUInteger)threadNumber;
 - (BOOL)threadFunction:(int(*)(void *))function argument:(void *)argument;

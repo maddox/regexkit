@@ -54,6 +54,7 @@ extern "C" {
 #import <pthread.h>
 
 #define RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS 251
+//#define RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS 1021
 
 struct collectionElement {
   RKRegex    *regex;
@@ -106,7 +107,7 @@ typedef struct _sortedRegexCollectionThreadMatchState RK_STRONG_REF RKSortedRege
   RK_STRONG_REF RKCollectionElement **sortedElements;
   RKUInteger            elementsCount;
 
-  RK_STRONG_REF RKUInteger           *cacheObjectHash;
+  RK_STRONG_REF RKUInteger           *missedObjectHashCache;
   
   RKUInteger cacheHits, cacheMisses;
 }

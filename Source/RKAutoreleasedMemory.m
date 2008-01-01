@@ -51,12 +51,12 @@ static size_t  classSizeDifference                    = 0;
 static size_t  classAlignedSize                       = 0;
 
 //
-// +load is called when the runtime first loads a class or category.
+// +initialize is called by the runtime just before the class receives its first message.
 //
 
 @implementation RKAutoreleasedMemory
 
-+ (void)load
++ (void)initialize
 {
   RKAtomicMemoryBarrier(); // Extra cautious
   if(RKAutoreleasedMemoryLoadInitialized == 1) { return; }
@@ -82,6 +82,7 @@ static size_t  classAlignedSize                       = 0;
 @end
 
 void *autoreleasedMalloc(const size_t length) {
+  if(RK_EXPECTED(RKAutoreleasedMemoryLoadInitialized == 0, 0)) { [RKAutoreleasedMemory initalize]; } 
   RKAutoreleasedMemory * RK_C99(restrict) memoryObject = (RKAutoreleasedMemory *)NSAllocateObject(autoreleaseClass, (length + classSizeDifference), autoreleaseMallocZone);
   (*autoreleasePoolAddObjectIMP)(autoreleasePoolClass, autoreleasePoolAddObjectMethodSelector, memoryObject); // == [memoryObject autorelease];
   return((void *)(((char *)memoryObject) + classAlignedSize));

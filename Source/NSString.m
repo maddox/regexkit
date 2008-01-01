@@ -96,21 +96,17 @@ static CFArrayCallBacks noRetainArrayCallBacks = {0, NULL, RKTypeCollectionRelea
 @implementation NSString (RegexKitAdditions)
 
 //
-// +load is called when the runtime first loads a class or category.
-//
-// Split in to a function to handle non-Mac OS X Objective-C runtimes
-// that do not call +load on category extensions.  In particular, there is
-// a check added in RKParseReference if __GNUSTEP_RUNTIME__ is defined.
+// +initialize is called by the runtime just before the class receives its first message.
 //
 
-static void NSStringRKExtensionsLoadFunction(void);
+static void NSStringRKExtensionsInitializeFunction(void);
 
-+ (void)load
++ (void)initalize
 {
-  NSStringRKExtensionsLoadFunction();
+  NSStringRKExtensionsInitializeFunction();
 }
 
-static void NSStringRKExtensionsLoadFunction(void) {
+static void NSStringRKExtensionsInitializeFunction(void) {
   RKAtomicMemoryBarrier(); // Extra cautious
   if(NSStringRKExtensionsLoadInitialized == 1) { return; }
   
@@ -1205,10 +1201,7 @@ finishedParse:
       
       if(RK_EXPECTED((*startFormat == '@'), 1) && RK_EXPECTED((*(endFormat - 1) == 'd'), 1) && RK_EXPECTED(((startFormat + 1) == (endFormat - 1)), 1)) {
         static BOOL didPrintLockWarning = NO;
-#ifdef __GNUSTEP_RUNTIME__
-        // This is a work around for observed non-Mac OS X Objective-C runtime behavior what does not call +load for category extensions.
-        if(NSStringRKExtensionsLoadInitialized == 0) { NSStringRKExtensionsLoadFunction(); }
-#endif // __GNUSTEP_RUNTIME__
+        if(RK_EXPECTED(NSStringRKExtensionsLoadInitialized == 0, 0)) { NSStringRKExtensionsInitializeFunction(); } 
         if(RK_EXPECTED(RKFastLock(NSStringRKExtensionsNSDateLock) == NO, 0)) {
           if(didPrintLockWarning == NO) { NSLog(@"Unable to acquire the NSDate access serialization lock.  Heavy concurrent date conversions may return incorrect results."); didPrintLockWarning = YES; }
         }

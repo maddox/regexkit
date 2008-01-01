@@ -54,6 +54,7 @@ void vnsprintf(NSString * const formatString, va_list ap) {
   printf("%s", [logString UTF8String]);
 }
 
+#pragma mark -
 
 NSString *RKPrettyObjectMethodStringFunction(id self, SEL _cmd, NSString * const formatString, ...) {
   va_list ap;
@@ -66,8 +67,11 @@ NSString *RKPrettyObjectMethodStringFunction(id self, SEL _cmd, NSString * const
 }
 
 NSString *RKVPrettyObjectMethodStringFunction(id self, SEL _cmd, NSString * const formatString, va_list argList) {
-  return([[[NSString alloc] initWithFormat:[NSString stringWithFormat:@"%p [%@ %@]: %@", self, self == NULL ? @"NULL" : NSStringFromClass([(id)self class]), _cmd == NULL ? @"NULL" : NSStringFromSelector(_cmd), formatString == NULL ? @"(formatString is NULL)" : formatString] arguments:argList] autorelease]);
+  return([[[NSString alloc] initWithFormat:[NSString stringWithFormat:@"%p [%@ %@]: %@", self, self == NULL ? @"NULL" : NSStringFromClass([(id)self class]), _cmd == NULL ? @"" : NSStringFromSelector(_cmd), formatString == NULL ? @"(formatString is NULL)" : formatString] arguments:argList] autorelease]);
 }
+
+#pragma mark -
+#pragma mark NSError Additions
 
 @implementation NSError (RegexKitPrivate)
 
@@ -92,6 +96,9 @@ NSString *RKVPrettyObjectMethodStringFunction(id self, SEL _cmd, NSString * cons
 }
 
 @end
+
+#pragma mark -
+#pragma mark NSException Additions
 
 @implementation NSException (RegexKitPrivate)
 
@@ -120,6 +127,8 @@ NSString *RKVPrettyObjectMethodStringFunction(id self, SEL _cmd, NSString * cons
 }
 
 @end
+
+#pragma mark -
 
 int RKRegexPCRECallout(pcre_callout_block * const callout_block RK_ATTRIBUTES(unused)) {
   [[NSException exceptionWithName:RKRegexUnsupportedException reason:RKLocalizedString(@"Callouts are not supported.") userInfo:NULL] raise];

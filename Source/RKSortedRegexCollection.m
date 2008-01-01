@@ -63,7 +63,7 @@ NSString *RKStringFromCollectionType(RKCollectionType collectionType) {
   return(collectionTypeString);
 }
 
-static RKThreadPool *threadPool = NULL;
+//static RKThreadPool *threadPool = NULL;
 
 @implementation RKSortedRegexCollection
 
@@ -75,11 +75,6 @@ static RKThreadPool *threadPool = NULL;
   if(RKSortedRegexCollectionCache == NULL) {
     RKCache *tmpCache = RKAutorelease([[RKCache alloc] initWithDescription:RKLocalizedString(@"Sorted Regex Collection Matching Accelerator Cache")]);
     if(RKAtomicCompareAndSwapPtr(NULL, tmpCache, &RKSortedRegexCollectionCache)) { RKRetain(RKSortedRegexCollectionCache); RKDisableCollectorForPointer(RKSortedRegexCollectionCache); }
-  }
-
-  if(threadPool == NULL) {
-    RKThreadPool *tmpPool = RKAutorelease([[RKThreadPool alloc] init]);
-    if(RKAtomicCompareAndSwapPtr(NULL, tmpPool, &threadPool)) { RKRetain(threadPool); RKDisableCollectorForPointer(threadPool); }
   }
 }
 
@@ -160,7 +155,7 @@ errorExit:
   
   if((readWriteLock = [[RKReadWriteLock alloc] init]) == NULL) { initError = [NSError rkErrorWithDomain:NSCocoaErrorDomain code:-1 localizeDescription:@"Unable to instantiate multithreading lock."]; goto errorExit; }
 
-  if(RK_EXPECTED((cacheObjectHash = RKCallocNotScanned(sizeof(RKUInteger)         * RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS)) == NULL, 0)) { [[NSException rkException:NSMallocException for:self selector:_cmd localizeReason:@"Unable to allocate memory for cacheObjectHash."] raise]; goto errorExit; }
+  if(RK_EXPECTED((missedObjectHashCache = RKCallocNotScanned(sizeof(RKUInteger) * RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS)) == NULL, 0)) { [[NSException rkException:NSMallocException for:self selector:_cmd localizeReason:@"Unable to allocate memory for missedObjectHashCache."] raise]; goto errorExit; }
 
   libraryString             = RKRetain(initRegexEngineString);
   regexEngineCompileOptions = initRegexEngineOptions;
@@ -227,14 +222,14 @@ errorExit:
 
 - (void)dealloc
 {
-  if(readWriteLock        != NULL) { RKRelease(readWriteLock);        readWriteLock        = NULL; }
-  if(libraryString        != NULL) { RKRelease(libraryString);        libraryString        = NULL; }
-  if(collection           != NULL) { RKRelease(collection);           collection           = NULL; }
-  if(collectionRegexArray != NULL) { RKRelease(collectionRegexArray); collectionRegexArray = NULL; }
+  if(readWriteLock         != NULL) { RKRelease(readWriteLock);        readWriteLock        = NULL; }
+  if(libraryString         != NULL) { RKRelease(libraryString);        libraryString        = NULL; }
+  if(collection            != NULL) { RKRelease(collection);           collection           = NULL; }
+  if(collectionRegexArray  != NULL) { RKRelease(collectionRegexArray); collectionRegexArray = NULL; }
   
-  if(elements             != NULL) { RKFreeAndNULL(elements);                                      }
-  if(sortedElements       != NULL) { RKFreeAndNULL(sortedElements);                                }
-  if(cacheObjectHash      != NULL) { RKFreeAndNULL(cacheObjectHash);                               }
+  if(elements              != NULL) { RKFreeAndNULL(elements);                                      }
+  if(sortedElements        != NULL) { RKFreeAndNULL(sortedElements);                                }
+  if(missedObjectHashCache != NULL) { RKFreeAndNULL(missedObjectHashCache);                         }
   
   [super dealloc];
 }
@@ -294,23 +289,26 @@ exitNow:
   char matchObjectCString[64];
   RK_PROBE(BEGINSORTEDREGEXMATCH, self, sortedRegexCollectionHash, collectionCount, RKGetUTF8String([matchObject description], matchObjectCString, 60));
 
-  RKUInteger matchObjectHash      = [matchObject hash];
-  RKUInteger matchObjectCacheHash = (matchObjectHash % RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS);
+  RKUInteger matchObjectHash        = [matchObject hash];
+  RKUInteger matchObjectCacheHash   = (matchObjectHash % RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS);
+  BOOL sortedRegexCacheProbeEnabled = RK_PROBE_ENABLED(SORTEDREGEXCACHE);
 
-  if(cacheObjectHash[matchObjectCacheHash] == matchObjectHash) {
+  if(missedObjectHashCache[matchObjectCacheHash] == matchObjectHash) {
     RKFastReadWriteUnlock(readWriteLock);
     RK_PROBE(ENDSORTEDREGEXMATCH, self, sortedRegexCollectionHash, NULL, 0, "", 0, collectionCount, 0, 0, 0x02);
-    cacheHits++;
-    BOOL sortedRegexCacheProbeEnabled = RK_PROBE_ENABLED(SORTEDREGEXCACHE);
+
+    if(sortedRegexCacheProbeEnabled != 0) { RKAtomicIncrementIntegerBarrier(&cacheHits); } else { cacheHits++; }
     if(RK_EXPECTED(sortedRegexCacheProbeEnabled != 0, 0)) {
+      
       double hitsPercent   = (((double)cacheHits   / ((double)(cacheHits + cacheMisses))) * 100.0);
       double missesPercent = (((double)cacheMisses / ((double)(cacheHits + cacheMisses))) * 100.0);
       RK_PROBE_CONDITIONAL(SORTEDREGEXCACHE, sortedRegexCacheProbeEnabled, self, sortedRegexCollectionHash, collectionCount, cacheHits, cacheMisses, &hitsPercent, &missesPercent);
     }
+
     return(NULL);
   }
 
-  cacheMisses++;
+  if(sortedRegexCacheProbeEnabled != 0) { RKAtomicDecrementIntegerBarrier(&cacheMisses); } else { cacheMisses++; }
 
   RK_STRONG_REF RKSortedRegexCollectionThreadMatchState threadMatchState;
   memset(&threadMatchState, 0, sizeof(RKSortedRegexCollectionThreadMatchState));
@@ -322,9 +320,11 @@ exitNow:
   if([matchObject isMemberOfClass:[NSString class]]) { threadMatchState.matchStringBuffer = RKStringBufferWithString(matchObject); }
   else {                                               threadMatchState.matchStringBuffer = RKStringBufferWithString([matchObject description]); }
   
-  if([threadPool threadFunction:threadMatchEntryFunction argument:&threadMatchState] == NO) {
+  if([[RKThreadPool defaultThreadPool] threadFunction:threadMatchEntryFunction argument:&threadMatchState] == NO) {
+#ifndef   NS_BLOCK_ASSERTIONS
     static BOOL didPrint = NO;
     if(didPrint == NO) { NSLog(@"threadFunction returned NO? Executing in-line within the current thread."); didPrint = YES; }
+#endif // NS_BLOCK_ASSERTIONS
     threadMatchEntryFunction(&threadMatchState);
   }
   
@@ -339,7 +339,7 @@ exitNow:
   
   RK_PROBE(ENDSORTEDREGEXMATCH, self, sortedRegexCollectionHash, (matchHit == YES) ? threadMatchState.matchedRegex : NULL, (matchHit == YES) ? [threadMatchState.matchedRegex hash] : 0, (matchHit == YES) ? (char *)regexUTF8String(threadMatchState.matchedRegex) : "", (matchHit == YES) ? threadMatchState.matchingSortedIndex : 0, collectionCount, (matchHit == YES) ? sortedElements[threadMatchState.matchingSortedIndex]->hitCount : 0, (matchHit == YES) ? threadMatchState.matchingCollectionIndex : 0, (((resortRequired == NO) ? 0x00 : 0x01) | (((matchHit == YES) && (lowestIndex == YES)) ? 0x04 : 0x00)));
 
-  if(matchHit == NO) { cacheObjectHash[matchObjectCacheHash] = matchObjectHash; }
+  if(matchHit == NO) { missedObjectHashCache[matchObjectCacheHash] = matchObjectHash; }
 
   return(threadMatchState.matchedRegex);
 }

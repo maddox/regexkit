@@ -58,6 +58,9 @@
 static NSMapTableKeyCallBacks *cacheMapKeyCallBacks   = NULL;
 static int32_t                 RKCacheLoadInitialized = 0;
 
+#pragma mark -
+#pragma mark Misc Garbage Collection
+
 #ifdef ENABLE_MACOSX_GARBAGE_COLLECTION
 
 // This creates the support objects that we'll need if garbage collection is found to be enabled at run time.
@@ -84,6 +87,8 @@ void        intPointerFunctionsRelinquish(const void *item RK_ATTRIBUTES(unused)
 RKUInteger  intPointerFunctionsSize(const void *item RK_ATTRIBUTES(unused)) { return(sizeof(RKUInteger)); }
 
 #endif // ENABLE_MACOSX_GARBAGE_COLLECTION
+
+#pragma mark -
 
 
 + (void)load

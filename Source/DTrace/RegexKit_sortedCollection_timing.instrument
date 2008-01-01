@@ -27,7 +27,7 @@
 		  <field index="13" name="Collection Count" code="arg6" type="%d" width="10" truncation="right"/>
 		  <field index="14" name="Lowest Matching Index" code="self->lowestIndexString" type="%s" width="10" truncation="right"/>
 		  <field index="15" name="Resort Required" code="self->resortRequiredString" type="%s" width="10" truncation="right"/>
-		  <field index="16" name="nanoSec" code="self->compileElapsedTime" type="%d" width="10" truncation="right"/>
+		  <field index="16" name="uSec" code="self->compileElapsedTime / 1000" type="%d" width="10" truncation="right"/>
 		</probe_definition>
 
 	</extension>

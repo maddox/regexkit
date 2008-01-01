@@ -83,7 +83,7 @@ NSString * const RKRegexPCRELibrary = @"RKRegexPCRELibrary";
     if((objc_collect_function = dlsym(RTLD_DEFAULT, "objc_collect")) != NULL) {
       NSLog(@"objc_collection() function defined.");
     }
-    
+
     unitTestBundle = [[NSBundle bundleWithIdentifier:@"com.zang.RegexKit.Unit Tests"] retain];
     
     blacklistArray = [[[NSString stringWithContentsOfFile:[unitTestBundle pathForResource:@"blacklist" ofType:@"txt"] encoding:NSUTF8StringEncoding error:NULL] componentsSeparatedByString:@"\n"] retain];

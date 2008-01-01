@@ -52,6 +52,9 @@ static void releaseRKLockResources(         RKLock          * const self, SEL _c
 static void releaseRKReadWriteResources(    RKReadWriteLock * const self, SEL _cmd) RK_ATTRIBUTES(nonnull(1), used);
 static void releaseRKConditionLockResources(RKConditionLock * const self, SEL _cmd) RK_ATTRIBUTES(nonnull(1), used);
 
+#pragma mark -
+#pragma mark Mutex Functions
+
 BOOL RKFastMutexLock(id const self, SEL _cmd, pthread_mutex_t *pthreadMutex, RKMutexLockStrategy mutexLockStrategy) {
   BOOL lazyLock = ((mutexLockStrategy == RKMutexTryLazyLock) || (mutexLockStrategy == RKMutexLazyLock))    ? YES : NO;
   BOOL tryLock  = ((mutexLockStrategy == RKMutexTryLazyLock) || (mutexLockStrategy == RKMutexTryFullLock)) ? YES : NO;
@@ -81,6 +84,8 @@ void RKFastMutexUnlock(id const self, SEL _cmd, pthread_mutex_t *pthreadMutex) {
   }
   RK_PROBE(UNLOCK, self, 0, globalIsMultiThreaded); 
 }
+
+#pragma mark -
 
 @implementation RKLock
 
@@ -175,6 +180,8 @@ void RKFastUnlock(RKLock * const self) {
 
 
 @end
+
+#pragma mark -
 
 @implementation RKReadWriteLock
 
@@ -436,10 +443,7 @@ void RKFastReadWriteUnlock(RKReadWriteLock * const self) {
 
 @end
 
-
-
-
-
+#pragma mark -
 
 @implementation RKConditionLock
 
@@ -458,7 +462,7 @@ void RKFastReadWriteUnlock(RKReadWriteLock * const self) {
   RKAutorelease(self);
   
   pthreadMutex     = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
-  pthreadCondition = (pthread_cond_t)PTHREAD_COND_INITIALIZER;
+  pthreadCondition = (pthread_cond_t) PTHREAD_COND_INITIALIZER;
 
   if((pthreadError = pthread_mutexattr_init(&threadMutexAttribute))                              != 0) { NSLog(@"pthread_mutexattr_init returned #%d, %s.",    pthreadError, strerror(pthreadError)); goto errorExit; }
   mutexAttributeInitialized = YES;
@@ -520,6 +524,13 @@ errorExit:
   return;
 }
 
+- (NSString *)description
+{
+  NSMutableString *lockedString = [NSMutableString stringWithFormat:@"Locked = %@", RKYesOrNo(conditionIsLocked)];
+  if(conditionIsLocked == YES) { [lockedString appendFormat:@", Lock Owned by Thread = %@ (this thread: %@)", [self lockOwnerThread], RKYesOrNo([self isLockedByCurrentThread])]; }
+  return(RKLocalizedFormat(@"<%@: %p> %@, Condition = %lu", [self className], self, lockedString, (unsigned long)currentLockCondition));
+}
+
 - (RKUInteger)hash
 {
   return((RKUInteger)self);
@@ -530,49 +541,12 @@ errorExit:
   if(self == anObject) { return(YES); } else { return(NO); }
 }
 
+#pragma mark -
+#pragma mark Lock Information
+
 - (RKInteger)condition
 {
   return(currentLockCondition);
-}
-
-- (void)lockWhenCondition:(RKInteger)condition
-{
-  RKFastConditionLock(self, _cmd, condition, RKConditionLockWhenCondition, 0.0);
-}
-
-- (BOOL)tryLock
-{
-  return(RKFastConditionLock(self, _cmd, 0, RKConditionLockAnyCondition, 0.0));
-}
-
-- (BOOL)tryLockWhenCondition:(RKInteger)condition
-{
-  return(RKFastConditionLock(self, _cmd, condition, RKConditionLockTryWhenCondition, 0.0));
-}
-
-- (void)unlockWithCondition:(RKInteger)condition
-{
-  RKFastConditionUnlock(self, _cmd, condition);
-}
-
-- (BOOL)lockBeforeDate:(NSDate *)limit
-{
-  return(RKFastConditionLock(self, _cmd, 0, RKConditionLockTryAnyConditionUntilTime, [limit timeIntervalSince1970]));
-}
-
-- (BOOL)lockWhenCondition:(RKInteger)condition beforeDate:(NSDate *)limit
-{
-  return(RKFastConditionLock(self, _cmd, condition, RKConditionLockTryWhenConditionUntilTime, [limit timeIntervalSince1970]));
-}
-
-- (BOOL)lockBeforeTimeIntervalSinceNow:(NSTimeInterval)seconds
-{
-  return(RKFastConditionLock(self, _cmd, 0, RKConditionLockTryAnyConditionUntilTime, seconds));
-}
-
-- (BOOL)lockWhenCondition:(RKInteger)condition beforeTimeIntervalSinceNow:(NSTimeInterval)seconds
-{
-  return(RKFastConditionLock(self, _cmd, condition, RKConditionLockTryWhenConditionUntilTime, seconds));
 }
 
 - (BOOL)isLocked
@@ -595,18 +569,66 @@ errorExit:
   return(RKAutorelease(RKRetain(lockOwnerThread)));
 }
 
-- (void)lock
+#pragma mark -
+#pragma mark Locking Methods
+
+- (BOOL)tryLock
 {
-  RKFastConditionLock(self, _cmd, 0, RKConditionLockAnyCondition, 0.0);  
+  return(RKFastConditionLock(self, _cmd, 0, RKConditionLockAnyCondition, 0.0));
 }
+
+- (BOOL)tryLockWhenCondition:(RKInteger)condition
+{
+  return(RKFastConditionLock(self, _cmd, condition, RKConditionLockTryWhenCondition, 0.0));
+}
+
+- (BOOL)lock
+{
+  return(RKFastConditionLock(self, _cmd, 0, RKConditionLockAnyCondition, 0.0));
+}
+
+- (BOOL)lockBeforeDate:(NSDate *)limit
+{
+  return(RKFastConditionLock(self, _cmd, 0, RKConditionLockTryAnyConditionUntilTime, [limit timeIntervalSince1970]));
+}
+
+- (BOOL)lockBeforeTimeIntervalSinceNow:(NSTimeInterval)seconds
+{
+  return(RKFastConditionLock(self, _cmd, 0, RKConditionLockTryAnyConditionUntilTime, seconds));
+}
+
+- (void)lockWhenCondition:(RKInteger)condition
+{
+  RKFastConditionLock(self, _cmd, condition, RKConditionLockWhenCondition, 0.0);
+}
+
+- (BOOL)lockWhenCondition:(RKInteger)condition beforeDate:(NSDate *)limit
+{
+  return(RKFastConditionLock(self, _cmd, condition, RKConditionLockTryWhenConditionUntilTime, [limit timeIntervalSince1970]));
+}
+
+- (BOOL)lockWhenCondition:(RKInteger)condition beforeTimeIntervalSinceNow:(NSTimeInterval)seconds
+{
+  return(RKFastConditionLock(self, _cmd, condition, RKConditionLockTryWhenConditionUntilTime, seconds));
+}
+
+#pragma mark -
+#pragma mark Unlocking Methods
 
 - (void)unlock
 {
-  RKFastConditionUnlock(self, _cmd, currentLockCondition);
+  RKFastConditionUnlock(self, _cmd, currentLockCondition, RKConditionUnlockAndWakeAll);
 }
 
+- (void)unlockWithCondition:(RKInteger)condition
+{
+  RKFastConditionUnlock(self, _cmd, condition, RKConditionUnlockAndWakeAll);
+}
+
+#pragma mark -
+
 BOOL RKFastConditionLock(RKConditionLock * const self, SEL _cmd, RKInteger lockOnCondition, RKConditionLockStrategy conditionLockStrategy, NSTimeInterval relativeTime) {
-  BOOL didLock = NO, lockOnAnyCondition = NO, tryToLock = NO, isRelativeTime = NO, canTimeOut = NO, lockTimedOut = NO;
+  BOOL didLock = NO, lockOnAnyCondition = NO, tryToLock = NO, isRelativeTime = NO, canTimeOut = NO, lockTimedOut = NO, mutexLocked = NO;
   double relativeTimeIntegralPart, relativeTimeFractionalPart;
   struct timespec pthreadConditionTimeSpec;
   struct timeval nowTimeVal;
@@ -624,6 +646,9 @@ BOOL RKFastConditionLock(RKConditionLock * const self, SEL _cmd, RKInteger lockO
     default: break;
   }
   
+  if((tryToLock == YES) && ((self->conditionIsLocked == YES) || ((self->currentLockCondition != lockOnCondition) && (lockOnAnyCondition == NO)))) { goto exitNow; }
+  
+  if((canTimeOut == YES) && (isRelativeTime == NO)) { relativeTime = 0.0; }
   if(isRelativeTime == YES) { gettimeofday(&nowTimeVal, NULL); relativeTime += (NSTimeInterval)((double)nowTimeVal.tv_sec + (1.0E-6 * (double)nowTimeVal.tv_usec)); }
   
   if(canTimeOut == YES) {
@@ -632,14 +657,18 @@ BOOL RKFastConditionLock(RKConditionLock * const self, SEL _cmd, RKInteger lockO
     pthreadConditionTimeSpec.tv_nsec = (long)(relativeTimeFractionalPart * 1.0E9);
   }
   
-  BOOL mutexLocked = RKFastMutexLock(self, _cmd, &self->pthreadMutex, (tryToLock == YES) ? RKMutexTryFullLock : RKMutexFullLock);
+  mutexLocked = RKFastMutexLock(self, _cmd, &self->pthreadMutex, (tryToLock == YES) ? RKMutexTryFullLock : RKMutexFullLock);
 
-  if(    (mutexLocked == NO) && (tryToLock == YES)) { goto exitNow; }
-  else if(mutexLocked == NO) { [[NSException rkException:@"RKConditionLockException" for:self selector:_cmd localizeReason:@"Mutex did not lock as expected."] raise]; }
+  if((mutexLocked == NO) && (tryToLock == YES)) { goto exitNow; }
+  else if((mutexLocked == NO) && (tryToLock == NO)) { [[NSException rkException:@"RKConditionLockException" for:self selector:_cmd localizeReason:@"Mutex did not lock as expected."] raise]; }
   
-  if((self->conditionIsLocked == YES) && pthread_equal(self->lockOwner, pthread_self())) { [[NSException rkException:@"RKConditionLockException" for:self selector:_cmd localizeReason:@"This RKConditionLock is already locked by this thread."] raise]; }
+  pthread_t pthreadSelf = pthread_self();
   
-  while((((self->currentLockCondition != lockOnCondition) && (lockOnAnyCondition == NO)) || (self->conditionIsLocked == YES)) && (lockTimedOut == NO)) {
+  if((self->conditionIsLocked == YES) && pthread_equal(self->lockOwner, pthreadSelf)) { [[NSException rkException:@"RKConditionLockException" for:self selector:_cmd localizeReason:@"This RKConditionLock is already locked by this thread."] raise]; }
+  
+  if((tryToLock == YES) && ((self->conditionIsLocked == YES) || ((self->currentLockCondition != lockOnCondition) && (lockOnAnyCondition == NO)))) { goto exitNow; }
+  
+  while((((self->currentLockCondition != lockOnCondition) && (lockOnAnyCondition == NO)) || (self->conditionIsLocked == YES)) && (lockTimedOut == NO) && (tryToLock == NO)) {
     if(canTimeOut == YES) { pthreadError = pthread_cond_timedwait(&self->pthreadCondition, &self->pthreadMutex, &pthreadConditionTimeSpec); }
     else {                  pthreadError = pthread_cond_wait(     &self->pthreadCondition, &self->pthreadMutex); }
     
@@ -647,34 +676,37 @@ BOOL RKFastConditionLock(RKConditionLock * const self, SEL _cmd, RKInteger lockO
     else if(pthreadError != 0) { [[NSException rkException:@"RKConditionLockException" for:self selector:_cmd localizeReason:@"pthread_cond != 0, is %d '%s'.", pthreadError, strerror(pthreadError)] raise]; }
   }
   NSCParameterAssert((pthreadError == ETIMEDOUT) ? (canTimeOut == YES) : YES);
-  NSCParameterAssert((lockTimedOut == YES) ? ((pthreadError == ETIMEDOUT) || (pthreadError == EINVAL)) : YES);
-
-  if(lockTimedOut == NO) {
+  NSCParameterAssert((lockTimedOut == YES)       ? ((pthreadError == ETIMEDOUT) || (pthreadError == EINVAL)) : YES);
+  NSCParameterAssert((tryToLock    == YES)       ? ((self->conditionIsLocked == NO) && ((self->currentLockCondition == lockOnCondition) || (lockOnAnyCondition == YES))) : YES);
+   
+  if((self->conditionIsLocked == NO) && (lockTimedOut == NO) && ((self->currentLockCondition == lockOnCondition) || (lockOnAnyCondition == YES))) {
     NSCParameterAssert(self->conditionIsLocked == NO);
     NSCParameterAssert((self->currentLockCondition == lockOnCondition) || (lockOnAnyCondition == YES));
     
     self->conditionIsLocked    = YES;
-    self->lockOwner            = pthread_self();
+    self->lockOwner            = pthreadSelf;
     self->lockOwnerThread      = [NSThread currentThread];
     self->currentLockCondition = (lockOnAnyCondition == YES) ? self->currentLockCondition : lockOnCondition;
     didLock                    = YES;
   }
-  RKFastMutexUnlock(self, _cmd, &self->pthreadMutex);
 
 exitNow:
   RK_PROBE(ENDLOCK, self, 0, globalIsMultiThreaded, didLock, 0);
+  if(mutexLocked == YES) { RKFastMutexUnlock(self, _cmd, &self->pthreadMutex); mutexLocked = NO; }
   return(didLock);
 }
 
-void RKFastConditionUnlock(RKConditionLock * const self, SEL _cmd, RKInteger unlockWithCondition) {
+void RKFastConditionUnlock(RKConditionLock * const self, SEL _cmd, RKInteger unlockWithCondition, RKConditionUnlockStrategy conditionUnlockStrategy) {
   if(RKFastMutexLock(self, _cmd, &self->pthreadMutex, RKMutexFullLock) == NO) { [[NSException rkException:@"RKConditionLockException" for:self selector:_cmd localizeReason:@"Mutex did not lock as expected."] raise]; }
   if((self->conditionIsLocked == NO) || (pthread_equal(self->lockOwner, pthread_self()) == 0)) { [[NSException rkException:@"RKConditionLockException" for:self selector:_cmd localizeReason:@"Illegal unlock attempt. conditionIsLocked: %@, thread is lock owner: %@.", RKYesOrNo(self->conditionIsLocked), RKYesOrNo(pthread_equal(self->lockOwner, pthread_self()))] raise]; }
   
   self->conditionIsLocked    = NO;
   self->currentLockCondition = unlockWithCondition;
-  pthread_cond_broadcast(&self->pthreadCondition);
+
+  if(     conditionUnlockStrategy == RKConditionUnlockAndWakeOne) { pthread_cond_signal(   &self->pthreadCondition); }
+  else if(conditionUnlockStrategy == RKConditionUnlockAndWakeAll) { pthread_cond_broadcast(&self->pthreadCondition); }
+  
   RKFastMutexUnlock(self, _cmd, &self->pthreadMutex);
 }
-
 
 @end

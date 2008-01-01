@@ -36,13 +36,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <RegexKit/RKLock.h>
 #import <RegexKit/RegexKitPrivate.h>
 #import <RegexKit/RKThreadPool.h>
-#import <stdlib.h>
-#import <sys/sysctl.h>
-#import <mach/thread_act.h>
-#import <mach/thread_policy.h>
 
 // Used to provide lockBefore: NSDate timeIntervalSinceNow: time delays to locks.
 // These are 1.0/prime, jobQueueDelays prime < 100, threadStartDelays > 100
@@ -52,14 +47,73 @@
 static double jobQueueDelays[3]    = {0.0120481927710843, 0.0112359550561797, 0.0103092783505154};
 static double threadStartDelays[5] = {0.0099009900990099, 0.0097087378640776, 0.0093457943925233, 0.0091743119266055, 0.0088495575221238};
 
-@implementation RKThreadPool
+static id defaultThreadPoolSingleton = NULL;
+static RKUInteger threadPoolIsMultiThreaded = 0;
 
-- (id)init
-{
-  return([self initWithError:NULL]);
+#if       defined(__MACOSX_RUNTIME__) || (__FreeBSD__ >= 5)
+
+static RKUInteger cpuCores                = 0;
+static RKUInteger activeCPUCores          = 0;
+#ifdef    __MACOSX_RUNTIME__
+static time_t     lastActiveCPUCoresCheck = 0;
+#endif // __MACOSX_RUNTIME__
+
+static void updateCPUCounts(void) {
+  size_t sysctlUIntSize = sizeof(unsigned int);
+  unsigned int sysctlUInt = 0;
+  
+  if(RK_EXPECTED(cpuCores == 0, 0)) { if(sysctlbyname("hw.ncpu", &sysctlUInt, &sysctlUIntSize, NULL, 0) == 0) { cpuCores = sysctlUInt; } }
+
+  if(cpuCores > 1) {
+#ifdef    __MACOSX_RUNTIME__
+    time_t thisActiveCPUCoresCheck = time(NULL);
+    if((thisActiveCPUCoresCheck - lastActiveCPUCoresCheck) > 5) {
+      lastActiveCPUCoresCheck = thisActiveCPUCoresCheck;
+      if(sysctlbyname("hw.activecpu", &sysctlUInt, &sysctlUIntSize, NULL, 0) != 0) { sysctlUInt = cpuCores; }
+    }
+#endif // __MACOSX_RUNTIME__
+  }
+  activeCPUCores = sysctlUInt;
 }
 
-- (id)initWithError:(NSError **)outError
+#else  // !defined(__MACOSX_RUNTIME__) && (__FreeBSD__ < 5)
+
+static RKUInteger cpuCores       = 2;
+static RKUInteger activeCPUCores = 2;
+#define updateCPUCounts()
+
+#endif // defined(__MACOSX_RUNTIME__) || (__FreeBSD__ >= 5)
+
+@implementation RKThreadPool
+
++ (id)defaultThreadPool
+{
+  id currentDefaultThreadPoolSingleton = defaultThreadPoolSingleton;
+  BOOL cocoaIsMultiThreaded = [NSThread isMultiThreaded];
+  
+  if(RK_EXPECTED(threadPoolIsMultiThreaded == 0, 0) && RK_EXPECTED(cocoaIsMultiThreaded == YES, 1) && (currentDefaultThreadPoolSingleton != NULL)) {
+    if(RKAtomicCompareAndSwapPtr(currentDefaultThreadPoolSingleton, NULL, &defaultThreadPoolSingleton)) {
+      [currentDefaultThreadPoolSingleton reapThreads];
+      RKAutorelease(currentDefaultThreadPoolSingleton);
+    }
+    currentDefaultThreadPoolSingleton = NULL;
+  }
+  
+  if(RK_EXPECTED(currentDefaultThreadPoolSingleton == NULL, 0)) {
+    updateCPUCounts();
+    threadPoolIsMultiThreaded = (cocoaIsMultiThreaded == NO) ? 0 : 1;
+    //RKThreadPool *tempThreadPoolSingleton = RKAutorelease([[self alloc] initWithThreadCount:((cocoaIsMultiThreaded == NO) || (cpuCores == 1)) ? 0 : cpuCores error:NULL]);
+#warning defaultThreadPool configured for debugging, artificially high thread counts enabled
+    RKThreadPool *tempThreadPoolSingleton = RKAutorelease([[self alloc] initWithThreadCount:((cocoaIsMultiThreaded == NO) || (cpuCores == 1)) ? 16 : cpuCores * 4 error:NULL]);
+    if(RKAtomicCompareAndSwapPtr(NULL, tempThreadPoolSingleton, &defaultThreadPoolSingleton)) { RKRetain(defaultThreadPoolSingleton); }
+    currentDefaultThreadPoolSingleton = defaultThreadPoolSingleton;
+  }
+
+  return(currentDefaultThreadPoolSingleton);
+}
+
+
+- (id)initWithThreadCount:(RKUInteger)initThreadCount error:(NSError **)outError
 {
   if(outError != NULL) { *outError = NULL; }
   BOOL        outOfMemoryError = NO, unableToAllocateObjectError = NO;
@@ -67,39 +121,34 @@ static double threadStartDelays[5] = {0.0099009900990099, 0.0097087378640776, 0.
   RKUInteger  objectsCount     = 0;
   id         *objects          = NULL;
   
-  if((self = [super init]) == NULL) { unableToAllocateObjectError = YES; goto errorExit; }
+  if((self = [self init]) == NULL) { unableToAllocateObjectError = YES; goto errorExit; }
   RKAutorelease(self);
-  
-  unsigned int cpuCoresUInt;
-  size_t cpuCoresUIntSize = sizeof(unsigned int);
-  if(sysctlbyname("hw.ncpu", &cpuCoresUInt, &cpuCoresUIntSize, NULL, 0) != 0) { initError = [NSError rkErrorWithDomain:NSPOSIXErrorDomain code:errno localizeDescription:[NSString stringWithUTF8String:strerror(errno)]]; goto errorExit; }
-  cpuCores = cpuCoresUInt;
-  
-  // For development testing, we always create extra threads. Normally, threads == cpuCores
-  RKUInteger initThreadCount = cpuCores + 4;
-  
-  if((objects       = alloca(sizeof(id) * (initThreadCount * 3)))                      == NULL) { outOfMemoryError = YES; goto errorExit; }
-  
-  if((threads       = RKCallocScanned(   sizeof(NSThread *)        * initThreadCount)) == NULL) { outOfMemoryError = YES; goto errorExit; }
-  if((locks         = RKCallocScanned(   sizeof(RKConditionLock *) * initThreadCount)) == NULL) { outOfMemoryError = YES; goto errorExit; }
-  if((threadStatus  = RKCallocNotScanned(sizeof(unsigned char)     * initThreadCount)) == NULL) { outOfMemoryError = YES; goto errorExit; }
-  if((lockStatus    = RKCallocNotScanned(sizeof(unsigned char)     * initThreadCount)) == NULL) { outOfMemoryError = YES; goto errorExit; }
-  if((jobs          = RKCallocScanned(   sizeof(RKThreadPoolJob)   * initThreadCount)) == NULL) { outOfMemoryError = YES; goto errorExit; }
-  if((threadQueue   = RKCallocScanned(   sizeof(RKThreadPoolJob *) * initThreadCount)) == NULL) { outOfMemoryError = YES; goto errorExit; }
-  
-  for(unsigned int atThread = 0; atThread < initThreadCount; atThread++) {
-    if((locks[atThread]        = RKAutorelease([[RKConditionLock alloc] initWithCondition:RKThreadConditionStarting])) == NULL) { unableToAllocateObjectError = YES; goto errorExit; }
-    objects[objectsCount++] = locks[atThread];
 
-    if((jobs[atThread].jobLock = RKAutorelease([[RKConditionLock alloc] initWithCondition:RKJobConditionAvailable]))   == NULL) { unableToAllocateObjectError = YES; goto errorExit; }
-    objects[objectsCount++] = jobs[atThread].jobLock;
-
-    [NSThread detachNewThreadSelector:@selector(workerThreadStart:) toTarget:self withObject:[NSNumber numberWithUnsignedInt:atThread]];
-    threadCount++;
-  }
+  if((threadPoolIsMultiThreaded = ([NSThread isMultiThreaded] == NO) ? 0 : 1) == 0) { initThreadCount = 0; }
   
-  objectsArray = [[NSArray alloc] initWithObjects:&objects[0] count:objectsCount];
+  if(initThreadCount > 0) {
+    if((objects     = alloca(sizeof(id) * (initThreadCount * 3)))                      == NULL) { outOfMemoryError = YES; goto errorExit; }
+    
+    if((threads     = RKCallocScanned(   sizeof(NSThread *)        * initThreadCount)) == NULL) { outOfMemoryError = YES; goto errorExit; }
+    if((locks       = RKCallocScanned(   sizeof(RKConditionLock *) * initThreadCount)) == NULL) { outOfMemoryError = YES; goto errorExit; }
+    if((jobs        = RKCallocScanned(   sizeof(RKThreadPoolJob)   * initThreadCount)) == NULL) { outOfMemoryError = YES; goto errorExit; }
+    if((threadQueue = RKCallocScanned(   sizeof(RKThreadPoolJob *) * initThreadCount)) == NULL) { outOfMemoryError = YES; goto errorExit; }
+    
+    for(unsigned int atThread = 0; atThread < initThreadCount; atThread++) {
+      if((locks[atThread]        = RKAutorelease([[RKConditionLock alloc] initWithCondition:RKThreadConditionStarting])) == NULL) { unableToAllocateObjectError = YES; goto errorExit; }
+      objects[objectsCount++]    = locks[atThread];
       
+      if((jobs[atThread].jobLock = RKAutorelease([[RKConditionLock alloc] initWithCondition:RKJobConditionAvailable]))   == NULL) { unableToAllocateObjectError = YES; goto errorExit; }
+      objects[objectsCount++]    = jobs[atThread].jobLock;
+      
+      [NSThread detachNewThreadSelector:@selector(workerThreadStart:) toTarget:self withObject:[NSNumber numberWithUnsignedInt:atThread]];
+      threadCount++;
+    }
+
+    NSParameterAssert(objectsCount < (initThreadCount * 3));
+    objectsArray = [[NSArray alloc] initWithObjects:&objects[0] count:objectsCount];
+  }
+
   return(RKRetain(self));
   
 errorExit:
@@ -111,13 +160,9 @@ errorExit:
 
 - (void)reapThreads
 {
-  if(RKAtomicTestAndSetBarrier(RKThreadPoolReapingThreadsBit, &threadPoolControl) == 0) {
-    RKAtomicTestAndSetBit(     RKThreadPoolStopBit,           &threadPoolControl);
-    while(liveThreads != 0) { for(RKUInteger x = 0; x < threadCount; x++) { [self wakeThread:x]; RKThreadYield(); } }
-    RKAtomicTestAndSetBit(     RKThreadPoolThreadsReapedBit,  &threadPoolControl);
-  } else {
-    while(liveThreads != 0) { RKThreadYield(); }
-  }
+  RKAtomicCompareAndSwapInteger(0, RKThreadPoolStop, &threadPoolControl);
+  while(liveThreads != 0) { for(RKUInteger x = 0; x < threadCount; x++) { [self wakeThread:x]; RKThreadYield(); } }
+  RKAtomicCompareAndSwapInteger(RKThreadPoolStop, (RKThreadPoolStop & RKThreadPoolThreadsReaped), &threadPoolControl);
 }
 
 - (void)dealloc
@@ -126,12 +171,8 @@ errorExit:
   NSParameterAssert(liveThreads == 0);
   
   if(objectsArray  != NULL) { RKRelease(objectsArray);      }
-
   if(threads       != NULL) { RKFreeAndNULL(threads);       }
   if(locks         != NULL) { RKFreeAndNULL(locks);         }
-  if(threadStatus  != NULL) { RKFreeAndNULL(threadStatus);  }
-  if(lockStatus    != NULL) { RKFreeAndNULL(lockStatus);    }
-
   if(jobs          != NULL) { RKFreeAndNULL(jobs);          }
   if(threadQueue   != NULL) { RKFreeAndNULL(threadQueue);   }
   
@@ -151,145 +192,158 @@ errorExit:
 - (BOOL)wakeThread:(RKUInteger)threadNumber
 {
   if(threadNumber > threadCount) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"The threadNumber argument is greater than the total threads in the pool."] raise]; return(NO); }
-  
-  if([locks[threadNumber] condition] == RKThreadConditionNotRunning) { return(NO); }
-  
-  RKFastConditionLock(  locks[threadNumber], @selector(lockWhenCondition:),   RKThreadConditionSleeping, RKConditionLockWhenCondition, 0.0);
-  RKFastConditionUnlock(locks[threadNumber], @selector(unlockWithCondition:), RKThreadConditionWakeup);
-  RKThreadYield();
-  RKFastConditionLock(  locks[threadNumber], @selector(lockWhenCondition:),   RKThreadConditionAwake,    RKConditionLockWhenCondition, 0.0);
-  RKFastConditionUnlock(locks[threadNumber], @selector(unlockWithCondition:), RKThreadConditionRunningJob);
 
-  return(YES);
+  BOOL didWake = NO;
+  if((didWake = RKFastConditionLock(locks[threadNumber], NULL, 0, RKConditionLockTryAnyConditionRelativeTime, 0.5)) == YES) {
+    RKFastConditionUnlock(locks[threadNumber], NULL, [locks[threadNumber] condition], RKConditionUnlockAndWakeAll);
+  }
+
+  return(didWake);
 }
 
 - (BOOL)threadFunction:(int(*)(void *))function argument:(void *)argument
 { 
+  updateCPUCounts();
+  
   // Single CPU fast case bypass removed to better excercise threading during development.
   //
-  // if(cpuCores == 1) { function(argument); return(YES); }
+#warning threadFunction configured for debugging, single CPU fast bypass disabled, will always thread jobs
+  //if((cpuCores == 1) || (activeCPUCores == 1) || (threadCount == 0) || (liveThreads == 0) || (threadPoolIsMultiThreaded == 0)) { function(argument); return(YES); }
   //
   RKUInteger startedJobThreads = 0, jobQueueDelayIndex = 0, threadStartDelayIndex = 0;
   
   RK_STRONG_REF RKThreadPoolJob *runJob = NULL;
-  while((runJob == NULL) && ((threadPoolControl & RKThreadPoolStopMask) == 0)) {
+
+  while(RK_EXPECTED(runJob == NULL, 1) && RK_EXPECTED(((threadPoolControl & RKThreadPoolStop) == 0), 1) && RK_EXPECTED(liveThreads > 0, 1)) {
     for(RKUInteger threadNumber = 0; threadNumber < threadCount; threadNumber++) {
-      if(RKFastConditionLock(jobs[threadNumber].jobLock, @selector(lockWhenCondition:beforeDate:), RKJobConditionAvailable, RKConditionLockTryWhenConditionRelativeTime, jobQueueDelays[jobQueueDelayIndex])) { runJob = &jobs[threadNumber]; break; }
+      if(RKFastConditionLock(jobs[threadNumber].jobLock, NULL, RKJobConditionAvailable, (jobQueueDelayIndex == 0) ? RKConditionLockTryWhenCondition : RKConditionLockTryWhenConditionRelativeTime, jobQueueDelays[(jobQueueDelayIndex > 0) ? jobQueueDelayIndex - 1 : 0])) { runJob = &jobs[threadNumber]; break; }
     }
     jobQueueDelayIndex = (jobQueueDelayIndex < 3) ? (jobQueueDelayIndex + 1) : 0;
   }
+
+  if(RK_EXPECTED(runJob == NULL, 0)) {
+#ifndef   NS_BLOCK_ASSERTIONS
+    static BOOL didPrint = NO;
+    if(didPrint == NO) { NSLog(@"Odd, unable to acquire a job queue slot. Executing function in-line."); didPrint = YES; }
+#endif // NS_BLOCK_ASSERTIONS
+    function(argument);
+    return(YES);
+  }
   
-  if(runJob == NULL) { NSLog(@"Odd, unable to acquire a job queue slot. Executing function in-line."); function(argument); return(YES); }
+  NSParameterAssert(runJob->activeThreadsCount                == 0);
+  NSParameterAssert([runJob->jobLock condition]               == RKJobConditionAvailable);
+  NSParameterAssert([runJob->jobLock isLockedByCurrentThread] == YES);
+  NSParameterAssert(runJob->jobFunction                       == NULL);
+  NSParameterAssert(runJob->jobArgument                       == NULL);
+  NSParameterAssert(threadPoolIsMultiThreaded                 == 1);
+  NSParameterAssert(liveThreads                               >  0);
   
-  NSParameterAssert(runJob->jobStatus          == 0);
-  NSParameterAssert(runJob->activeThreadsCount == 0);
-  NSParameterAssert(runJob->jobFunction        == NULL);
-  NSParameterAssert(runJob->jobArgument        == NULL);
-  
-  runJob->jobStatus   = 0;
   runJob->jobFunction = function;
   runJob->jobArgument = argument;
-  RKFastConditionUnlock(runJob->jobLock, @selector(unlockWithCondition:), RKJobConditionExecuting);
+  RKFastConditionUnlock(runJob->jobLock, NULL, RKJobConditionExecuting, RKConditionUnlockAndWakeAll);
   
-  while(([runJob->jobLock condition] == RKJobConditionExecuting) && (startedJobThreads < liveThreads) && ((threadPoolControl & RKThreadPoolStopMask) == 0)) {
+  while(RK_EXPECTED([runJob->jobLock condition] == RKJobConditionExecuting, 1) && RK_EXPECTED(startedJobThreads < liveThreads, 1) && RK_EXPECTED((threadPoolControl & RKThreadPoolStop) == 0, 1)) {
     for(RKUInteger threadNumber = 0; ((threadNumber < threadCount) && ([runJob->jobLock condition] == RKJobConditionExecuting)); threadNumber++) {
-      if(RKFastConditionLock( locks[threadNumber], @selector(lockWhenCondition:beforeDate:), RKThreadConditionSleeping, RKConditionLockTryWhenConditionRelativeTime, threadStartDelays[threadStartDelayIndex])) {
-        threadQueue[threadNumber] = runJob;
-        RKFastConditionUnlock(locks[threadNumber], @selector(unlockWithCondition:), RKThreadConditionWakeup);
-        if(cpuCores == 1) { RKThreadYield(); }
-        RKFastConditionLock(  locks[threadNumber], @selector(lockWhenCondition:),   RKThreadConditionAwake, RKConditionLockWhenCondition, 0.0);
-        RKFastConditionUnlock(locks[threadNumber], @selector(unlockWithCondition:), RKThreadConditionRunningJob);
-        startedJobThreads++;
-        if(startedJobThreads >= liveThreads) { break; }
+      if(RKFastConditionLock(locks[threadNumber], NULL, RKThreadConditionSleeping, (threadStartDelayIndex == 0) ? RKConditionLockTryWhenCondition : RKConditionLockTryWhenConditionRelativeTime, threadStartDelays[(threadStartDelayIndex > 0) ? threadStartDelayIndex - 1 : 0]) == YES) {
+        if([runJob->jobLock condition] == RKJobConditionExecuting) {
+          threadQueue[threadNumber] = runJob;
+          RKFastConditionUnlock(locks[threadNumber], NULL, RKThreadConditionWakeup,     RKConditionUnlockAndWakeAll);
+          RKFastConditionLock(  locks[threadNumber], NULL, RKThreadConditionAwake,      RKConditionLockWhenCondition, 0.0);
+          RKFastConditionUnlock(locks[threadNumber], NULL, RKThreadConditionRunningJob, RKConditionUnlockAndWakeAll);
+          startedJobThreads++;
+          if(startedJobThreads >= liveThreads) { goto exitLoop; }
+        } else {
+          RKFastConditionUnlock(locks[threadNumber], NULL, RKThreadConditionSleeping,   RKConditionUnlockAndWakeAll);
+        }
       }
     }
     threadStartDelayIndex = (threadStartDelayIndex < 5) ? (threadStartDelayIndex + 1) : 0;
   }
-  if(([runJob->jobLock condition]  == RKJobConditionFinishing) && (cpuCores == 1)) { RKThreadYield(); }
-  RKFastConditionLock(runJob->jobLock, @selector(lockWhenCondition:), RKJobConditionCompleted, RKConditionLockWhenCondition, 0.0);
-  
-  runJob->jobStatus   = 0;
+
+exitLoop:
+  if(RK_EXPECTED(startedJobThreads == 0, 0)) {
+#ifndef   NS_BLOCK_ASSERTIONS
+    static BOOL didPrint = NO;
+    if(didPrint == NO) { NSLog(@"Odd, no job threads were started. Executing function in-line. liveThreads: %d active threads: %d jobLock: %@", liveThreads, runJob->activeThreadsCount, runJob->jobLock); didPrint = YES; }
+#endif // NS_BLOCK_ASSERTIONS
+    function(argument);
+    if(RKFastConditionLock(runJob->jobLock, NULL, 0, RKConditionLockTryAnyCondition, 0.0) == NO) { [[NSException rkException:NSInternalInconsistencyException localizeReason:@"Unable to acquire thread run job lock."] raise]; }
+  } else {
+    RKFastConditionLock(runJob->jobLock, NULL, RKJobConditionCompleted, RKConditionLockWhenCondition, 0.0);
+  }
+  NSParameterAssert(startedJobThreads > 0);
+  NSParameterAssert(runJob->activeThreadsCount == 0);
   runJob->jobFunction = NULL;
   runJob->jobArgument = NULL;
-  RKFastConditionUnlock(runJob->jobLock, @selector(unlockWithCondition:), RKJobConditionAvailable);
-  
+  RKFastConditionUnlock(runJob->jobLock, NULL, RKJobConditionAvailable, RKConditionUnlockAndWakeAll);
+
   return(YES);
 }
 
 - (void)workerThreadStart:(id)startObject
 {
-  NSAutoreleasePool *topThreadPool = [[NSAutoreleasePool alloc] init], *loopThreadPool = NULL;
-  unsigned int       threadNumber  = 0;
-  NSThread          *thisThread    = NULL;
-  RKThreadPoolJob RK_STRONG_REF  *currentJob    = NULL;
-  RKConditionLock   *threadLock    = NULL;
+  NSAutoreleasePool             *topThreadPool = [[NSAutoreleasePool alloc] init], *loopThreadPool = NULL;
+  unsigned int                   threadNumber  = 0;
+  NSThread                      *thisThread    = NULL;
+  RKThreadPoolJob RK_STRONG_REF *currentJob    = NULL;
+  RKConditionLock               *threadLock    = NULL;
   
   if(startObject == NULL) { goto exitThreadNow; }
+  RKAutorelease(startObject);
   
   threadNumber          = [startObject unsignedIntValue];
   thisThread            = [NSThread currentThread];
   threads[threadNumber] = thisThread;
   threadLock            = locks[threadNumber];
   
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if       MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+  // Since we start a number of threads equal to the number of CPU's, give each thread a seperate CPU affinity if running on Mac OS X 10.5 or later.
   if(NSFoundationVersionNumber >= 677.0) {
     thread_affinity_policy_data_t threadAffinityPolicy;
+    memset(&threadAffinityPolicy, 0, sizeof(thread_affinity_policy_data_t));
     threadAffinityPolicy.affinity_tag = (threadNumber + 1);
 
     kern_return_t kernalReturn = thread_policy_set(mach_thread_self(), THREAD_AFFINITY_POLICY, (integer_t *) &threadAffinityPolicy, THREAD_AFFINITY_POLICY_COUNT);
-  
     if(kernalReturn != KERN_SUCCESS) { NSLog(@"Unable to set the threads CPU affinity.  thread_policy_set returned %d.", kernalReturn); }
   }
-#endif
+#endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
   
   RKAtomicIncrementIntegerBarrier(&liveThreads);
   
-  if(RKFastConditionLock(threadLock, @selector(tryLockWhenCondition:), RKThreadConditionStarting, RKConditionLockWhenCondition, 0.0) == NO) { NSLog(@"Unknown start up lock state, %ld.", (long)[threadLock condition]); goto exitThread; }
+  if(RKFastConditionLock(threadLock, NULL, RKThreadConditionStarting, RKConditionLockWhenCondition, 0.0) == NO) { NSLog(@"Unknown start up lock state, %ld.", (long)[threadLock condition]); goto exitThread; }
   
-  RKFastConditionUnlock(threadLock, @selector(unlockWithCondition:), RKThreadConditionSleeping);
+  RKFastConditionUnlock(threadLock, NULL, RKThreadConditionSleeping, RKConditionUnlockAndWakeAll);
 
-  while((threadPoolControl & RKThreadPoolStopMask) == 0) {
+  while(RK_EXPECTED((threadPoolControl & RKThreadPoolStop) == 0, 1)) {
     if(RK_EXPECTED(loopThreadPool == NULL, 1) && RK_EXPECTED(RKRegexGarbageCollect == 0, 1)) { loopThreadPool = [[NSAutoreleasePool alloc] init]; }
-    
-    RKFastConditionLock(threadLock, @selector(lockWhenCondition:), RKThreadConditionWakeup, RKConditionLockWhenCondition, 0.0);
 
-    if((threadPoolControl & RKThreadPoolStopMask) != 0) { break; } // Check if we're exiting.
+    RKFastConditionLock(threadLock, NULL, RKThreadConditionWakeup, RKConditionLockWhenCondition, 0.0);
     
-    if(threadQueue[threadNumber] != NULL) {
-      do {
-        if(RKFastConditionLock(threadQueue[threadNumber]->jobLock, @selector(lockWhenCondition:beforeDate:), RKJobConditionExecuting, RKConditionLockTryWhenConditionRelativeTime, 0.0078740157480314)) {
-          currentJob = threadQueue[threadNumber];
-          RKAtomicIncrementIntegerBarrier(&currentJob->activeThreadsCount);
-          RKFastConditionUnlock(currentJob->jobLock, @selector(unlockWithCondition:), RKJobConditionExecuting);
-          break;
-        }
-      } while([threadQueue[threadNumber]->jobLock condition] == RKJobConditionExecuting);
-      
+    if(RK_EXPECTED((threadPoolControl & RKThreadPoolStop) != 0, 0)) { break; } // Check if we're exiting.
+    
+    if(RK_EXPECTED(threadQueue[threadNumber] != NULL, 1)) {
+      RKFastConditionLock(threadQueue[threadNumber]->jobLock, NULL, 0, RKConditionLockAnyCondition, 0.0);
+      RKInteger jobCondition = [threadQueue[threadNumber]->jobLock condition];
+      if(jobCondition == RKJobConditionExecuting) { currentJob = threadQueue[threadNumber]; currentJob->activeThreadsCount++; }
+      RKFastConditionUnlock(threadQueue[threadNumber]->jobLock, NULL, jobCondition, RKConditionUnlockAndWakeAll);
       threadQueue[threadNumber] = NULL;
     }
+
+    RKFastConditionUnlock(threadLock, NULL, RKThreadConditionAwake, RKConditionUnlockAndWakeAll);
     
-    RKFastConditionUnlock(threadLock, @selector(unlockWithCondition:), RKThreadConditionAwake);
-    
-    // Do something
-    
-    if(currentJob != NULL) {
+    if(RK_EXPECTED(currentJob != NULL, 1)) {
       currentJob->jobFunction(currentJob->jobArgument);
-      if(RKAtomicTestAndSetBarrier(RKThreadPoolJobFinishedBit, &currentJob->jobStatus) == 0) {
-        RKFastConditionLock(  currentJob->jobLock, @selector(lockWhenCondition:),   RKJobConditionExecuting, RKConditionLockWhenCondition, 0.0);
-        RKFastConditionUnlock(currentJob->jobLock, @selector(unlockWithCondition:), RKJobConditionFinishing);
-      }
-      
-      RKFastConditionLock(currentJob->jobLock, @selector(lockWhenCondition:), RKJobConditionFinishing, RKConditionLockWhenCondition, 0.0);
-      
-      RKInteger activeThreads = RKAtomicDecrementIntegerBarrier(&currentJob->activeThreadsCount);
-      if(activeThreads == 0) { RKFastConditionUnlock(currentJob->jobLock, @selector(unlockWithCondition:), RKJobConditionCompleted); if(cpuCores == 1) { RKThreadYield(); } }
-      else                   { RKFastConditionUnlock(currentJob->jobLock, @selector(unlockWithCondition:), RKJobConditionFinishing); }
+      RKFastConditionLock(currentJob->jobLock, NULL, 0, RKConditionLockAnyCondition, 0.0);
+      NSParameterAssert(([currentJob->jobLock condition] == RKJobConditionExecuting) || ([currentJob->jobLock condition] == RKJobConditionFinishing));
+      currentJob->activeThreadsCount--;
+      if(currentJob->activeThreadsCount == 0) { RKFastConditionUnlock(currentJob->jobLock, NULL, RKJobConditionCompleted, RKConditionUnlockAndWakeAll); }
+      else                                    { RKFastConditionUnlock(currentJob->jobLock, NULL, RKJobConditionFinishing, RKConditionUnlockAndWakeAll); }
       
       currentJob = NULL;
     }
     
-    RKFastConditionLock(  threadLock, @selector(lockWhenCondition:),   RKThreadConditionRunningJob, RKConditionLockWhenCondition, 0.0);
-    RKFastConditionUnlock(threadLock, @selector(unlockWithCondition:), RKThreadConditionSleeping);
+    RKFastConditionLock(  threadLock, NULL, RKThreadConditionRunningJob, RKConditionLockWhenCondition, 0.0);
+    RKFastConditionUnlock(threadLock, NULL, RKThreadConditionSleeping,   RKConditionUnlockAndWakeAll);
     
     if(loopThreadPool != NULL) { [loopThreadPool release]; loopThreadPool = NULL; }
   }
@@ -297,35 +351,17 @@ errorExit:
 exitThread:
   
   if(currentJob != NULL) {
-    do { if(RKFastConditionLock(threadQueue[threadNumber]->jobLock, @selector(lockWhenCondition:beforeDate:), RKJobConditionExecuting, RKConditionLockTryWhenConditionRelativeTime, 0.0076335877862595)) { break; } }
-    while(  [currentJob->jobLock condition] == RKJobConditionExecuting);
+    RKFastConditionLock(currentJob->jobLock, NULL, 0, RKConditionLockAnyCondition, 0.0);
+    currentJob->activeThreadsCount--;
+    if(currentJob->activeThreadsCount == 0) { RKFastConditionUnlock(currentJob->jobLock, NULL, RKJobConditionCompleted, RKConditionUnlockAndWakeAll); }
+    else                                    { RKFastConditionUnlock(currentJob->jobLock, NULL, RKJobConditionFinishing, RKConditionUnlockAndWakeAll); }
     
-    if([currentJob->jobLock condition] != RKJobConditionExecuting) { RKFastConditionLock(currentJob->jobLock, @selector(tryLockWhenCondition:), RKJobConditionFinishing, RKConditionLockWhenCondition, 0.0); }
-    
-    RKInteger activeThreads = RKAtomicDecrementIntegerBarrier(&currentJob->activeThreadsCount);
-    if(activeThreads == 0) {
-      if([currentJob->jobLock condition] == RKJobConditionExecuting) {
-        RKFastConditionUnlock(currentJob->jobLock, @selector(unlockWithCondition:),  RKJobConditionFinishing);
-        RKFastConditionLock(  currentJob->jobLock, @selector(tryLockWhenCondition:), RKJobConditionFinishing, RKConditionLockWhenCondition, 0.0);
-      }
-      RKFastConditionUnlock(currentJob->jobLock, @selector(unlockWithCondition:), RKJobConditionCompleted);
-    } else {
-      if([currentJob->jobLock condition] == RKJobConditionExecuting) { RKFastConditionUnlock(currentJob->jobLock, @selector(unlockWithCondition:), RKJobConditionExecuting); }
-      else { RKFastConditionUnlock(currentJob->jobLock, @selector(unlockWithCondition:), RKJobConditionFinishing); }
-
-    }
     currentJob = NULL;
   }
   
-  if([threadLock condition] == RKThreadConditionWakeup) {
-    RKFastConditionUnlock(threadLock, @selector(unlockWithCondition:),  RKThreadConditionAwake);
-    RKFastConditionLock(  threadLock, @selector(tryLockWhenCondition:), RKThreadConditionRunningJob, RKConditionLockWhenCondition, 0.0);
-    RKFastConditionUnlock(threadLock, @selector(unlockWithCondition:),  RKThreadConditionNotRunning);
-  } else if([threadLock condition] == RKThreadConditionRunningJob) {
-    RKFastConditionLock(  threadLock, @selector(tryLockWhenCondition:), RKThreadConditionRunningJob, RKConditionLockWhenCondition, 0.0);
-    RKFastConditionUnlock(threadLock, @selector(unlockWithCondition:),  RKThreadConditionNotRunning);
-  }
-  
+  if([threadLock isLockedByCurrentThread] == NO) { RKFastConditionLock(threadLock, NULL, 0, RKConditionLockAnyCondition, 0.0); }
+  RKFastConditionUnlock(threadLock, NULL, RKThreadConditionNotRunning, RKConditionUnlockAndWakeAll);
+   
   threads[threadNumber] = NULL;
   RKAtomicDecrementIntegerBarrier(&liveThreads);
   
