@@ -84,8 +84,8 @@ static BOOL RKParseReference(RK_STRONG_REF const RKStringBuffer * const RK_C99(r
                              RK_STRONG_REF void *** const RK_C99(restrict) autoreleasePool, RK_STRONG_REF RKUInteger * const RK_C99(restrict) autoreleasePoolIndex);
   
 /* Although the docs claim NSDate is multithreading safe, testing indicates otherwise.  NSDate will mis-parse strings occasionally under heavy threaded access. */
-static RK_STRONG_REF RKLock  *NSStringRKExtensionsNSDateLock      = NULL;
-static               int32_t  NSStringRKExtensionsLoadInitialized = 0;
+static RK_STRONG_REF RKLock  *NSStringRKExtensionsNSDateLock  = NULL;
+static               int32_t  NSStringRKExtensionsInitialized = 0;
 
 #ifdef USE_CORE_FOUNDATION
 static Boolean RKCFArrayEqualCallBack(const void *value1, const void *value2) { return(CFEqual(value1, value2)); }
@@ -108,9 +108,9 @@ static void NSStringRKExtensionsInitializeFunction(void);
 
 static void NSStringRKExtensionsInitializeFunction(void) {
   RKAtomicMemoryBarrier(); // Extra cautious
-  if(NSStringRKExtensionsLoadInitialized == 1) { return; }
+  if(NSStringRKExtensionsInitialized == 1) { return; }
   
-  if(RKAtomicCompareAndSwapInt(0, 1, &NSStringRKExtensionsLoadInitialized)) {
+  if(RKAtomicCompareAndSwapInt(0, 1, &NSStringRKExtensionsInitialized)) {
     NSAutoreleasePool *lockPool = [[NSAutoreleasePool alloc] init];
     
     NSStringRKExtensionsNSDateLock = [(RKLock *)NSAllocateObject([RKLock class], 0, NULL) init];
@@ -1201,7 +1201,7 @@ finishedParse:
       
       if(RK_EXPECTED((*startFormat == '@'), 1) && RK_EXPECTED((*(endFormat - 1) == 'd'), 1) && RK_EXPECTED(((startFormat + 1) == (endFormat - 1)), 1)) {
         static BOOL didPrintLockWarning = NO;
-        if(RK_EXPECTED(NSStringRKExtensionsLoadInitialized == 0, 0)) { NSStringRKExtensionsInitializeFunction(); } 
+        if(RK_EXPECTED(NSStringRKExtensionsInitialized == 0, 0)) { NSStringRKExtensionsInitializeFunction(); } 
         if(RK_EXPECTED(RKFastLock(NSStringRKExtensionsNSDateLock) == NO, 0)) {
           if(didPrintLockWarning == NO) { NSLog(@"Unable to acquire the NSDate access serialization lock.  Heavy concurrent date conversions may return incorrect results."); didPrintLockWarning = YES; }
         }

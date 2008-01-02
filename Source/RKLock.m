@@ -162,20 +162,25 @@ errorExit:
 
 - (BOOL)lock
 {
-  return(RKFastMutexLock(self, _cmd, &lock, RKMutexLazyLock));
+  return(RKFastLock(self));
 }
 
 - (void)unlock
 {
-  return(RKFastMutexUnlock(self, _cmd, &lock));
+  return(RKFastUnlock(self));
 }
 
 BOOL RKFastLock(RKLock * const self) {
-  return(RKFastMutexLock(self, @selector(lock), &self->lock, RKMutexLazyLock));
+  if(globalIsMultiThreaded == 0) {
+    if(RK_EXPECTED([NSThread isMultiThreaded] == NO, 1)) { RK_PROBE(BEGINLOCK, self, 0, globalIsMultiThreaded); RK_PROBE(ENDLOCK, self, 0, globalIsMultiThreaded, 1, 0); return(YES); }
+    RKAtomicCompareAndSwapInt(0, 1, &globalIsMultiThreaded);
+  }
+  
+  return(RKFastMutexLock(self, @selector(lock), &self->lock, RKMutexFullLock));
 }
 
 void RKFastUnlock(RKLock * const self) {
-  return(RKFastMutexUnlock(self, @selector(unlock), &self->lock));
+  if(globalIsMultiThreaded != 0) { RKFastMutexUnlock(self, @selector(unlock), &self->lock); } else { RK_PROBE(UNLOCK, self, 0, globalIsMultiThreaded); }
 }
 
 
