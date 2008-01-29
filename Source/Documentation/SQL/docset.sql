@@ -1,7 +1,6 @@
 drop table docset;
 drop table files;
 drop table nodeNames;
---drop view v_tst;
 
 BEGIN;
 
@@ -38,21 +37,5 @@ CREATE TRIGGER IF NOT EXISTS nodeNames_null_anchor_trig
 AFTER INSERT ON nodeNames
 FOR EACH ROW WHEN NEW.anchor IS NULL
 BEGIN DELETE FROM nodeNames WHERE nodeNames.anchor IS NULL AND nodeNames.fid = NEW.fid AND refid != NEW.refid; END;
-/*
-CREATE VIEW IF NOT EXISTS v_tst AS
-SELECT
-ds.dsid AS dsid,
-f.fid AS fid,
-nn.refid AS refid,
-ds.docset AS docset,
-f.path AS path,
-f.file AS file,
-nn.anchor AS anchor,
-nn.name AS name
-FROM docset AS ds
-JOIN files AS f ON f.dsid = ds.dsid
-JOIN nodeNames AS nn ON nn.fid = f.fid
---ORDER BY ds.dsid, f.fid, nn.refid
-;
-*/
+
 COMMIT;

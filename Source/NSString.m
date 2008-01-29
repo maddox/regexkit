@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -401,7 +401,7 @@ NSRange RKConvertUTF8ToUTF16RangeForStringBuffer(RKStringBuffer *stringBuffer, N
   
   if(utf8Range.location == NSNotFound) { return(utf8Range); }
 
-  if((utf8Range.location > stringBuffer->length) || (NSMaxRange(utf8Range) > stringBuffer->length)) { [[NSException exceptionWithName:NSRangeException reason:[NSString stringWithFormat:@"RKConvertUTF8ToUTF16RangeForStringBuffer: Range invalid. utf8Range: %@. MaxRange: %lu stringBuffer->length: %lu", NSStringFromRange(utf8Range), (unsigned long)NSMaxRange(utf8Range), (unsigned long)stringBuffer->length] userInfo:NULL] raise]; }
+  if((utf8Range.location > stringBuffer->length) || (NSMaxRange(utf8Range) > stringBuffer->length)) { [[NSException rkException:NSRangeException localizeReason:@"RKConvertUTF8ToUTF16RangeForStringBuffer: Range invalid. utf8Range: %@. MaxRange: %lu stringBuffer->length: %lu", NSStringFromRange(utf8Range), (unsigned long)NSMaxRange(utf8Range), (unsigned long)stringBuffer->length] raise]; }
   
 #ifdef USE_CORE_FOUNDATION
   if((stringBuffer->encoding == kCFStringEncodingMacRoman) || (stringBuffer->encoding == kCFStringEncodingASCII)) { return(utf8Range); }
@@ -445,7 +445,7 @@ NSRange RKConvertUTF16ToUTF8RangeForStringBuffer(RKStringBuffer *stringBuffer, N
   if(utf16Range.location == NSNotFound) { return(utf16Range); }
 
   RKUInteger stringLength = [stringBuffer->string length];
-  if((utf16Range.location > stringLength) || (NSMaxRange(utf16Range) > stringLength)) { [[NSException exceptionWithName:NSRangeException reason:[NSString stringWithFormat:@"RKConvertUTF16ToUTF8RangeForStringBuffer: Range invalid. utf16Range: %@. MaxRange: %lu stringLength: %lu", NSStringFromRange(utf16Range), (unsigned long)NSMaxRange(utf16Range), (unsigned long)stringLength] userInfo:NULL] raise]; }
+  if((utf16Range.location > stringLength) || (NSMaxRange(utf16Range) > stringLength)) { [[NSException rkException:NSRangeException localizeReason:@"RKConvertUTF16ToUTF8RangeForStringBuffer: Range invalid. utf16Range: %@. MaxRange: %lu stringLength: %lu", NSStringFromRange(utf16Range), (unsigned long)NSMaxRange(utf16Range), (unsigned long)stringLength] raise]; }
   
 #ifdef USE_CORE_FOUNDATION
   if((stringBuffer->encoding == kCFStringEncodingMacRoman) || (stringBuffer->encoding == kCFStringEncodingASCII)) { return(utf16Range); }
@@ -696,12 +696,13 @@ static NSString *RKStringByMatchingAndExpanding(id self, const SEL _cmd, NSStrin
   }
 
   if(matchedCountPtr != NULL) { *matchedCountPtr = matchedCount; }
-
-  if(expandOrReplace == YES) {
-    if(copyInstructionsBuffer.length == 0) { return(searchString); } // There were no matches, so the replaced string == search string.
-    if(RKAppendCopyInstruction(&copyInstructionsBuffer, searchStringBuffer.characters, NSMakeRange(searchIndex, (searchStringBuffer.length - searchIndex))) == NO) { goto errorExit; }
-  }
   
+  if(expandOrReplace == YES) {
+    NSRange copySearchStringRange = NSMakeRange(searchIndex, (searchStringBuffer.length - searchIndex));
+    if((copyInstructionsBuffer.length == 0) && (NSEqualRanges(NSMakeRange(0, copyInstructionsBuffer.length), copySearchStringRange) == YES)) { return(searchString); } // There were no changes, so the replaced string == search string.
+    if(RKAppendCopyInstruction(&copyInstructionsBuffer, searchStringBuffer.characters, copySearchStringRange) == NO) { goto errorExit; }
+  }
+    
   return(RKStringFromCopyInstructions(self, _cmd, &copyInstructionsBuffer, RKUTF8StringEncoding));
 
 errorExit:
@@ -900,8 +901,7 @@ static BOOL RKCompileReferenceString(id self, const SEL _cmd, RK_STRONG_REF cons
         appendRangeLocation = nextChar - '0';
 
         if(appendRangeLocation >= [regex captureCount]) {
-          parseErrorString = [NSString stringWithFormat:@"The capture reference '\\%c' specifies a capture subpattern '%lu' that is greater than number of capture subpatterns defined by the regular expression, '%ld'.", nextChar, (unsigned long)appendRangeLocation, (long)max(0, ((RKInteger)[regex captureCount] - 1))];
-          [[NSException exceptionWithName:RKRegexCaptureReferenceException reason:RKPrettyObjectMethodString(parseErrorString) userInfo:NULL] raise];
+          [[NSException rkException:RKRegexCaptureReferenceException for:self selector:_cmd localizeReason:@"The capture reference '\\%c' specifies a capture subpattern '%lu' that is greater than number of capture subpatterns defined by the regular expression, '%ld'.", nextChar, (unsigned long)appendRangeLocation, (long)max(0, ((RKInteger)[regex captureCount] - 1))] raise];
         }
       } else {
         switch(nextChar) {
@@ -1049,11 +1049,11 @@ static BOOL RKParseReference(RK_STRONG_REF const RKStringBuffer * const RK_C99(r
 
   if((*atPtr != '\\') && RK_EXPECTED((*(atPtr + 1) <= '9'), 1) && RK_EXPECTED((*(atPtr + 1) >= '0'), 1) && ((*(atPtr + 2) == 0) || (strictReference == NO))) { referenceUInteger = (*(atPtr + 1) - '0'); startReference = atPtr + 1; atPtr += 2; endReference = atPtr; goto finishedParse; } // Fast path \\[0-9]
 
-  if(RK_EXPECTED(*atPtr != '$', 0)) { tempErrorString = [NSString stringWithFormat:@"The capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters]; goto finishedParseError; }
+  if(RK_EXPECTED(*atPtr != '$', 0)) { tempErrorString = RKLocalizedFormat(@"The capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters); goto finishedParseError; }
   
   if(RK_EXPECTED((*(atPtr + 1) <= '9'), 1) && RK_EXPECTED((*(atPtr + 1) >= '0'), 1) && ((*(atPtr + 2) == 0) || (strictReference == NO))) { referenceUInteger = (*(atPtr + 1) - '0'); startReference = atPtr + 1; atPtr += 2; endReference = atPtr; goto finishedParse; } // Fast path $[0-9]
 
-  if(RK_EXPECTED(*(atPtr + 1) != '{', 0)) { tempErrorString = [NSString stringWithFormat:@"The capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters]; goto finishedParseError; }
+  if(RK_EXPECTED(*(atPtr + 1) != '{', 0)) { tempErrorString = RKLocalizedFormat(@"The capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters); goto finishedParseError; }
 
   if(RK_EXPECTED((*(atPtr + 2) <= '9'), 1) && RK_EXPECTED((*(atPtr + 2) >= '0'), 1) && RK_EXPECTED((*(atPtr + 3) == '}'), 1) && ((*(atPtr + 4) == 0) || (strictReference == NO))) { referenceUInteger = (*(atPtr + 2) - '0'); startReference = atPtr + 2; endReference = atPtr + 3; atPtr += 4; goto finishedParse; } // Fast path ${[0-9]}
 
@@ -1069,30 +1069,30 @@ static BOOL RKParseReference(RK_STRONG_REF const RKStringBuffer * const RK_C99(r
 
   endReference = atPtr;
 
-  if(RK_EXPECTED((endReference - startReference) == 0, 0)) { tempErrorString = [NSString stringWithFormat:@"The capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters]; goto finishedParseError; }
-  if((*atPtr == ':') && (conversionAllowed == NO) && (ignoreConversion == NO)) { tempErrorString = [NSString stringWithFormat:@"Type conversion is not permitted for capture reference '%*.*s' in this context.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters]; goto finishedParseError; }
+  if(RK_EXPECTED((endReference - startReference) == 0, 0)) { tempErrorString = RKLocalizedFormat(@"The capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters); goto finishedParseError; }
+  if((*atPtr == ':') && (conversionAllowed == NO) && (ignoreConversion == NO)) { tempErrorString = RKLocalizedFormat(@"Type conversion is not permitted for capture reference '%*.*s' in this context.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters); goto finishedParseError; }
 
   if((conversionAllowed == YES) && (*atPtr == ':')) {
     atPtr++;
     if((*atPtr == '%') || (*atPtr == '@')) {
       startFormat = atPtr; while(((atPtr - rBuffer.characters) < (int)rBuffer.length) && (*atPtr != 0) && (*atPtr != '}')) { atPtr++; } endFormat = atPtr;
-      if((endFormat - startFormat) == 1) { tempErrorString = [NSString stringWithFormat:@"The conversion format of capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters]; goto finishedParseError; }
-    } else { tempErrorString = [NSString stringWithFormat:@"The conversion format of capture reference '%*.*s' is not valid. Valid formats begin with '@' or '%%'.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters]; goto finishedParseError; }
+      if((endFormat - startFormat) == 1) { tempErrorString = RKLocalizedFormat(@"The conversion format of capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters); goto finishedParseError; }
+    } else { tempErrorString = RKLocalizedFormat(@"The conversion format of capture reference '%*.*s' is not valid. Valid formats begin with '@' or '%%'.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters); goto finishedParseError; }
   }
   
   if(*atPtr == '}') { atPtr++; endBracket = atPtr; }
   
-  if(RK_EXPECTED((startBracket != NULL), 1) && RK_EXPECTED(((endBracket - startBracket) == 0), 0)) { tempErrorString = [NSString stringWithFormat:@"The conversion format of capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters]; goto finishedParseError; }
+  if(RK_EXPECTED((startBracket != NULL), 1) && RK_EXPECTED(((endBracket - startBracket) == 0), 0)) { tempErrorString = RKLocalizedFormat(@"The conversion format of capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters); goto finishedParseError; }
 
   if(RK_EXPECTED((startBracket != NULL), 1) && RK_EXPECTED((endBracket == NULL), 0)) {
     while(((atPtr - rBuffer.characters) < (int)rBuffer.length) && (*atPtr != 0) && (*atPtr != '}')) { atPtr++; }
     if(*atPtr == '}') { 
-      if(conversionAllowed == NO) { tempErrorString = [NSString stringWithFormat:@"The capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters]; goto finishedParseError; }
-      else { endBracket = atPtr; tempErrorString = [NSString stringWithFormat:@"The conversion format of capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters]; goto finishedParseError; }
+      if(conversionAllowed == NO) { tempErrorString = RKLocalizedFormat(@"The capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters); goto finishedParseError; }
+      else { endBracket = atPtr; tempErrorString = RKLocalizedFormat(@"The conversion format of capture reference '%*.*s' is not valid.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters); goto finishedParseError; }
     }
   }
 
-  if((RK_EXPECTED((startBracket == NULL), 0) && RK_EXPECTED((endBracket != NULL), 1)) || (RK_EXPECTED((startBracket != NULL), 1) && RK_EXPECTED((endBracket == NULL), 0))) { tempErrorString = [NSString stringWithFormat:@"The capture reference '%*.*s' has unbalanced curly brackets.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters]; goto finishedParseError; }
+  if((RK_EXPECTED((startBracket == NULL), 0) && RK_EXPECTED((endBracket != NULL), 1)) || (RK_EXPECTED((startBracket != NULL), 1) && RK_EXPECTED((endBracket == NULL), 0))) { tempErrorString = RKLocalizedFormat(@"The capture reference '%*.*s' has unbalanced curly brackets.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters); goto finishedParseError; }
 
 finishedParse:
   
@@ -1100,13 +1100,13 @@ finishedParse:
     referenceUInteger = RKCaptureIndexForCaptureNameCharacters(regex, NULL, startReference, (endReference - startReference), NULL, NO);
 
     if((referenceUInteger == NSNotFound) && ((subjectMatchResultRanges != NULL) || (checkCaptureName == YES))) {
-      tempErrorString = [NSString stringWithFormat:@"The named capture '%*.*s' from capture reference '%*.*s' is not defined by the regular expression.", (int)(endReference - startReference), (int)(endReference - startReference), startReference, (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters];
+      tempErrorString = RKLocalizedFormat(@"The named capture '%*.*s' from capture reference '%*.*s' is not defined by the regular expression.", (int)(endReference - startReference), (int)(endReference - startReference), startReference, (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters);
       goto finishedParseError;
     }
   }
     
   if(referenceUInteger != NSNotFound) {
-    if(RK_EXPECTED(referenceUInteger >= [regex captureCount], 0)) { tempErrorString = [NSString stringWithFormat:@"The capture reference '%*.*s' specifies a capture subpattern '%lu' that is greater than number of capture subpatterns defined by the regular expression, '%ld'.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters, (unsigned long)referenceUInteger, (long)max(0, ((RKInteger)[regex captureCount] - 1))]; goto finishedParseError; }
+    if(RK_EXPECTED(referenceUInteger >= [regex captureCount], 0)) { tempErrorString = RKLocalizedFormat(@"The capture reference '%*.*s' specifies a capture subpattern '%lu' that is greater than number of capture subpatterns defined by the regular expression, '%ld'.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters, (unsigned long)referenceUInteger, (long)max(0, ((RKInteger)[regex captureCount] - 1))); goto finishedParseError; }
     
     if((performConversion == YES) && (subjectMatchResultRanges[referenceUInteger].location != NSNotFound)) {
       NSCParameterAssert((subjectMatchResultRanges[referenceUInteger].location + subjectMatchResultRanges[referenceUInteger].length) <= subjectBuffer->length);
@@ -1163,7 +1163,7 @@ finishedParse:
                   
                   if(any < 0) { if(unsignedConversion == YES) { acc = UINT_MAX; } else { acc = neg ? INT_MIN : INT_MAX; } } else if(neg) { acc = -acc; }
                   
-                  if(RK_EXPECTED(conversionPtr == NULL, 0)) { tempErrorString = [NSString stringWithFormat:@"The capture reference '%*.*s' storage pointer is NULL.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters]; goto finishedParseError; }
+                  if(RK_EXPECTED(conversionPtr == NULL, 0)) { tempErrorString = RKLocalizedFormat(@"The capture reference '%*.*s' storage pointer is NULL.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters); goto finishedParseError; }
                   *((int *)conversionPtr) = acc;
                   goto finishedParseSuccess;
                 }
@@ -1183,7 +1183,7 @@ finishedParse:
         if( ! ( RK_EXPECTED((*startFormat == '@'), 1) && 
                      ( ((*(endFormat - 1) == 'n') && (((startFormat + 1) == (endFormat - 1)) || ((startFormat + 2) == (endFormat - 1)))) ||
                        ((*(endFormat - 1) == 'd') &&  ((startFormat + 1) == (endFormat - 1))) ))) {
-          tempErrorString = [NSString stringWithFormat:@"Unknown type conversion requested in capture reference '%*.*s'.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters];
+          tempErrorString = RKLocalizedFormat(@"Unknown type conversion requested in capture reference '%*.*s'.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters);
           goto finishedParseError;
         }
       }
@@ -1221,14 +1221,14 @@ finishedParse:
             case '%': if(tld->_currentFormatterStyle != NSNumberFormatterPercentStyle)    { tld->_currentFormatterStyle = NSNumberFormatterPercentStyle;    [numberFormatter setNumberStyle:NSNumberFormatterPercentStyle]; }    break;
             case 's': if(tld->_currentFormatterStyle != NSNumberFormatterScientificStyle) { tld->_currentFormatterStyle = NSNumberFormatterScientificStyle; [numberFormatter setNumberStyle:NSNumberFormatterScientificStyle]; } break;
             case 'w': if(tld->_currentFormatterStyle != NSNumberFormatterSpellOutStyle)   { tld->_currentFormatterStyle = NSNumberFormatterSpellOutStyle;   [numberFormatter setNumberStyle:NSNumberFormatterSpellOutStyle]; }   break;
-            default: tempErrorString = [NSString stringWithFormat:@"Capture reference '%*.*s' NSNumber conversion is invalid. Valid NSNumber conversion options are '.$%%ew'.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters]; goto finishedParseError; break;
+            default: tempErrorString = RKLocalizedFormat(@"Capture reference '%*.*s' NSNumber conversion is invalid. Valid NSNumber conversion options are '.$%%ew'.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters); goto finishedParseError; break;
           }
         } else { if(tld->_currentFormatterStyle != NSNumberFormatterNoStyle) { tld->_currentFormatterStyle = NSNumberFormatterNoStyle; [numberFormatter setNumberStyle:NSNumberFormatterNoStyle]; } }
         *((NSNumber **)conversionPtr) = [numberFormatter numberFromString:convertedString];
         goto finishedParseSuccess;
       }
 #endif // HAVE_NSNUMBERFORMATTER_CONVERSIONS
-      else { tempErrorString = [NSString stringWithFormat:@"Unknown type conversion requested in capture reference '%*.*s'.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters]; goto finishedParseError; }
+      else { tempErrorString = RKLocalizedFormat(@"Unknown type conversion requested in capture reference '%*.*s'.", (int)rBuffer.length, (int)rBuffer.length, rBuffer.characters); goto finishedParseError; }
     }
   }
   

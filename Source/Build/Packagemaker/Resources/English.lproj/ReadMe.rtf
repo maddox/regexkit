@@ -21,31 +21,47 @@ RegexKit will install in the following directories by default:\
 \cf0 \
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 
+\fs36 \cf0 Linking Issues Information\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\fs24 \cf0 \
+Unfortunately, a problem linking to RegexKit has been discovered when using Mac OS X 10.4 or Xcode versions prior to 3.0.  This does not effect actual execution under Mac OS X 10.4, only the final linking step during development.\
+\
+Refer to 
+\i Release Information - Release Notes for 0.6.0 Beta
+\i0  for more information regarding this problem.\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
 \fs36 \cf0 What's New in 0.6.0\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 
 \fs24 \cf0 \
 \pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\sa120\ql\qnatural\pardirnatural
-\ls1\ilvl0\cf0 {\listtext	\'95	}RegexKit specific 
-\f1 DTrace
-\f0  probes.\
-{\listtext	\'95	}Collection of RegexKit instruments for 
-\f1 Instruments.app
-\f0 .\
-{\listtext	\'95	}New 
+\ls1\ilvl0\cf0 {\listtext	\'95	}Upgraded to PCRE version 7.6.\
+{\listtext	\'95	}Preliminary support for internationalization, though English is currently the only provided localization.\
+{\listtext	\'95	}Support for returning 
+\f1 NSError
+\f0  objects for error conditions.\
+{\listtext	\'95	}Support for multiple regular expressions in a collection (i.e., 
 \f1 NSArray
-\f0  methods for returning a 
-\f1 NSIndexSet
-\f0  for matches.\
-{\listtext	\'95	}
-\f1 NSData
-\f0  class category additions.\
+\f0 ) to be evaluated concurrently on multiple threads, one per CPU.\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 \cf0 \
 See 
 \i Release Information - Release Notes for 0.6.0 Beta
-\i0  for more information\
+\i0  for more information.\
 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\fs36 \cf0 Projects Using RegexKit\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\fs24 \cf0 \
+Safari AdBlock is a free, GPL licensed plug-in for Safari that blocks ads using RegexKit and AdBlock Plus lists.  Similar to the popular Firefox Adblock Plus plug-in.\
+\
+Available at {\field{\*\fldinst{HYPERLINK "http://safariadblock.sourceforge.net/"}}{\fldrslt http://safariadblock.sourceforge.net/}}\
+ \
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
 
 \fs36 \cf0 Prerequisites\

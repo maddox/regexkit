@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -45,9 +45,6 @@ static RKUInteger startAutoreleasedObjects = 0;
 static RKCPUTime testStartCPUTime;
 static RKCPUTime testEndCPUTime;
 static RKCPUTime testElapsedCPUTime;
-
-
-
 
 
 @interface collectionAdditions : RKTestCase {

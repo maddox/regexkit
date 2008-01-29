@@ -1,9 +1,11 @@
 personal_ws-1.1 en 1614 
 ABI
 APIs
+API's
 ARGS
 AbsoluteTime
 AbsoluteToNanoseconds
+AdBlock
 AppKit
 BeginCacheAdd
 BeginCacheLookup
@@ -58,9 +60,11 @@ CRLF
 CTORS
 CXX
 CacheDebugging
+Contributers
 CaptureSubpatternReferenceSyntax
 CaptureSubpatternReferenceandTypeConversionSyntax
 CountersDebugging
+DOF
 DTRACE
 DTrace
 DYLD
@@ -101,6 +105,7 @@ INITIALIZERS
 INLINE
 JCHANGED
 JavaScript
+Libreadline
 LDFLAGS
 LF
 LINENO
@@ -124,6 +129,7 @@ MyCompanyName
 NAMECOUNT
 NAMETABLE
 NSAccessibilityDebugLogLevel
+NSAlert
 NSAllocateObject
 NSApplication
 NSArray
@@ -175,7 +181,10 @@ NSInternalInconsistencyException
 NSInvalidArgumentException
 NSInvalidUnarchiveOperationException
 NSInvocation
+NSHighResTimeInterval
 NSLocalizedString
+NSLocalizedDescriptionKey
+NSLocalizedFailureReasonErrorKey
 NSLog
 NSMakeRange
 NSMallocException
@@ -215,6 +224,7 @@ NSQuitAfterLaunch
 NSRange
 NSRangeException
 NSRanges
+NSResponder
 NSScanner
 NSScriptingDebugLogLevel
 NSSet
@@ -226,6 +236,7 @@ NSStringFromClass
 NSStringFromRange
 NSStringFromSelector
 NSStringREExtensionsLinkerInitialized
+NSTimeInterval
 NSThread
 NSToolTipAttributeName
 NSTraceEvents
@@ -272,6 +283,9 @@ REReadWriteLock
 REUTILITY
 RGB
 RK
+RKAbreviatedAttributedRegexStringErrorKey
+RKAbreviatedRegexStringErrorKey
+RKAbreviatedRegexStringErrorRangeErrorKey
 RKAppendCopyInstruction
 RKAppendInstruction
 RKApplyReferenceInstructions
@@ -287,12 +301,14 @@ RKArrayFromCompileOption
 RKArrayFromMatchOption
 RKArrayFromMatchOptions
 RKArrayOfPrettyNewlineTypes
+RKArrayIndexErrorKey
 RKAtomic
 RKAtomicCompareAndSwapInt
 RKAtomicCompareAndSwapPtr
 RKAtomicDecrementInt
 RKAtomicIncrementInt
 RKAtomicMemoryBarrier
+RKAttributedRegexStringErrorKey
 RKAutoreleasedMalloc
 RKAutoreleasedMemory
 RKAutoreleasedMemoryLinkerInitialized
@@ -320,6 +336,7 @@ RKCaptureExtractOptions
 RKCaptureExtractStrictReference
 RKCaptureIndexForCaptureNameCharacters
 RKCoder
+RKCollectionErrorKey
 RKCompile
 RKCompileAllOptions
 RKCompileAnchored
@@ -334,7 +351,9 @@ RKCompileErrorAssertionExpectedAfterCondition
 RKCompileErrorByteEscapeAtEndOfPattern
 RKCompileErrorCalloutExceedsMaximumAllowed
 RKCompileErrorCode
+RKCompileErrorCodeErrorKey
 RKCompileErrorCodeString
+RKCompileErrorCodeStringErrorKey
 RKCompileErrorConditionalGroupContainsMoreThanTwoBranches
 RKCompileErrorDEFINEGroupContainsMoreThanOneBranch
 RKCompileErrorDuplicateSubpatternNames
@@ -403,12 +422,16 @@ RKCompileNoAutoCapture
 RKCompileNoOptions
 RKCompileNoUTF
 RKCompileOption
+RKCompileOptionErrorKey
 RKCompileOptionArray
+RKCompileOptionArrayErrorKey
 RKCompileOptionString
+RKCompileOptionArrayStringErrorKey
 RKCompileReferenceString
 RKCompileUTF
 RKCompileUngreedy
 RKCompileUnsupported
+RKConditionLock
 RKConvertByteRangeToUTF
 RKConvertUTF
 RKCopyInstruction
@@ -435,7 +458,11 @@ RKEvaluateCopyInstructions
 RKExtractCapturesFromMatchesWithKeyArguments
 RKExtractCapturesFromMatchesWithKeysAndPointers
 RKFastCacheLookup
+RKFastConditionLock
+RKFastConditionUnlock
 RKFastLock
+RKFastMutexLock
+RKFastMutexUnlock
 RKFastReadWriteLock
 RKFastReadWriteUnlock
 RKFastUnlock
@@ -492,6 +519,7 @@ RKMatchNotEndOfLine
 RKMatchOption
 RKMatchPartial
 RKMutableStringMatch
+RKObjectErrorKey
 RKParseReference
 RKPlaceholder
 RKPrettyObject
@@ -508,14 +536,21 @@ RKRegexCaptureReferenceException
 RKRegexCoderDifferencesDictionary
 RKRegexDef
 RKRegexEncodeWithCoder
+RKRegexErrorDomain
 RKRegexFromStringOrRegex
 RKRegexFromStringOrRegexWithError
 RKRegexGarbageCollect
 RKRegexInitWithCoder
+RKRegexLibraryErrorKey
+RKRegexLibraryErrorStringErrorKey
 RKRegexLinkerInitialized
 RKRegexPCRECallout
+RKRegexPCRELibrary
+RKRegexPCRELibraryErrorDomain
 RKRegexPlaceholder
 RKRegexString
+RKRegexStringErrorKey
+RKRegexStringErrorRangeErrorKey
 RKRegexSyntaxErrorException
 RKRegexThreadLocalDataKey
 RKRegexUnsupportedException
@@ -537,6 +572,7 @@ RKStringFromCopyInstructions
 RKStringFromMatchErrorCode
 RKStringFromNewlineOption
 RKStringFromReferenceString
+RKTestCase
 RKThreadIsExiting
 RKThreadLocalData
 RKThreadYield
@@ -567,6 +603,7 @@ SRCROOT
 STDC
 STRASSE
 SUPERCLASSES
+SenTestCase
 SetFile
 Solaris
 SortedRegexCompare
@@ -619,6 +656,7 @@ addObjectsFromSet
 aff
 againstRange
 ala
+alertWithError
 allKeys
 allObjects
 allValues
@@ -756,6 +794,7 @@ checkbox
 checkboxes
 childArray
 childNodes
+chk
 chmod
 classMethodsString
 className
@@ -791,6 +830,8 @@ const
 containsKey
 containsKeyMatchingRegex
 containsObjectMatchingRegex
+contributer
+contributers
 conversionAllowed
 conversionPtr
 convertArray
@@ -852,6 +893,7 @@ defineName
 defineText
 desc
 descriptionString
+dev
 dfa
 dftables
 dictionaryByMatchingKeysWithRegex
@@ -1091,6 +1133,7 @@ keyRegex
 keyStrings
 keysForObjectsMatchingRegex
 keysMatchingRegex
+kludgey
 ktrace
 lastCell
 lastRow
@@ -1109,6 +1152,7 @@ linkerInitializeRKRegex
 lipo
 llu
 localException
+localizable
 localizedNameOfStringEncoding
 lockPool
 logString
@@ -1124,6 +1168,7 @@ lproj
 lquantize
 lt
 machtimeStringFromCPUTime
+macosx
 majorBuffer
 makehybrid
 malloc
@@ -1168,6 +1213,7 @@ methodsStart
 microSecondsStringFromCPUTime
 minorBuffer
 mkdir
+mmacosx
 mozilla
 mpkg
 msec
@@ -1179,6 +1225,7 @@ mutableArray
 mutableBytes
 mutableData
 mutex
+mutexes
 mxref
 myController
 nameEntrySize
@@ -1195,6 +1242,7 @@ nextRange
 nextRangeForCapture
 nextRangeForCaptureName
 nextRanges
+nmedit
 noRetainArrayCallBacks
 nobr
 nodeType
@@ -1221,6 +1269,7 @@ objectsForKey
 objectsForKeysMatchingRegex
 objectsMatchingRegex
 objectsReady
+obsd
 occlid
 ocmid
 oldMapTable
@@ -1415,6 +1464,7 @@ shouldAutorelease
 singletonRKRegexPlaceholder
 sizeof
 snprintf
+sortedRegexCollection
 sourcecode
 spinCount
 spuriousErrors
@@ -1488,6 +1538,7 @@ svr
 sw
 sym
 symlink
+sys
 syscall
 sysctl
 syslibroot
@@ -1568,6 +1619,7 @@ unsignedConversion
 untar
 untaring
 updateToNextMatch
+urandom
 usdt
 useVarArgsList
 useable

@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -43,6 +43,8 @@ extern "C" {
 #ifndef _REGEXKIT_REGEXKITDEFINES_H_
 #define _REGEXKIT_REGEXKITDEFINES_H_ 1
 
+#import <mach-o/loader.h>
+
 #define __REGEXKIT__
 
 
@@ -70,7 +72,7 @@ extern "C" {
  @tocgroup Constants Preprocessor Macros
  @abstract Preprocessor definition for cross-platform @link NSInteger NSInteger @/link functionality.
  @discussion <p>On <span class="nobr">Mac OS X 10.5</span> this is defined to be @link NSInteger NSInteger@/link, otherwise it is defined as <span class="code">int</span>.</p>
- <p>This is done as a preprocessor macro so that it is rewritten in to the proper type for the environment for type checking.</p>
+ <p>This is done as a preprocessor macro so that it is rewritten in to the proper type for the build environment for type checking.</p>
 */
 
 /*!
@@ -78,7 +80,7 @@ extern "C" {
  @tocgroup Constants Preprocessor Macros
  @abstract Preprocessor definition for cross-platform @link NSUInteger NSUInteger @/link functionality.
  @discussion <p>On <span class="nobr">Mac OS X 10.5</span> this is defined to be @link NSUInteger NSUInteger@/link, otherwise it is defined as <span class="code">unsigned int</span>.</p>
- <p>This is done as a preprocessor macro so that it is rewritten in to the proper type for the environment for type checking.</p>
+ <p>This is done as a preprocessor macro so that it is rewritten in to the proper type for the build environment for type checking.</p>
 */
 
 /*!
@@ -163,7 +165,7 @@ extern "C" {
  @discussion <p>Supported on <span class="nobr">Mac OS X 10.5</span> and later.</p>
 */
 
-#if defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5)
+#if defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5) && defined(NS_REQUIRES_NIL_TERMINATION)
 #define RK_REQUIRES_NIL_TERMINATION NS_REQUIRES_NIL_TERMINATION
 #else
 #define RK_REQUIRES_NIL_TERMINATION
@@ -237,7 +239,7 @@ extern "C" {
  @seealso <a href="http://developer.apple.com/documentation/Cocoa/Reference/NSGarbageCollector_class/index.html" class="section-link" target="_top">NSGarbageCollector Class Reference</a>
 */
 
-#if defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5)
+#if defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5) && defined(__OBJC_GC__)
 #define ENABLE_MACOSX_GARBAGE_COLLECTION
 #define RK_STRONG_REF                     __strong
 #define RK_WEAK_REF                       __weak
@@ -259,7 +261,7 @@ extern "C" {
  @seealso <a href="http://docs.sun.com/app/docs/doc/817-6223" class="section-link" target="_top">Solaris Dynamic Tracing Guide</a> <a href="http://dlc.sun.com/pdf/817-6223/817-6223.pdf" class="section-link" target="_top">(as .PDF)</a>
 */
 
-#if (defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5))
+#if defined(__MACOSX_RUNTIME__) && defined(MAC_OS_X_VERSION_10_5) && defined(S_DTRACE_DOF)
 #define ENABLE_DTRACE_INSTRUMENTATION
 #endif
 

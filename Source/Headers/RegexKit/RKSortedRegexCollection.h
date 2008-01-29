@@ -7,7 +7,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -54,7 +54,6 @@ extern "C" {
 #import <pthread.h>
 
 #define RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS 251
-//#define RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS 1021
 
 struct collectionElement {
   RKRegex    *regex;
@@ -79,35 +78,35 @@ NSString *RKStringFromCollectionType(RKCollectionType collectionType);
 struct _sortedRegexCollectionThreadMatchState {
   RKSortedRegexCollection *self;
     
-  BOOL            findLowestIndex;
-  RKUInteger      atSortedIndex;
-  RKUInteger      highestMatchingArrayIndex;
-  RKUInteger      finished;
+  BOOL                     findLowestIndex;
+  RKUInteger               atSortedIndex;
+  RKUInteger               highestMatchingArrayIndex;
+  RKUInteger               finished;
 
-  RKStringBuffer  matchStringBuffer;
-  RKRegex        *matchedRegex;
-  RKUInteger      matchingSortedIndex;
-  RKUInteger      matchingCollectionIndex;
+  RKStringBuffer           matchStringBuffer;
+  RKRegex                 *matchedRegex;
+  RKUInteger               matchingSortedIndex;
+  RKUInteger               matchingCollectionIndex;
 };
 
 typedef struct _sortedRegexCollectionThreadMatchState RK_STRONG_REF RKSortedRegexCollectionThreadMatchState;
 
 @interface RKSortedRegexCollection : NSObject {
-  RKReadWriteLock      *readWriteLock;
-  NSString             *libraryString;
-  RKCompileOption       regexEngineCompileOptions;
-  RKUInteger            sortedRegexCollectionHash;
-  id                    collection;
-  NSArray              *collectionRegexArray;
-  RKCollectionType      collectionType;
-  RKUInteger            collectionHash;
-  RKUInteger            collectionCount;
-  RKUInteger            resortRequired;
-  RK_STRONG_REF RKCollectionElement  *elements;
-  RK_STRONG_REF RKCollectionElement **sortedElements;
-  RKUInteger            elementsCount;
+  RKReadWriteLock                    *readWriteLock;
+  NSString                           *regexLibraryString;
+  RKCompileOption                     regexLibraryCompileOptions;
+  RKUInteger                          sortedRegexCollectionHash;
+  id                                  collection;
+  NSArray                            *collectionRegexArray;
+  RKCollectionType                    collectionType;
+  RKUInteger                          collectionHash;
+  RKUInteger                          collectionCount;
+  RKUInteger                          resortRequired;
+  RKCollectionElement RK_STRONG_REF  *elements;
+  RKCollectionElement RK_STRONG_REF **sortedElements;
+  RKUInteger                          elementsCount;
 
-  RK_STRONG_REF RKUInteger           *missedObjectHashCache;
+  RKUInteger RK_STRONG_REF           *missedObjectHashCache;
   
   RKUInteger cacheHits, cacheMisses;
 }
@@ -117,10 +116,10 @@ typedef struct _sortedRegexCollectionThreadMatchState RK_STRONG_REF RKSortedRege
 + (NSArray *)sortedArrayForSortedRegexCollection:(RKSortedRegexCollection *)sortedRegexCollection;
 
 + (RKSortedRegexCollection *)sortedRegexCollectionForCollection:(id const RK_C99(restrict))collection;
-+ (RKSortedRegexCollection *)sortedRegexCollectionForCollection:(id const RK_C99(restrict))collection library:(NSString * const RK_C99(restrict))initRegexEngineString options:(const RKCompileOption)initRegexEngineOptions error:(NSError ** const RK_C99(restrict))outError;
++ (RKSortedRegexCollection *)sortedRegexCollectionForCollection:(id const RK_C99(restrict))collection library:(NSString * const RK_C99(restrict))initRegexLibraryString options:(const RKCompileOption)initRegexLibraryOptions error:(NSError ** const RK_C99(restrict))error;
 
 - (id)initWithCollection:(id const RK_C99(restrict))initCollection;
-- (id)initWithCollection:(id const RK_C99(restrict))initCollection library:(NSString * const RK_C99(restrict))initRegexEngineString options:(const RKCompileOption)initRegexEngineOptions error:(NSError ** const RK_C99(restrict))outError;
+- (id)initWithCollection:(id const RK_C99(restrict))initCollection library:(NSString * const RK_C99(restrict))initRegexLibraryString options:(const RKCompileOption)initRegexLibraryOptions error:(NSError ** const RK_C99(restrict))error;
 
 - (id)collection;
 

@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -79,108 +79,114 @@ extern "C" {
  @method     isMatchedByAnyRegexInArray:
  @tocgroup   NSObject Identifying Matches in an Array
  @abstract   Returns a Boolean value that indicates whether the receiver is matched by any regular expression in <span class="argument">regexArray</span>.
- @discussion <span class="XXX UNKNOWN">TODO</span>
  @param      regexArray A @link NSArray NSArray @/link containing either regular expression strings or @link RKRegex RKRegex @/link objects.
+ @discussion Equivalent to @link isMatchedByAnyRegexInArray:library:options:error: isMatchedByAnyRegexInArray:library:options:error: @/link using <span class="argument">regexArray</span> with @link RKRegexPCRELibrary RKRegexPCRELibrary @/link for <span class="argument">library</span> and <span class="code">(</span>@link RKCompileUTF8 RKCompileUTF8 @/link <span class="code">|</span> @link RKCompileNoUTF8Check RKCompileNoUTF8Check@/link<span class="code">)</span> for <span class="argument">libraryOptions</span>.
  @result     Returns <span class="code">YES</span> if the receiver is matched by any regular expression in <span class="argument">regexArray</span>, <span class="code">NO</span> otherwise.
-*/
+ @seealso    @link anyMatchingRegexInArray: - anyMatchingRegexInArray: @/link
+ @seealso    @link firstMatchingRegexInArray: - firstMatchingRegexInArray: @/link
+ @seealso    @link isMatchedByAnyRegexInArray:library:options:error: - isMatchedByAnyRegexInArray:library:options:error: @/link
+ */
 - (BOOL)isMatchedByAnyRegexInArray:(NSArray *)regexArray;
 /*!
  @method     anyMatchingRegexInArray:
  @tocgroup   NSObject Identifying Matches in an Array
- @abstract   Returns a Boolean value that indicates whether the receiver is matched by <span class="argument">aRegex</span>.
- @discussion <span class="XXX UNKNOWN">TODO</span>
+ @abstract   Returns any regular expression from <span class="argument">regexArray</span> that matches the receiver.
  @param      regexArray A @link NSArray NSArray @/link containing either regular expression strings or @link RKRegex RKRegex @/link objects.
- @result     Returns any regular expression from <span class="argument">regexArray</span> that matches the receiver, or <span class="code">NULL</span> if there is no match.
-*/
+ @discussion Equivalent to @link anyMatchingRegexInArray:library:options:error: anyMatchingRegexInArray:library:options:error: @/link using <span class="argument">regexArray</span> with @link RKRegexPCRELibrary RKRegexPCRELibrary @/link for <span class="argument">library</span> and <span class="code">(</span>@link RKCompileUTF8 RKCompileUTF8 @/link <span class="code">|</span> @link RKCompileNoUTF8Check RKCompileNoUTF8Check@/link<span class="code">)</span> for <span class="argument">libraryOptions</span>.
+ @result     Returns one of the regular expressions from <span class="argument">regexArray</span> that matches the receiver, or <span class="code">NULL</span> if the receiver is not matched by any of the regular expressions or an error occurs. The object returned is chosen at the receiver's convenience- the selection is not guaranteed to be random.
+ @seealso    @link anyMatchingRegexInArray:library:options:error: - anyMatchingRegexInArray:library:options:error: @/link
+ @seealso    @link firstMatchingRegexInArray: - firstMatchingRegexInArray: @/link
+ @seealso    @link isMatchedByAnyRegexInArray: - isMatchedByAnyRegexInArray: @/link
+ */
 - (RKRegex *)anyMatchingRegexInArray:(NSArray *)regexArray;
 /*!
  @method     firstMatchingRegexInArray:
  @tocgroup   NSObject Identifying Matches in an Array
- @abstract   Returns a Boolean value that indicates whether the receiver is matched by <span class="argument">aRegex</span>.
- @discussion <span class="XXX UNKNOWN">TODO</span>
+ @abstract   Returns the first regular expression from <span class="argument">regexArray</span> that matches the receiver.
  @param      regexArray A @link NSArray NSArray @/link containing either regular expression strings or @link RKRegex RKRegex @/link objects.
- @result     Returns the first regular expression from <span class="argument">regexArray</span> that matches the receiver, or <span class="code">NULL</span> if there is no match.
-*/
+ @discussion Equivalent to @link firstMatchingRegexInArray:library:options:error: firstMatchingRegexInArray:library:options:error: @/link using <span class="argument">regexArray</span> with @link RKRegexPCRELibrary RKRegexPCRELibrary @/link for <span class="argument">library</span> and <span class="code">(</span>@link RKCompileUTF8 RKCompileUTF8 @/link <span class="code">|</span> @link RKCompileNoUTF8Check RKCompileNoUTF8Check@/link<span class="code">)</span> for <span class="argument">libraryOptions</span>.
+ @result     Returns the first regular expression from <span class="argument">regexArray</span> that matches the receiver, or <span class="code">NULL</span> if the receiver is not matched by any of the regular expressions or an error occurs.
+ @seealso    @link anyMatchingRegexInArray: - anyMatchingRegexInArray: @/link
+ @seealso    @link firstMatchingRegexInArray:library:options:error: - firstMatchingRegexInArray:library:options:error: @/link
+ @seealso    @link isMatchedByAnyRegexInArray: - isMatchedByAnyRegexInArray: @/link
+ */
 - (RKRegex *)firstMatchingRegexInArray:(NSArray *)regexArray;
 /*!
  @method     isMatchedByAnyRegexInArray:library:options:error:
  @tocgroup   NSObject Identifying Matches in an Array
- @abstract   Returns a Boolean value that indicates whether the receiver is matched by any regular expression in <span class="argument">regexArray</span>.
- @discussion <span class="XXX UNKNOWN">TODO</span>
- @param      regexArray A @link NSArray NSArray @/link containing either regular expression strings or @link RKRegex RKRegex @/link objects.
- @param      libraryString <span class="XXX UNKNOWN">TODO</span>
- @param      libraryOptions <span class="XXX UNKNOWN">TODO</span>
- @param      outError <span class="XXX UNKNOWN">TODO</span>
+ @abstract   Returns a Boolean value that indicates whether the receiver is matched by any regular expression in <span class="argument">regexArray</span> using the regular expression <span class="argument">library</span> and <span class="argument">libraryOptions</span>, setting the optional <span class="argument">error</span> parameter if an error occurs.
+ @discussion <span class="argument">regexArray</span> may contain either regular expression strings or @link RKRegex RKRegex @/link objects.  See <a href="Constants.html#Regular_Expression_Libraries" class="section-link">Regular Expression Libraries</a> for a list of valid <span class="argument">library</span> constants.  If information about any errors is not required, <span class="argument">error</span> may be set to <span class="code">NULL</span>.
  @result     Returns <span class="code">YES</span> if the receiver is matched by any regular expression in <span class="argument">regexArray</span>, <span class="code">NO</span> otherwise.
-*/
-- (BOOL)isMatchedByAnyRegexInArray:(NSArray *)regexArray library:(NSString *)libraryString options:(RKCompileOption)libraryOptions error:(NSError **)outError;
+ @seealso    @link anyMatchingRegexInArray:library:options:error: - anyMatchingRegexInArray:library:options:error: @/link
+ @seealso    @link firstMatchingRegexInArray:library:options:error: - firstMatchingRegexInArray:library:options:error: @/link
+ @seealso    @link isMatchedByAnyRegexInArray: - isMatchedByAnyRegexInArray: @/link
+ */
+- (BOOL)isMatchedByAnyRegexInArray:(NSArray *)regexArray library:(NSString *)library options:(RKCompileOption)libraryOptions error:(NSError **)error;
 /*!
  @method     anyMatchingRegexInArray:library:options:error:
  @tocgroup   NSObject Identifying Matches in an Array
- @abstract   Returns a Boolean value that indicates whether the receiver is matched by <span class="argument">aRegex</span>.
- @discussion <span class="XXX UNKNOWN">TODO</span>
- @param      regexArray A @link NSArray NSArray @/link containing either regular expression strings or @link RKRegex RKRegex @/link objects.
- @param      libraryString <span class="XXX UNKNOWN">TODO</span>
- @param      libraryOptions <span class="XXX UNKNOWN">TODO</span>
- @param      outError <span class="XXX UNKNOWN">TODO</span>
- @result     Returns any regular expression from <span class="argument">regexArray</span> that matches the receiver, or <span class="code">NULL</span> if there is no match.
-*/
-- (RKRegex *)anyMatchingRegexInArray:(NSArray *)regexArray library:(NSString *)libraryString options:(RKCompileOption)libraryOptions error:(NSError **)outError;
+ @abstract   Returns any regular expression from <span class="argument">regexArray</span> that matches the receiver using the regular expression <span class="argument">library</span> and <span class="argument">libraryOptions</span>, setting the optional <span class="argument">error</span> parameter if an error occurs.
+ @discussion <span class="argument">regexArray</span> may contain either regular expression strings or @link RKRegex RKRegex @/link objects.  See <a href="Constants.html#Regular_Expression_Libraries" class="section-link">Regular Expression Libraries</a> for a list of valid <span class="argument">library</span> constants.  If information about any errors is not required, <span class="argument">error</span> may be set to <span class="code">NULL</span>.
+ @result     Returns one of the regular expressions from <span class="argument">regexArray</span> that matches the receiver, or <span class="code">NULL</span> if the receiver is not matched by any of the regular expressions or an error occurs. The object returned is chosen at the receiver's convenience- the selection is not guaranteed to be random.
+ @seealso    @link anyMatchingRegexInArray: - anyMatchingRegexInArray: @/link
+ @seealso    @link firstMatchingRegexInArray:library:options:error: - firstMatchingRegexInArray:library:options:error: @/link
+ @seealso    @link isMatchedByAnyRegexInArray:library:options:error: - isMatchedByAnyRegexInArray:library:options:error: @/link
+ */
+- (RKRegex *)anyMatchingRegexInArray:(NSArray *)regexArray library:(NSString *)library options:(RKCompileOption)libraryOptions error:(NSError **)error;
 /*!
  @method     firstMatchingRegexInArray:library:options:error:
  @tocgroup   NSObject Identifying Matches in an Array
- @abstract   Returns a Boolean value that indicates whether the receiver is matched by <span class="argument">aRegex</span>.
- @discussion <span class="XXX UNKNOWN">TODO</span>
- @param      regexArray A @link NSArray NSArray @/link containing either regular expression strings or @link RKRegex RKRegex @/link objects.
- @param      libraryString <span class="XXX UNKNOWN">TODO</span>
- @param      libraryOptions <span class="XXX UNKNOWN">TODO</span>
- @param      outError <span class="XXX UNKNOWN">TODO</span>
- @result     Returns the first regular expression from <span class="argument">regexArray</span> that matches the receiver, or <span class="code">NULL</span> if there is no match.
-*/
-- (RKRegex *)firstMatchingRegexInArray:(NSArray *)regexArray library:(NSString *)libraryString options:(RKCompileOption)libraryOptions error:(NSError **)outError;
+ @abstract   Returns the first regular expression from <span class="argument">regexArray</span> that matches the receiver using the regular expression <span class="argument">library</span> and <span class="argument">libraryOptions</span>, setting the optional <span class="argument">error</span> parameter if an error occurs.
+ @discussion <span class="argument">regexArray</span> may contain either regular expression strings or @link RKRegex RKRegex @/link objects.  See <a href="Constants.html#Regular_Expression_Libraries" class="section-link">Regular Expression Libraries</a> for a list of valid <span class="argument">library</span> constants.  If information about any errors is not required, <span class="argument">error</span> may be set to <span class="code">NULL</span>.
+ @result     Returns the first regular expression from <span class="argument">regexArray</span> that matches the receiver, or <span class="code">NULL</span> if the receiver is not matched by any of the regular expressions or an error occurs.
+ @seealso    @link anyMatchingRegexInArray:library:options:error: - anyMatchingRegexInArray:library:options:error: @/link
+ @seealso    @link firstMatchingRegexInArray: - firstMatchingRegexInArray: @/link
+ @seealso    @link isMatchedByAnyRegexInArray:library:options:error: - isMatchedByAnyRegexInArray:library:options:error: @/link
+ */
+- (RKRegex *)firstMatchingRegexInArray:(NSArray *)regexArray library:(NSString *)library options:(RKCompileOption)libraryOptions error:(NSError **)error;
 
 /*!
  @method     isMatchedByAnyRegexInSet:
  @tocgroup   NSObject Identifying Matches in a Set
  @abstract   Returns a Boolean value that indicates whether the receiver is matched by any regular expression in <span class="argument">regexSet</span>.
- @discussion <span class="XXX UNKNOWN">TODO</span>
  @param      regexSet A @link NSSet NSSet @/link containing either regular expression strings or @link RKRegex RKRegex @/link objects.
+ @discussion Equivalent to @link isMatchedByAnyRegexInSet:library:options:error: isMatchedByAnyRegexInSet:library:options:error: @/link using <span class="argument">regexArray</span> with @link RKRegexPCRELibrary RKRegexPCRELibrary @/link for <span class="argument">library</span> and <span class="code">(</span>@link RKCompileUTF8 RKCompileUTF8 @/link <span class="code">|</span> @link RKCompileNoUTF8Check RKCompileNoUTF8Check@/link<span class="code">)</span> for <span class="argument">libraryOptions</span>.
  @result     Returns <span class="code">YES</span> if the receiver is matched by any regular expression in <span class="argument">regexSet</span>, <span class="code">NO</span> otherwise.
+ @seealso    @link anyMatchingRegexInSet: - anyMatchingRegexInSet: @/link
+ @seealso    @link isMatchedByAnyRegexInSet:library:options:error: - isMatchedByAnyRegexInSet:library:options:error: @/link
 */
 - (BOOL)isMatchedByAnyRegexInSet:(NSSet *)regexSet;
 /*!
  @method     anyMatchingRegexInSet:
  @tocgroup   NSObject Identifying Matches in a Set
- @abstract   Returns a Boolean value that indicates whether the receiver is matched by <span class="argument">aRegex</span>.
- @discussion <span class="XXX UNKNOWN">TODO</span>
+ @abstract   Returns any regular expression from <span class="argument">regexSet</span> that matches the receiver.
  @param      regexSet A @link NSSet NSSet @/link containing either regular expression strings or @link RKRegex RKRegex @/link objects.
- @result     Returns any regular expression from <span class="argument">regexSet</span> that matches the receiver, or <span class="code">NULL</span> if there is no match.
+ @discussion Equivalent to @link anyMatchingRegexInSet:library:options:error: anyMatchingRegexInSet:library:options:error: @/link using <span class="argument">regexArray</span> with @link RKRegexPCRELibrary RKRegexPCRELibrary @/link for <span class="argument">library</span> and <span class="code">(</span>@link RKCompileUTF8 RKCompileUTF8 @/link <span class="code">|</span> @link RKCompileNoUTF8Check RKCompileNoUTF8Check@/link<span class="code">)</span> for <span class="argument">libraryOptions</span>.
+ @result     Returns one of the regular expressions from <span class="argument">regexSet</span> that matches the receiver, or <span class="code">NULL</span> if the receiver is not matched by any of the regular expressions or an error occurs. The object returned is chosen at the receiver's convenience- the selection is not guaranteed to be random.
+ @seealso    @link anyMatchingRegexInSet:library:options:error: - anyMatchingRegexInSet:library:options:error: @/link
+ @seealso    @link isMatchedByAnyRegexInSet: - isMatchedByAnyRegexInSet: @/link
 */
 - (RKRegex *)anyMatchingRegexInSet:(NSSet *)regexSet;
 /*!
  @method     isMatchedByAnyRegexInSet:library:options:error:
  @tocgroup   NSObject Identifying Matches in a Set
- @abstract   Returns a Boolean value that indicates whether the receiver is matched by any regular expression in <span class="argument">regexSet</span>.
- @discussion <span class="XXX UNKNOWN">TODO</span>
- @param      regexSet A @link NSSet NSSet @/link containing either regular expression strings or @link RKRegex RKRegex @/link objects.
- @param      libraryString <span class="XXX UNKNOWN">TODO</span>
- @param      libraryOptions <span class="XXX UNKNOWN">TODO</span>
- @param      outError <span class="XXX UNKNOWN">TODO</span>
+ @abstract   Returns a Boolean value that indicates whether the receiver is matched by any regular expression in <span class="argument">regexSet</span> using the regular expression <span class="argument">library</span> and <span class="argument">libraryOptions</span>, setting the optional <span class="argument">error</span> parameter if an error occurs.
+ @discussion <span class="argument">regexSet</span> may contain either regular expression strings or @link RKRegex RKRegex @/link objects.  See <a href="Constants.html#Regular_Expression_Libraries" class="section-link">Regular Expression Libraries</a> for a list of valid <span class="argument">library</span> constants.  If information about any errors is not required, <span class="argument">error</span> may be set to <span class="code">NULL</span>.
  @result     Returns <span class="code">YES</span> if the receiver is matched by any regular expression in <span class="argument">regexSet</span>, <span class="code">NO</span> otherwise.
+ @seealso    @link anyMatchingRegexInSet:library:options:error: - anyMatchingRegexInSet:library:options:error: @/link
+ @seealso    @link isMatchedByAnyRegexInSet: - isMatchedByAnyRegexInSet: @/link
 */
-- (BOOL)isMatchedByAnyRegexInSet:(NSSet *)regexSet library:(NSString *)libraryString options:(RKCompileOption)libraryOptions error:(NSError **)outError;
+- (BOOL)isMatchedByAnyRegexInSet:(NSSet *)regexSet library:(NSString *)library options:(RKCompileOption)libraryOptions error:(NSError **)error;
 /*!
  @method     anyMatchingRegexInSet:library:options:error:
  @tocgroup   NSObject Identifying Matches in a Set
- @abstract   Returns a Boolean value that indicates whether the receiver is matched by <span class="argument">aRegex</span>.
- @discussion <span class="XXX UNKNOWN">TODO</span>
- @param      regexSet A @link NSSet NSSet @/link containing either regular expression strings or @link RKRegex RKRegex @/link objects.
- @param      libraryString <span class="XXX UNKNOWN">TODO</span>
- @param      libraryOptions <span class="XXX UNKNOWN">TODO</span>
- @param      outError <span class="XXX UNKNOWN">TODO</span>
- @result     Returns any regular expression from <span class="argument">regexSet</span> that matches the receiver, or <span class="code">NULL</span> if there is no match.
+ @abstract   Returns any regular expression from <span class="argument">regexSet</span> that matches the receiver using the regular expression <span class="argument">library</span> and <span class="argument">libraryOptions</span>, setting the optional <span class="argument">error</span> parameter if an error occurs.
+ @discussion See <a href="Constants.html#Regular_Expression_Libraries" class="section-link">Regular Expression Libraries</a> for a list of valid <span class="argument">library</span> constants.  If information about any errors is not required, <span class="argument">error</span> may be set to <span class="code">NULL</span>.
+ @result     <span class="argument">regexSet</span> may contain either regular expression strings or @link RKRegex RKRegex @/link objects.  Returns one of the regular expressions from <span class="argument">regexSet</span> that matches the receiver, or <span class="code">NULL</span> if the receiver is not matched by any of the regular expressions or an error occurs. The object returned is chosen at the receiver's convenience- the selection is not guaranteed to be random.
+ @seealso    @link anyMatchingRegexInSet: - anyMatchingRegexInSet: @/link
+ @seealso    @link isMatchedByAnyRegexInSet:library:options:error: - isMatchedByAnyRegexInSet:library:options:error: @/link
 */
-- (RKRegex *)anyMatchingRegexInSet:(NSSet *)regexSet library:(NSString *)libraryString options:(RKCompileOption)libraryOptions error:(NSError **)outError;
+- (RKRegex *)anyMatchingRegexInSet:(NSSet *)regexSet library:(NSString *)library options:(RKCompileOption)libraryOptions error:(NSError **)error;
 
 @end
 

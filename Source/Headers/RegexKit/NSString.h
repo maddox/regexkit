@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -195,8 +195,9 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @abstract   Returns an enumerator object that lets you access every match of <span class="argument">aRegex</span> in the receiver.
  @discussion Returns an @link RKEnumerator RKEnumerator @/link object that begins at location <span class="code">0</span> of the receiver and enumerates every match of <span class="argument">aRegex</span> in the receiver.
  @seealso    @link RKEnumerator RKEnumerator @/link
+ @seealso    @link RKEnumerator/enumeratorWithRegex:string: - enumeratorWithRegex:string: @/link
  @seealso    @link RKEnumerator/getCapturesWithReferences: - getCapturesWithReferences: @/link
- @seealso    @link RKEnumerator/matchEnumeratorWithRegex:inRange: - matchEnumeratorWithRegex:inRange: @/link
+ @seealso    @link NSString/matchEnumeratorWithRegex:inRange: - matchEnumeratorWithRegex:inRange: @/link
  @seealso    @link RKEnumerator/nextRanges - nextRanges @/link
  @seealso    @link RKEnumerator/stringWithReferenceFormat: - stringWithReferenceFormat: @/link
  @seealso    @link RKEnumerator/stringWithReferenceString: - stringWithReferenceString: @/link
@@ -209,7 +210,8 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @param      range The range of the receiver to enumerate matches.
  @discussion Returns an @link RKEnumerator RKEnumerator @/link object that enumerates every match of <span class="argument">aRegex</span> within <span class="argument">range</span> of the receiver.
  @seealso    @link RKEnumerator RKEnumerator @/link
- @seealso    @link RKEnumerator/matchEnumeratorWithRegex: - matchEnumeratorWithRegex: @/link
+ @seealso    @link RKEnumerator/enumeratorWithRegex:string: - enumeratorWithRegex:string: @/link
+ @seealso    @link NSString/matchEnumeratorWithRegex: - matchEnumeratorWithRegex: @/link
 */
 - (RKEnumerator *)matchEnumeratorWithRegex:(id)aRegex inRange:(const NSRange)range;
 

@@ -7,7 +7,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -118,15 +118,15 @@ extern "C" {
 
 // In RKRegex.m
 //RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCompileOption compileOptions, const BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3), pure, used, visibility("hidden"));
-RKRegex *RKRegexFromStringOrRegexWithError(id self, const SEL _cmd, id aRegex, NSString * const RK_C99(restrict)libraryString, const RKCompileOption compileOptions, NSError **outError, const BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3, 4), used, visibility("hidden"));
+RKRegex *RKRegexFromStringOrRegexWithError(id self, const SEL _cmd, id aRegex, NSString * const RK_C99(restrict)libraryString, const RKCompileOption compileOptions, NSError **error, const BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3, 4), used, visibility("hidden"));
 RKRegex *RKRegexFromStringOrRegex(id self, SEL _cmd, id aRegex, RKCompileOption compileOptions, BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3), used, visibility("hidden"));
-//RKRegex *RKRegexFromStringOrRegexWithError(id self, SEL _cmd, id aRegex, NSString *libraryString, RKCompileOption compileOptions, NSError **outError, BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3, 4), pure, used, visibility("hidden"));
+//RKRegex *RKRegexFromStringOrRegexWithError(id self, SEL _cmd, id aRegex, NSString *libraryString, RKCompileOption compileOptions, NSError **error, BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3, 4), pure, used, visibility("hidden"));
 
 NSException *RKExceptionFromInitFailureForOlderAPI(id self, const SEL _cmd, NSError *initError) RK_ATTRIBUTES(used, visibility("hidden"), nonnull);
 NSError *RKErrorForCompileInitFailure(id self, const SEL _cmd, RKStringBuffer *regexStringBuffer, RKUInteger errorOffset, RKCompileErrorCode compileErrorCode, RKCompileOption compileOption, RKUInteger abreviatedPadding) RK_ATTRIBUTES(nonnull(3), used, visibility("hidden"));
 const char *regexUTF8String(RKRegex *self) RK_ATTRIBUTES(used, visibility("hidden"), nonnull(1));
 RKUInteger RKCaptureIndexForCaptureNameCharacters(RKRegex * const aRegex, const SEL _cmd, const char * const RK_C99(restrict) captureNameCharacters, const RKUInteger length, const NSRange * const RK_C99(restrict) matchedRanges, const BOOL raiseExceptionOnDoesNotExist) RK_ATTRIBUTES(used, visibility("hidden"));
-RKUInteger RKCaptureIndexForCaptureNameCharactersWithError(RKRegex * const aRegex, const SEL _cmd, const char * const RK_C99(restrict) captureNameCharacters, const RKUInteger length, const NSRange * const RK_C99(restrict) matchedRanges, NSError **outError);
+RKUInteger RKCaptureIndexForCaptureNameCharactersWithError(RKRegex * const aRegex, const SEL _cmd, const char * const RK_C99(restrict) captureNameCharacters, const RKUInteger length, const NSRange * const RK_C99(restrict) matchedRanges, NSError **error);
 
 @interface RKRegex (Private)
 - (RKMatchErrorCode)getRanges:(NSRange * const RK_C99(restrict))ranges count:(const RKUInteger)rangeCount withCharacters:(const void * const RK_C99(restrict))charactersBuffer length:(const RKUInteger)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options;
@@ -158,7 +158,7 @@ const char *RKCharactersFromMatchErrorCode(  const RKMatchErrorCode   decodeErro
 #define NSMaxRange(r)                                 ({ NSRange _r = (r); _r.location + _r.length; })
 #define RKRangeInsideRange(inside, within)            (((inside.location - within.location) < within.length) && ((NSMaxRange(inside) - within.location) <= within.length))
 
-#define RKYesOrNo(yesOrNo)                            (((yesOrNo) == YES) ? @"Yes":@"No")
+#define RKYesOrNo(yesOrNo)                            (((yesOrNo) == YES) ? RKLocalizedString(@"Yes"):RKLocalizedString(@"No"))
 
 #ifdef    USE_CORE_FOUNDATION
 #define RKHashForStringAndCompileOption(string, option) (RK_EXPECTED((string) == NULL, 0) ? (RKUInteger)(option) : ((RKUInteger)CFHash((CFTypeRef)(string)) ^ (RKUInteger)(option)))

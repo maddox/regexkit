@@ -15,6 +15,9 @@ A:visited:hover	{ text-decoration: underline; color: #FF6600; }
 .XXX { border: 2px solid red; padding: 2px; }
 .XXX { border-color: rgba(255,0,0,0.8); -webkit-border-radius: 6px; -webkit-box-shadow: 8px 8px 10px #444; text-shadow: 2px 2px 2px #400; -moz-border-radius: 4px; -moz-border-bottom-colors: #FF0000 #D00000; -moz-border-top-colors: #FF0000 #D00000; -moz-border-right-colors: #FF0000 #D00000; -moz-border-left-colors: #FF0000 #D00000; }
 
+.security { border: 2px solid red; padding: 0.5ex 0.5em; margin-left: 0.5ex; margin-right: 0.5ex; }
+.security { border-color: rgba(255,0,0,0.8); -webkit-border-radius: 6px; -webkit-box-shadow: 8px 8px 10px #444; -moz-border-radius: 4px; -moz-border-bottom-colors: #FF0000 #D00000; -moz-border-top-colors: #FF0000 #D00000; -moz-border-right-colors: #FF0000 #D00000; -moz-border-left-colors: #FF0000 #D00000; }
+
 .topFrameSet { border-width: 50px; }
 
 .nobr { white-space: nowrap; white-space: pre-wrap !important; }
@@ -40,6 +43,7 @@ A:visited:hover	{ text-decoration: underline; color: #FF6600; }
 .bar { height: 0px; width: 100%; margin-top: 0.5em; margin-bottom: 0.5em; border-bottom: 1px solid #a1a5a9; }
 
 .box   { margin: 0.5em 3ex; padding: 0.5em 1.75ex; text-align: left; vertical-align: top; -webkit-box-shadow: 3px 3px 4px #999; border: 1px solid #a1a5a9; background-color: #f7f7f7; }
+.box + .box { margin-top: 1em; }
 .box p { margin: 0px 0px; }
 .box p + p { margin-top: 1em; }
 

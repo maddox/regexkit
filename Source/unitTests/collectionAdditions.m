@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -1028,4 +1028,46 @@
   STAssertThrowsSpecificNamed((searchAndReplacedString = [searchString stringByMatching:searchRegexString inRange:NSMakeRange(15, [searchString length] - 14) replace:2 withReferenceString:@"<\\8 :\\9>"]), NSException, NSRangeException, NULL);
 
 }
+
+
+- (void) testStringByMatchingBug
+{
+  NSString *newString = NULL;
+
+  STAssertNoThrow((newString = [@"MmMmMm" stringByMatching:@"." replace:1 withReferenceString:@""]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:@"mMmMm"] == YES), @"String: %@", newString);
+
+  STAssertNoThrow((newString = [@"MmMmMm" stringByMatching:@"." replace:1 withReferenceString:@"Z"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:@"ZmMmMm"] == YES), @"String: %@", newString);
+  
+  STAssertNoThrow((newString = [@"MmMmMm" stringByMatching:@"." replace:2 withReferenceString:@""]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:@"MmMm"] == YES), @"String: %@", newString);
+
+  STAssertNoThrow((newString = [@"MmMmMm" stringByMatching:@"." replace:2 withReferenceString:@"Z"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:@"ZZMmMm"] == YES), @"String: %@", newString);
+
+  STAssertNoThrow((newString = [@"MmMmMm" stringByMatching:@".." replace:1 withReferenceString:@""]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:@"MmMm"] == YES), @"String: %@", newString);
+  
+  STAssertNoThrow((newString = [@"MmMmMm" stringByMatching:@".." replace:1 withReferenceString:@"z"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:@"zMmMm"] == YES), @"String: %@", newString);
+
+
+  
+  STAssertNoThrow((newString = [@"MmMmMm" stringByMatching:@"M" replace:1 withReferenceString:@""]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:@"mMmMm"] == YES), @"String: %@", newString);
+
+  STAssertNoThrow((newString = [@"MmMmMm" stringByMatching:@"M" replace:1 withReferenceString:@"Y"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:@"YmMmMm"] == YES), @"String: %@", newString);
+  
+}
+
 @end

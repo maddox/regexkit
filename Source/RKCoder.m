@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -48,13 +48,13 @@ NSDictionary *RKRegexCoderDifferencesDictionary(id self RK_ATTRIBUTES(unused), c
   NSString *codedVersionString = [coder decodeObjectForKey:@"PCREVersionString"];
   RKBuildConfig codedBuildConfig = [coder decodeInt32ForKey:@"PCREBuildConfig"];
   
-  if([[RKRegex PCREVersionString] isEqualToString:codedVersionString] == NO) { [extraInfoArray addObject:[NSString stringWithFormat:@"Encoded PCRE version   : %@, current version %@", codedVersionString, [RKRegex PCREVersionString]]]; }
+  if([[RKRegex PCREVersionString] isEqualToString:codedVersionString] == NO) { [extraInfoArray addObject:RKLocalizedFormat(@"Encoded PCRE version   : %@, current version %@", codedVersionString, [RKRegex PCREVersionString])]; }
   
   // Mask off known valid bits and check if any remain
   RKCompileOption unknownCompileOption = (codedCompileOption & (~(RKCompileAllOptions | RKCompileNewlineMask)));
   if(unknownCompileOption != 0) {
-    [extraInfoArray addObject:[NSString stringWithFormat:@"Decoded compile options: 0x%8.8x (%@)", (unsigned int)codedCompileOption, [RKArrayFromCompileOption(codedCompileOption) componentsJoinedByString:@" | "]]];
-    [extraInfoArray addObject:[NSString stringWithFormat:@"Unknown option bits    : 0x%8.8x", (unsigned int)unknownCompileOption]];
+    [extraInfoArray addObject:RKLocalizedFormat(@"Decoded compile options: 0x%8.8x (%@)", (unsigned int)codedCompileOption, [RKArrayFromCompileOption(codedCompileOption) componentsJoinedByString:@" | "])];
+    [extraInfoArray addObject:RKLocalizedFormat(@"Unknown option bits    : 0x%8.8x", (unsigned int)unknownCompileOption)];
   }
   
   // Check for valid newline type
@@ -65,7 +65,7 @@ NSDictionary *RKRegexCoderDifferencesDictionary(id self RK_ATTRIBUTES(unused), c
      (codedCompileNewlineOption != RKCompileNewlineAnyCRLF) &&
 #endif
      (codedCompileNewlineOption != RKCompileNewlineAny)  && (codedCompileNewlineOption != RKCompileNewlineDefault)) {
-    [extraInfoArray addObject:[NSString stringWithFormat:@"Unknown Newline type   : 0x%8.8x. Valid types: %@", (unsigned int)codedCompileNewlineOption, [RKArrayOfPrettyNewlineTypes(@"RKCompile") componentsJoinedByString:@", "]]];
+    [extraInfoArray addObject:RKLocalizedFormat(@"Unknown Newline type   : 0x%8.8x. Valid types: %@", (unsigned int)codedCompileNewlineOption, [RKArrayOfPrettyNewlineTypes(@"RKCompile") componentsJoinedByString:@", "])];
   }
   
   // Calculate a bit difference of RKBuildConfig options
@@ -73,13 +73,13 @@ NSDictionary *RKRegexCoderDifferencesDictionary(id self RK_ATTRIBUTES(unused), c
   differenceBuildConfig |= ((codedBuildConfig & RKBuildConfigNewlineMask) != ([RKRegex PCREBuildConfig] & RKBuildConfigNewlineMask)) ? (codedBuildConfig & RKBuildConfigNewlineMask) : 0;
   
   if(differenceBuildConfig != 0) {
-    [extraInfoArray addObject:[NSString stringWithFormat:@"Encoded build config   : 0x%8.8x (%@)", (unsigned int)codedBuildConfig, [RKArrayFromBuildConfig(codedBuildConfig) componentsJoinedByString:@" | "]]];
-    [extraInfoArray addObject:[NSString stringWithFormat:@"Current build config   : 0x%8.8x (%@)", (unsigned int)[RKRegex PCREBuildConfig], [RKArrayFromBuildConfig([RKRegex PCREBuildConfig]) componentsJoinedByString:@" | "]]];
-    [extraInfoArray addObject:[NSString stringWithFormat:@"Difference in builds   : 0x%8.8x (%@)", (unsigned int)differenceBuildConfig, [RKArrayFromBuildConfig(differenceBuildConfig) componentsJoinedByString:@" | "]]];
+    [extraInfoArray addObject:RKLocalizedFormat(@"Encoded build config   : 0x%8.8x (%@)", (unsigned int)codedBuildConfig, [RKArrayFromBuildConfig(codedBuildConfig) componentsJoinedByString:@" | "])];
+    [extraInfoArray addObject:RKLocalizedFormat(@"Current build config   : 0x%8.8x (%@)", (unsigned int)[RKRegex PCREBuildConfig], [RKArrayFromBuildConfig([RKRegex PCREBuildConfig]) componentsJoinedByString:@" | "])];
+    [extraInfoArray addObject:RKLocalizedFormat(@"Difference in builds   : 0x%8.8x (%@)", (unsigned int)differenceBuildConfig, [RKArrayFromBuildConfig(differenceBuildConfig) componentsJoinedByString:@" | "])];
   }
   
   NSMutableString *extraInfoString = [NSMutableString string]; // In case there is no extra info created, this can be safely printed with no visible effect
-  if([extraInfoArray count] != 0) { extraInfoString = [NSString stringWithFormat:@"\nAdditional information: %@\n", [extraInfoArray componentsJoinedByString:@"\n                        "]]; }
+  if([extraInfoArray count] != 0) { extraInfoString = RKLocalizedFormat(@"\nAdditional information: %@\n", [extraInfoArray componentsJoinedByString:RKLocalizedString(@"\n                        ")]); }
   
   return([NSDictionary dictionaryWithObjectsAndKeys:extraInfoArray, @"extraInfoArray", extraInfoString, @"extraInfoString", NULL]);
 }

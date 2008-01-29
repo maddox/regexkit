@@ -16,10 +16,3 @@ ul.seealso { margin: 0px; padding: 0px; list-style-type: none; }
 ul.seealso > li { margin: 0px 0px 0px 6.25ex; }
 
 .guide .parameters ul { list-style-type: none; margin: 0px 0px 0px 2ex; padding: 0px; } 
-
-
-.guide .sourceLicense pre { white-space: pre; font-family: courier, monospace; margin: 2em 4ex; }
-.guide .sourceLicense { margin: 2em 4ex; max-width: 5.25in; }
-.guide .sourceLicense ul { list-style-type: disk; }
-.guide .sourceLicense li { margin-bottom: 0.75em; }
-.guide .sourceLicense .disclaimer { font-family: courier, monospace;  }

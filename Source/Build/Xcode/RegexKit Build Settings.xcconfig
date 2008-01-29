@@ -145,7 +145,7 @@ TEXTUTIL  = /usr/bin/textutil
 // PCRE_VERSION is the fundamental setting that controls which version of the pcre library will be built.
 // The variable is used to construct the distribution tarball name, such as pcre-7.4.tar.bz2.
 
-PCRE_VERSION         = 7.4
+PCRE_VERSION         = 7.6
 
 // ${PCRE_URL_ROOT} is the URL where the tarball can be found. It is assembled from the SCHEME, SITE, and PATH
 // build settings.  The SCHEME build setting contains a trailing ':/' which is important because Xcode will

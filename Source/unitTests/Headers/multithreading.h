@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -37,6 +37,7 @@
 */
 
 #import "RKTestCase.h"
+
 
 @interface multithreading : RKTestCase {
   BOOL isInitialized;

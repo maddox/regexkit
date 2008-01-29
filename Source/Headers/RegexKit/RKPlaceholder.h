@@ -7,7 +7,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -56,7 +56,7 @@ extern "C" {
 
 + (id)sharedObject;
 - (id)initWithRegexString:(NSString * const)regexString options:(const RKCompileOption)options;
-- (id)initWithRegexString:(NSString * const RK_C99(restrict))regexString library:(NSString * const RK_C99(restrict))libraryString options:(const RKCompileOption)libraryOptions error:(NSError **)outError;
+- (id)initWithRegexString:(NSString * const RK_C99(restrict))regexString library:(NSString * const RK_C99(restrict))libraryString options:(const RKCompileOption)libraryOptions error:(NSError **)error;
 
 @end
 

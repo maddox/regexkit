@@ -36,7 +36,7 @@
     <string>10.5.0</string>
   </dict>
   <key>NSHumanReadableCopyright</key>
-  <string>Copyright © 2007, John Engelhart</string>
+  <string>Copyright © 2007-2008, John Engelhart</string>
 	<key>NSPrincipalClass</key>
 	<string>RKRegex</string>
 </dict>

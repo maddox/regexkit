@@ -120,6 +120,13 @@ h5   { margin-top: 1.5em; margin-bottom: 0.5000em; font-size: 1.0834em; padding:
 .quotation .attribution:before { margin-left: 1.25ex; content:"-"; margin-right: 1.25ex; }
 .quotation .attribution {  }
 
+.sourceLicense pre { white-space: pre; font-family: courier, monospace; margin: 2em 4ex; }
+.sourceLicense { margin: 2em 4ex; max-width: 5.25in; }
+.sourceLicense ul { list-style-type: disk; }
+.sourceLicense li { margin-bottom: 0.75em; }
+.sourceLicense .disclaimer { font-family: courier, monospace;  }
+
+
 .pop-up_menu-selection, .pop-up_menu-name, .context-menu, .menu-selection, .checkbox-name, .tab-name, .button-name, .icon-button-name { white-space: nowrap; white-space: pre-wrap !important; }
 
 .code              {        font:         0.9167em monaco, courier, monospace; }

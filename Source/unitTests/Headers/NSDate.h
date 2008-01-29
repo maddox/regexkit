@@ -1,5 +1,11 @@
+//
+//  NSDate.h
+//  RegexKit
+//  http://regexkit.sourceforge.net/
+//
+
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -31,15 +37,14 @@
 */
 
 
-#import <Cocoa/Cocoa.h>
+#import <RegexKit/RegexKit.h>
 #import <Foundation/NSDebug.h>
 #import <stdint.h>
 #import <sys/time.h>
 #import <sys/resource.h>
-#import <RegexKit/RegexKit.h>
 
 #ifdef __MACOSX_RUNTIME__
-#import <malloc/malloc.h>
+//#import <malloc/malloc.h>
 #import <mach/mach.h>
 #import <mach/mach_time.h>
 #import <CoreServices/CoreServices.h>
@@ -52,14 +57,13 @@
 
 int dummyDateFunction(int dummyInt);
 
-typedef double NSHighResTimeInterval;
 
 typedef struct {
-  NSHighResTimeInterval systemCPUTime;
-  NSHighResTimeInterval userCPUTime;
-  NSHighResTimeInterval CPUTime;
+  NSTimeInterval systemCPUTime;
+  NSTimeInterval userCPUTime;
+  NSTimeInterval CPUTime;
 #ifdef __MACOSX_RUNTIME__
-  malloc_statistics_t zoneStats;
+  //malloc_statistics_t zoneStats;
   uint64_t mach_time;
   uint64_t nanoSeconds;
 #endif //__MACOSX_RUNTIME__
@@ -72,7 +76,7 @@ typedef struct {
 + (NSString *)microSecondsStringFromCPUTime:(RKCPUTime)CPUTime;
 #ifdef __MACOSX_RUNTIME__
 + (NSString *)machtimeStringFromCPUTime:(RKCPUTime)CPUTime;
-+ (NSString *)stringFromCPUTimeMemory:(RKCPUTime)CPUTime;
+//+ (NSString *)stringFromCPUTimeMemory:(RKCPUTime)CPUTime;
 #endif //__MACOSX_RUNTIME__
 
 

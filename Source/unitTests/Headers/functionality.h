@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -45,10 +45,6 @@ static RKUInteger startAutoreleasedObjects = 0;
 static RKCPUTime testStartCPUTime;
 static RKCPUTime testEndCPUTime;
 static RKCPUTime testElapsedCPUTime;
-
-//static NSString *leakEnvString = nil;
-//static NSString *debugEnvString = nil;
-//static NSString *timingEnvString = nil;
 
 @interface functionality : RKTestCase {
 

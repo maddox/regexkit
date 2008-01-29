@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -58,7 +58,6 @@ int32_t garbageCollectorEnabled      = 0;
 void (*objc_collect_function)(unsigned long) = NULL;
 
 int32_t RKTestCaseLoadInitialized    = 0;
-NSString * const RKRegexPCRELibrary = @"RKRegexPCRELibrary";
 
 @implementation RKTestCase
 

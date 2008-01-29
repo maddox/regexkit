@@ -32,3 +32,5 @@ body { font: 12px "lucida grande", geneva, helvetica, arial, sans-serif; color: 
 .content .references .referenceColumn > .title { white-space: inherit; font-size: 1.0834em; padding-bottom: 0.25em; padding-right: 3.0ex; margin-bottom: 0.25em; font-weight: bold; border-bottom: 1px solid #A1A5A9; }
 .content .references .referenceColumn > .entries > .bar { margin-top: 1.0em; }
 .content .references .referenceColumn .entry { white-space: inherit; font-size: 0.9167em; }
+
+.entry.ohloh { margin-top: 3px; margin-bottom: -3px; }

@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -149,7 +149,7 @@ extern "C" {
  @result     Returns the object that matches <span class="argument">objectHash</span> if it currently exists in the cache, <span class="code">nil</span> otherwise.
  @seealso    @link RKCache/addObjectToCache: - addObjectToCache: @/link
  @seealso    @link hash - hash @/link
- @seealso    @link RKCache/objectForHash:autorelease: - objectForHash:autorelease: @/link
+ @seealso    @link RKCache/objectForHash:description:autorelease: - objectForHash:description:autorelease: @/link
  @seealso    @link RKCache/removeObjectFromCache: - removeObjectFromCache: @/link
 */
 - (id)objectForHash:(const RKUInteger)objectHash description:(NSString * const)descriptionString;
@@ -165,7 +165,7 @@ extern "C" {
  @result     Returns the object that matches <span class="argument">objectHash</span> if it currently exists in the cache, <span class="code">nil</span> otherwise.
  @seealso    @link RKCache/addObjectToCache:withHash: - addObjectToCache:withHash: @/link
  @seealso    @link hash - hash @/link
- @seealso    @link RKCache/objectForHash: - objectForHash: @/link
+ @seealso    @link RKCache/objectForHash:description: - objectForHash:description: @/link
  @seealso    @link RKCache/removeObjectWithHash: - removeObjectWithHash: @/link
 */
 - (id)objectForHash:(const RKUInteger)objectHash description:(NSString * const)descriptionString autorelease:(const BOOL)shouldAutorelease;
@@ -196,7 +196,7 @@ extern "C" {
  @result     Returns <span class="code">YES</span> if <span class="argument">object</span> was successfully added to the cache, <span class="code">NO</span> otherwise. 
  @seealso    @link RKCache/addObjectToCache: - addObjectToCache: @/link
  @seealso    @link hash - hash @/link
- @seealso    @link RKCache/objectForHash: - objectForHash: @/link
+ @seealso    @link RKCache/objectForHash:description: - objectForHash:description: @/link
  @seealso    @link RKCache/removeObjectWithHash: - removeObjectWithHash: @/link
 */
 - (BOOL)addObjectToCache:(id)object withHash:(const RKUInteger)objectHash;
@@ -221,7 +221,7 @@ extern "C" {
  @result     Returns the object in the cache that has the hash value of <span class="argument">objectHash</span>.  Returns <span class="code">nil</span> if there is was no object in the cache matching <span class="argument">objectHash</span>.
  @seealso    @link RKCache/addObjectToCache:withHash: - addObjectToCache:withHash: @/link
  @seealso    @link hash - hash @/link
- @seealso    @link RKCache/objectForHash: - objectForHash: @/link
+ @seealso    @link RKCache/objectForHash:description: - objectForHash:description: @/link
  @seealso    @link RKCache/removeObjectFromCache: - removeObjectFromCache: @/link
 */
 - (id)removeObjectWithHash:(const RKUInteger)objectHash;

@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -215,60 +215,3 @@ NSString *RKLocalizedStringForPCRECompileErrorCode(int errorCode) {
   if(localizeString != NULL) { returnString = RKLocalizedStringFromTable(localizeString, @"pcre"); }
   return(returnString);
 }
-/*
-RKStringBuffer RKStringBufferWithString(NSString * const RK_C99(restrict) string) {
-  RKStringBuffer stringBuffer = RKMakeStringBuffer(string, NULL, 0, 0);
-  
-#ifdef    USE_CORE_FOUNDATION
-  if(RK_EXPECTED(string != NULL, 1)) {
-    stringBuffer.encoding = CFStringGetFastestEncoding((CFStringRef)string);
-    
-    if((stringBuffer.encoding == kCFStringEncodingMacRoman) || (stringBuffer.encoding == kCFStringEncodingASCII) || (stringBuffer.encoding == kCFStringEncodingUTF8)) {
-      stringBuffer.characters = CFStringGetCStringPtr((CFStringRef)string, stringBuffer.encoding);
-      RKPrefetch(stringBuffer.characters);
-      if(RK_EXPECTED(stringBuffer.characters != NULL, 1)) {
-        if((stringBuffer.encoding == kCFStringEncodingMacRoman) || (stringBuffer.encoding == kCFStringEncodingASCII)) {
-          stringBuffer.length = (RKUInteger)CFStringGetLength((CFStringRef)string);
-        } else {
-          stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters);
-        }
-      }
-    }
-    if(RK_EXPECTED(stringBuffer.characters == NULL, 0)) {
-      RK_PROBE(PERFORMANCENOTE, NULL, 0, NULL, 0, -1, 1, "NSString encoding requires expensive UTF8 conversion.");
-      stringBuffer.characters = [string UTF8String];
-      stringBuffer.encoding = kCFStringEncodingUTF8;
-      if(RK_EXPECTED(stringBuffer.characters != NULL, 1)) { stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters); }
-      RK_PROBE(PERFORMANCENOTE, NULL, 0, NULL, stringBuffer.length, -1, 2, "NSString encoding requires expensive UTF8 conversion.");
-    }
-  }
-#else  // USE_CORE_FOUNDATION is not defined
-  if(RK_EXPECTED(string != NULL, 1)) {
-    stringBuffer.encoding = [string fastestEncoding];
-    
-    if((stringBuffer.encoding == NSMacOSRomanStringEncoding) || (stringBuffer.encoding == NSASCIIStringEncoding) || (stringBuffer.encoding == NSUTF8StringEncoding)) {
-      stringBuffer.characters = [string cStringUsingEncoding:stringBuffer.encoding];
-      RKPrefetch(stringBuffer.characters);
-      if(RK_EXPECTED(stringBuffer.characters != NULL, 1)) {
-        if((stringBuffer.encoding == NSMacOSRomanStringEncoding) || (stringBuffer.encoding == NSASCIIStringEncoding)) {
-          stringBuffer.length = [string length];
-        } else {
-          stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters);
-        }
-      }
-    }
-    if(RK_EXPECTED(stringBuffer.characters == NULL, 0)) {
-      RK_PROBE(PERFORMANCENOTE, NULL, 0, NULL, 0, -1, 1, "NSString encoding requires expensive UTF8 conversion.");
-      stringBuffer.characters = [string UTF8String];
-      stringBuffer.encoding = NSUTF8StringEncoding;
-      if(RK_EXPECTED(stringBuffer.characters != NULL, 1)) { stringBuffer.length = (RKUInteger)strlen(stringBuffer.characters); }
-      RK_PROBE(PERFORMANCENOTE, NULL, 0, NULL, stringBuffer.length, -1, 2, "NSString encoding requires expensive UTF8 conversion.");
-    }
-  }
-#endif //USE_CORE_FOUNDATION
-  //NSCParameterAssert(stringBuffer.characters != NULL);
-  if(stringBuffer.characters == NULL) { Debugger(); }
-  
-  return(stringBuffer);
-}
-*/

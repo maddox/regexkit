@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -42,9 +42,9 @@
 #import <RegexKit/RKThreadPool.h>
 #import <stdlib.h>
 
-#define RKSortedRegexCollectionDefaultRegexEngine        RKRegexPCRELibrary
-#define RKSortedRegexCollectionDefaultRegexEngineOptions (RKCompileUTF8 | RKCompileNoUTF8Check)
-#define RKSortedRegexCollectionHashForCollection(collection, regexEngine, libraryOptions) ((RKUInteger)([collection hash] ^ (RKUInteger)collection ^ (RKUInteger)[regexEngine hash] ^ libraryOptions))
+#define RKSortedRegexCollectionDefaultRegexLibrary        RKRegexPCRELibrary
+#define RKSortedRegexCollectionDefaultRegexLibraryOptions (RKCompileUTF8 | RKCompileNoUTF8Check)
+#define RKSortedRegexCollectionHashForCollection(collection, regexLibrary, libraryOptions) ((RKUInteger)([collection hash] ^ (RKUInteger)collection ^ (RKUInteger)[regexLibrary hash] ^ libraryOptions))
 
 static int sortRegexCollectionItems(const void *a, const void *b) RK_ATTRIBUTES(used, nonnull);
 static int threadMatchEntryFunction(void *startState) RK_ATTRIBUTES(used, nonnull);
@@ -107,18 +107,18 @@ errorExit:
 
 + (RKSortedRegexCollection *)sortedRegexCollectionForCollection:(id const RK_C99(restrict))collection
 {
-  return([self sortedRegexCollectionForCollection:collection library:RKSortedRegexCollectionDefaultRegexEngine options:RKSortedRegexCollectionDefaultRegexEngineOptions error:NULL]);
+  return([self sortedRegexCollectionForCollection:collection library:RKSortedRegexCollectionDefaultRegexLibrary options:RKSortedRegexCollectionDefaultRegexLibraryOptions error:NULL]);
 }
 
-+ (RKSortedRegexCollection *)sortedRegexCollectionForCollection:(id const RK_C99(restrict))initCollection library:(NSString * const RK_C99(restrict))initRegexEngineString options:(const RKCompileOption)initRegexEngineOptions error:(NSError ** const RK_C99(restrict))outError
++ (RKSortedRegexCollection *)sortedRegexCollectionForCollection:(id const RK_C99(restrict))initCollection library:(NSString * const RK_C99(restrict))initRegexLibraryString options:(const RKCompileOption)initRegexLibraryOptions error:(NSError ** const RK_C99(restrict))error
 {
   if(RK_EXPECTED(initCollection        == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"initCollection == NULL."]        raise]; return(NULL); }
-  if(RK_EXPECTED(initRegexEngineString == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"initRegexEngineString == NULL."] raise]; return(NULL); }
+  if(RK_EXPECTED(initRegexLibraryString == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"initRegexLibraryString == NULL."] raise]; return(NULL); }
 
   RKSortedRegexCollection *sortedRegexCollection = NULL;
   
-  if(RK_EXPECTED((sortedRegexCollection = RKFastCacheLookup(RKSortedRegexCollectionCache, _cmd, RKSortedRegexCollectionHashForCollection(initCollection, initRegexEngineString, initRegexEngineOptions), @"bulk matcher", YES)) == NULL, 0)) {
-    sortedRegexCollection = [[[self alloc] initWithCollection:initCollection library:initRegexEngineString options:initRegexEngineOptions error:outError] autorelease];
+  if(RK_EXPECTED((sortedRegexCollection = RKFastCacheLookup(RKSortedRegexCollectionCache, _cmd, RKSortedRegexCollectionHashForCollection(initCollection, initRegexLibraryString, initRegexLibraryOptions), @"bulk matcher", YES)) == NULL, 0)) {
+    sortedRegexCollection = [[[self alloc] initWithCollection:initCollection library:initRegexLibraryString options:initRegexLibraryOptions error:error] autorelease];
   }
   
   return(sortedRegexCollection);
@@ -127,12 +127,12 @@ errorExit:
 
 - (id)initWithCollection:(id const RK_C99(restrict))initCollection
 {
-  return([self initWithCollection:initCollection library:RKSortedRegexCollectionDefaultRegexEngine options:RKSortedRegexCollectionDefaultRegexEngineOptions error:NULL]);
+  return([self initWithCollection:initCollection library:RKSortedRegexCollectionDefaultRegexLibrary options:RKSortedRegexCollectionDefaultRegexLibraryOptions error:NULL]);
 }
 
-- (id)initWithCollection:(id const RK_C99(restrict))initCollection library:(NSString * const RK_C99(restrict))initRegexEngineString options:(const RKCompileOption)initRegexEngineOptions error:(NSError ** const RK_C99(restrict))outError
+- (id)initWithCollection:(id const RK_C99(restrict))initCollection library:(NSString * const RK_C99(restrict))initRegexLibraryString options:(const RKCompileOption)initRegexLibraryOptions error:(NSError ** const RK_C99(restrict))error
 {
-  if(outError != NULL) { *outError = NULL; }
+  if(error != NULL) { *error = NULL; }
   NSError *initError = NULL;
 
   if((self = [self init]) == NULL) { goto errorExit; }
@@ -142,9 +142,9 @@ errorExit:
   RKUInteger atIndex = 0;
   
   if(RK_EXPECTED(initCollection        == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"initCollection == NULL."]        raise]; goto errorExit; }
-  if(RK_EXPECTED(initRegexEngineString == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"initRegexEngineString == NULL."] raise]; goto errorExit; }
+  if(RK_EXPECTED(initRegexLibraryString == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"initRegexLibraryString == NULL."] raise]; goto errorExit; }
 
-  sortedRegexCollectionHash = RKSortedRegexCollectionHashForCollection(initCollection, initRegexEngineString, initRegexEngineOptions);
+  sortedRegexCollectionHash = RKSortedRegexCollectionHashForCollection(initCollection, initRegexLibraryString, initRegexLibraryOptions);
   RKSortedRegexCollection *cachedSortedRegexCollection = NULL;
   
   if(RK_EXPECTED((cachedSortedRegexCollection = RKFastCacheLookup(RKSortedRegexCollectionCache, _cmd, sortedRegexCollectionHash, @"bulk matcher", NO)) != NULL, 1)) { return(cachedSortedRegexCollection); }
@@ -157,10 +157,10 @@ errorExit:
 
   if(RK_EXPECTED((missedObjectHashCache = RKCallocNotScanned(sizeof(RKUInteger) * RK_SORTED_REGEX_COLLECTION_CACHE_BUCKETS)) == NULL, 0)) { [[NSException rkException:NSMallocException for:self selector:_cmd localizeReason:@"Unable to allocate memory for missedObjectHashCache."] raise]; goto errorExit; }
 
-  libraryString             = RKRetain(initRegexEngineString);
-  regexEngineCompileOptions = initRegexEngineOptions;
-  collection                = RKRetain(initCollection);
-  collectionHash            = [collection hash];
+  regexLibraryString         = RKRetain(initRegexLibraryString);
+  regexLibraryCompileOptions = initRegexLibraryOptions;
+  collection                 = RKRetain(initCollection);
+  collectionHash             = [collection hash];
   
 #ifdef USE_CORE_FOUNDATION
   if(collectionType == RKArrayCollection) { if((collectionCount = (RKUInteger)CFArrayGetCount((CFArrayRef)collection)) == 0) { goto errorExit; } }
@@ -184,17 +184,17 @@ errorExit:
 
   for(atIndex = 0; atIndex < collectionCount; atIndex++) {
     id savedRegexObject = regexObjects[atIndex];
-    regexObjects[atIndex] = RKRegexFromStringOrRegexWithError(self, _cmd, regexObjects[atIndex], libraryString, regexEngineCompileOptions, &initError, YES);
+    regexObjects[atIndex] = RKRegexFromStringOrRegexWithError(self, _cmd, regexObjects[atIndex], regexLibraryString, regexLibraryCompileOptions, &initError, YES);
 
     if(initError != NULL) {
-      if(outError != NULL) {
-        NSString *arrayErrorKey = NULL, *regexEngine = [[initError userInfo] objectForKey:RKRegexEngineErrorKey];
+      if(error != NULL) {
+        NSString *arrayErrorKey = NULL, *regexLibrary = [[initError userInfo] objectForKey:RKRegexLibraryErrorKey];
         NSNumber *arrayIndexNumber = NULL;
         if(collectionType == RKArrayCollection) { arrayIndexNumber = [NSNumber numberWithUnsignedLong:(unsigned long)atIndex]; arrayErrorKey = RKArrayIndexErrorKey; }
         NSDictionary *infoDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
                                         [initError localizedDescription],   NSLocalizedDescriptionKey,
                                         [initError localizedFailureReason], NSLocalizedFailureReasonErrorKey,
-                                        regexEngine,                        RKRegexEngineErrorKey,
+                                        regexLibrary,                       RKRegexLibraryErrorKey,
                                         initError,                          NSUnderlyingErrorKey,
                                         collection,                         RKCollectionErrorKey,
                                         savedRegexObject,                   RKObjectErrorKey,
@@ -216,14 +216,14 @@ errorExit:
   return(RKRetain(self));
   
 errorExit:
-  if(RK_EXPECTED(initError != NULL, 0) && (outError != NULL)) { *outError = initError; }
+  if(RK_EXPECTED(initError != NULL, 0) && (error != NULL)) { *error = initError; }
   return(NULL);
 }
 
 - (void)dealloc
 {
   if(readWriteLock         != NULL) { RKRelease(readWriteLock);        readWriteLock        = NULL; }
-  if(libraryString         != NULL) { RKRelease(libraryString);        libraryString        = NULL; }
+  if(regexLibraryString    != NULL) { RKRelease(regexLibraryString);   regexLibraryString   = NULL; }
   if(collection            != NULL) { RKRelease(collection);           collection           = NULL; }
   if(collectionRegexArray  != NULL) { RKRelease(collectionRegexArray); collectionRegexArray = NULL; }
   
@@ -243,12 +243,12 @@ errorExit:
 {
   BOOL equal = NO;
   RKSortedRegexCollection *sortedRegexCollectionObject = anObject;
-  if(self == anObject)                                                                    { equal = YES; goto exitNow; }
-  if([anObject isKindOfClass:[RKSortedRegexCollection class]] == NO)                      { equal = NO;  goto exitNow; }
-  if(sortedRegexCollectionHash != sortedRegexCollectionObject->sortedRegexCollectionHash) { equal = NO;  goto exitNow; }
-  if(regexEngineCompileOptions != sortedRegexCollectionObject->regexEngineCompileOptions) { equal = NO;  goto exitNow; }
-  if([libraryString isEqualToString:sortedRegexCollectionObject->libraryString] == NO)    { equal = NO;  goto exitNow; }
-  if([collection isEqual:sortedRegexCollectionObject->collection])                        { equal = YES; goto exitNow; }
+  if(self == anObject)                                                                           { equal = YES; goto exitNow; }
+  if([anObject isKindOfClass:[RKSortedRegexCollection class]] == NO)                             { equal = NO;  goto exitNow; }
+  if(sortedRegexCollectionHash != sortedRegexCollectionObject->sortedRegexCollectionHash)        { equal = NO;  goto exitNow; }
+  if(regexLibraryCompileOptions != sortedRegexCollectionObject->regexLibraryCompileOptions)      { equal = NO;  goto exitNow; }
+  if([regexLibraryString isEqualToString:sortedRegexCollectionObject->regexLibraryString] == NO) { equal = NO;  goto exitNow; }
+  if([collection isEqual:sortedRegexCollectionObject->collection])                               { equal = YES; goto exitNow; }
   // Fall through with equal = NO initialization
   
 exitNow:
@@ -257,7 +257,7 @@ exitNow:
 
 - (NSString *)description
 {
-  return(RKLocalizedFormat(@"<%@: %p> Sorted Regex Collection type = %@, count = %lu, Regex library = %@, Compiled options = 0x%8.8x (%@)", [self className], self, RKLocalizedString(RKStringFromCollectionType(collectionType)), (unsigned long)collectionCount, libraryString, (unsigned int)regexEngineCompileOptions, [RKArrayFromCompileOption(regexEngineCompileOptions) componentsJoinedByString:@" | "]));
+  return(RKLocalizedFormat(@"<%@: %p> Sorted Regex Collection type = %@, count = %lu, Regex library = %@, Compiled options = 0x%8.8x (%@)", [self className], self, RKLocalizedString(RKStringFromCollectionType(collectionType)), (unsigned long)collectionCount, regexLibraryString, (unsigned int)regexLibraryCompileOptions, [RKArrayFromCompileOption(regexLibraryCompileOptions) componentsJoinedByString:@" | "]));
 }
 
 - (id)collection
@@ -286,7 +286,10 @@ exitNow:
     }
   }
 
+#ifdef    ENABLE_DTRACE_INSTRUMENTATION
   char matchObjectCString[64];
+#endif // ENABLE_DTRACE_INSTRUMENTATION
+
   RK_PROBE(BEGINSORTEDREGEXMATCH, self, sortedRegexCollectionHash, collectionCount, RKGetUTF8String([matchObject description], matchObjectCString, 60));
 
   RKUInteger matchObjectHash        = [matchObject hash];
@@ -298,12 +301,14 @@ exitNow:
     RK_PROBE(ENDSORTEDREGEXMATCH, self, sortedRegexCollectionHash, NULL, 0, "", 0, collectionCount, 0, 0, 0x02);
 
     if(sortedRegexCacheProbeEnabled != 0) { RKAtomicIncrementIntegerBarrier(&cacheHits); } else { cacheHits++; }
+#ifdef    ENABLE_DTRACE_INSTRUMENTATION
     if(RK_EXPECTED(sortedRegexCacheProbeEnabled != 0, 0)) {
       
       double hitsPercent   = (((double)cacheHits   / ((double)(cacheHits + cacheMisses))) * 100.0);
       double missesPercent = (((double)cacheMisses / ((double)(cacheHits + cacheMisses))) * 100.0);
       RK_PROBE_CONDITIONAL(SORTEDREGEXCACHE, sortedRegexCacheProbeEnabled, self, sortedRegexCollectionHash, collectionCount, cacheHits, cacheMisses, &hitsPercent, &missesPercent);
     }
+#endif // ENABLE_DTRACE_INSTRUMENTATION
 
     return(NULL);
   }

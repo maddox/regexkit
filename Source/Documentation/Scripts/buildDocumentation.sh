@@ -109,12 +109,16 @@ fi
 
 #if [ ! -f "${DOCUMENTATION_TEMP_DIR}/cpp_defines.out" ]; then
   echo "Extracting C Preprocessor #defines."
-  gcc -E -Wp,-dM -std=gnu99 -x objective-c "-I${PROJECT_HEADERS_ROOT}" "-Ibuild/RegexKit.build/${CONFIGURATION}/RegexKit Framework.build/DerivedSources" "${PROJECT_HEADERS_DIR}/RegexKitPrivate.h" > "${DOCUMENTATION_TEMP_DIR}/cpp_defines.out"
+  gcc -E -Wp,-dM -std=gnu99 -fobjc-gc -x objective-c "-I${PROJECT_HEADERS_ROOT}" "-Ibuild/RegexKit.build/${CONFIGURATION}/RegexKit Framework.build/DerivedSources" "${PROJECT_HEADERS_DIR}/RegexKitPrivate.h" > "${DOCUMENTATION_TEMP_DIR}/cpp_defines.out"
 #fi
 
 # Extract the documentation from the header files.
 echo "$0:$LINENO: note: Parsing headerdoc information from project headers into database."
 "${DOCUMENTATION_PARSE_HEADERS_SCRIPT}" "${PROJECT_HEADERS_DIR}"/*.h
+
+"${SQLITE}" "${DOCUMENTATION_SQL_DATABASE_FILE}" <"${DOCUMENTATION_SQL_DIR}/availability.sql"
+if [ $? != 0 ]; then echo "$0:$LINENO: error: API availability data load failed."; exit 1; fi;
+
 
 
 # Copy the pcre distribution documentation in to the documentation directory.

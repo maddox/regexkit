@@ -41,6 +41,8 @@ populate_const_html();
 print("Creating toc.html\n");
 create_toc_html();
 
+
+
 for my $tocName (keys %{$global_xtoc_cache{'toc'}{'contentsForToc'}}) {
   if(!exists($hdoc{$tocName}{'printedClassMethods'})) { $hdoc{$tocName}{'printedClassMethods'} = 0; }
   if(!exists($hdoc{$tocName}{'printedInstanceMethods'})) { $hdoc{$tocName}{'printedInstanceMethods'} = 0; }
@@ -134,87 +136,62 @@ sub replaceLinks {
 
 
 sub populate_const_html {
-  my ($const_html, $html, $declaredIn) = ("", "", "");
+  my (%const_html, %html, %declaredIn);
 
-  $html = "<h2>Constants</h2>\n\n";
-  $html .= "<div class=\"constants\">\n";
-  $html .= "  <div class=\"declaration table\">\n";
-  
-  for my $row (@{$global_xtoc_cache{'constantDefines'}}) {
-    if(!defined($row)) { next; }
+  for my $tx (0 .. $#{$global_xtoc_cache{'toc'}{'contentsForToc'}{'Constants'}}) {
+    my $at = $global_xtoc_cache{'toc'}{'contentsForToc'}{'Constants'}[$tx];
+    my ($row, $groupName) = ($global_xtoc_cache{'tables'}{$at->{'table'}}[$at->{'hdcid'}], $at->{'groupName'});
     my ($hdcid, $tags) = ($row->{'hdcid'}, $global_xtoc_cache{'tags'}[$row->{'hdcid'}]);
+    my $name = ($at->{'table'} eq 'constant') ? 'name' : 'defineName';
     
-    $html .= "    <div class=\"row\"><div class=\"name cell\">" . add_xref($row->{'fullText'}) . "</div></div>\n";
-    $const_html .= "  <div class=\"constant\">\n";
-    $const_html .= "    <div class=\"identifier\"><a name=\"$global_xtoc_cache{'xref'}{$row->{'defineName'}}{'linkId'}\">$row->{'defineName'}</a></div>\n";
-    $const_html .= "    <div class=\"text\">$tags->{'abstract'}</div>\n";
-#    $const_html .= "  <div class=\"declared_in\"><div class=\"header\">Declared In</div>\n    <div class=\"file\">$global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'}</div>\n  </div>\n";
-#    $const_html .= seealso_html($tags);
-    if (defined($tags->{'seealso'})) {
-      my(@seealso_html);
-      for my $s (@{$tags->{'seealso'}}) { push(@seealso_html, "      <li>".$s."</li>"); }
-      $const_html .= "  <div class=\"seealso\"><div class=\"header\">See Also</div>\n    <ul>\n" . join("\n", @seealso_html) . "\n    </ul>\n  </div>\n";
+    if(!exists($html{$groupName})) { $html{$groupName} = ""; }
+    if(!exists($const_html{$groupName})) { $const_html{$groupName} = ""; }
+    
+    if($groupName eq 'Preprocessor Macros') {
+      my $signature_html = "  <div class=\"signature\">$row->{'cppText'}</div>\n";
+      $html{$groupName} .= "<div class=\"macro\">\n  <div class=\"name\"><a name=\"$global_xtoc_cache{'xref'}{$row->{$name}}{'linkId'}\">$row->{$name}</a></div>\n";
+      
+      $html{$groupName} .= common_html($signature_html, $hdcid);
+      $html{$groupName} .= "  <div class=\"declared_in\"><div class=\"header\">Declared In</div>\n    <div class=\"file\">$global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'}</div>\n  </div>\n";
+      $html{$groupName} .= "</div>\n\n";
+    } else {
+      $html{$groupName} .= "    <div class=\"row\"><div class=\"name cell\">" . add_xref($row->{'fullText'}) . "</div></div>\n";
+      $const_html{$groupName} .= "  <div class=\"constant\">\n";
+      $const_html{$groupName} .= "    <div class=\"identifier\"><a name=\"$global_xtoc_cache{'xref'}{$row->{$name}}{'linkId'}\">$row->{$name}</a></div>\n";
+      $const_html{$groupName} .= "    <div class=\"text\">$tags->{'abstract'}</div>\n";
+      if (defined($tags->{'seealso'})) {
+        my(@seealso_html);
+        for my $s (@{$tags->{'seealso'}}) { push(@seealso_html, "      <li>".$s."</li>"); }
+        $const_html{$groupName} .= "  <div class=\"seealso\"><div class=\"header\">See Also</div>\n    <ul>\n" . join("\n", @seealso_html) . "\n    </ul>\n  </div>\n";
+      }
+      $const_html{$groupName} .= "  </div>\n";
+      $declaredIn{$groupName} = $global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'};
     }
-    $const_html .= "  </div>\n";
-    $declaredIn = $global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'};
   }
   
-  $html .= "  </div>\n";
-  $html .= "  <div class=\"constants\"><div class=\"header\">Constants</div>\n" . $const_html . "  </div>\n";
-  $html .= "  <div class=\"declared_in\"><div class=\"header\">Declared In</div>\n    <div class=\"file\">$declaredIn</div>\n  </div>\n";
-  $html .= "</div>\n";
-  
-  $hdoc{'Constants'}{'Constants'} = $html;
-  $hdoc{'Constants'}{'Preprocessor Macros'} = populate_cpp_html();
+  $hdoc{'AllConstants'} = "";
 
-  $const_html = "";
-  $html = "<h2>Exceptions</h2>\n\n";
-  $html .= "<div class=\"exceptions\">\n";
-  $html .= "  <div class=\"declaration table\">\n";
-  
-  for my $row (@{$global_xtoc_cache{'constants'}}) {
-    if(!defined($row)) { next; }
-    my ($hdcid, $tags) = ($row->{'hdcid'}, $global_xtoc_cache{'tags'}[$row->{'hdcid'}]);
+  for my $tx (0 .. $#{$global_xtoc_cache{'toc'}{'tocGroups'}{'Constants'}}) {
+    my $groupName = $global_xtoc_cache{'toc'}{'tocGroups'}{'Constants'}[$tx];
+    my $groupNameLinkId = $groupName;
+    $groupNameLinkId =~ s/ /_/g;
     
-    $html .= "    <div class=\"row\"><div class=\"name cell\">" . add_xref($row->{'fullText'}) . "</div></div>\n";
-    $const_html .= "  <div class=\"constant\">\n";
-    $const_html .= "    <div class=\"identifier\"><a name=\"$global_xtoc_cache{'xref'}{$row->{'name'}}{'linkId'}\">$row->{'name'}</a></div>\n";
-    $const_html .= "    <div class=\"text\">$tags->{'abstract'}</div>\n";
-    if (defined($tags->{'seealso'})) {
-      my(@seealso_html);
-      for my $s (@{$tags->{'seealso'}}) { push(@seealso_html, "      <li>".$s."</li>"); }
-      $const_html .= "  <div class=\"seealso\"><div class=\"header\">See Also</div>\n    <ul>\n" . join("\n", @seealso_html) . "\n    </ul>\n  </div>\n";
+    $hdoc{'AllConstants'} .= "<h2><a name=\"" . $groupNameLinkId . "\">" . $groupName . "</a></h2>\n\n";
+    if($groupName eq 'Preprocessor Macros') {
+      $hdoc{'AllConstants'} .= $html{$groupName};
+    } else {
+      $hdoc{'AllConstants'} .= "<div class=\"constants\">\n";
+      $hdoc{'AllConstants'} .= "  <div class=\"declaration table\">\n";
+      $hdoc{'AllConstants'} .= $html{$groupName};
+      $hdoc{'AllConstants'} .= "  </div>\n";
+      $hdoc{'AllConstants'} .= "  <div class=\"constants\"><div class=\"header\">Constants</div>\n" . $const_html{$groupName} . "  </div>\n";
+      $hdoc{'AllConstants'} .= "  <div class=\"declared_in\"><div class=\"header\">Declared In</div>\n    <div class=\"file\">" . $declaredIn{$groupName} . "</div>\n  </div>\n";
+      $hdoc{'AllConstants'} .= "</div>\n\n\n";
     }
-    $const_html .= "  </div>\n";
-    $declaredIn = $global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'}
   }
-
-  $html .= "  </div>\n";
-  $html .= "  <div class=\"constants\"><div class=\"header\">Constants</div>\n" . $const_html . "  </div>\n";
-  $html .= "  <div class=\"declared_in\"><div class=\"header\">Declared In</div>\n    <div class=\"file\">$declaredIn</div>\n  </div>\n";
-  $html .= "</div>\n";
-  
-  $hdoc{'Constants'}{'Exceptions'} = $html;
 }
 
-sub populate_cpp_html {
-  my ($const_html, $html) = ("", "");
-  
-  $html = "<h2>Preprocessor Macros</h2>\n\n";
-  
-  for my $row (@{$global_xtoc_cache{'preprocessorDefines'}}) {
-    if(!defined($row)) { next; }
-    my ($hdcid, $tags) = ($row->{'hdcid'}, $global_xtoc_cache{'tags'}[$row->{'hdcid'}]);
-    my $signature_html = "  <div class=\"signature\">$row->{'cppText'}</div>\n";
-    $html .= "<div class=\"macro\">\n  <div class=\"name\"><a name=\"$global_xtoc_cache{'xref'}{$row->{'defineName'}}{'linkId'}\">$row->{'defineName'}</a></div>\n";
-    
-    $html .= common_html($signature_html, $hdcid);
-    $html .= "  <div class=\"declared_in\"><div class=\"header\">Declared In</div>\n    <div class=\"file\">$global_xtoc_cache{'headers'}[$row->{'hid'}]{'fileName'}</div>\n  </div>\n";
-    $html .= "</div>\n\n";
-    
-  }
-  return($html);
-} 
+ 
 
 sub add_xref {
   my $xref = shift(@_);
@@ -224,27 +201,6 @@ sub add_xref {
   return($xref);
 }
 
-sub constant_html {
-  my $cid = shift(@_);
-  my $html;
-  my $const_html = "";
-  
-  if(defined($global_xtoc_cache{'constants'}[$cid])) {
-    my $row = $global_xtoc_cache{'constants'}[$cid];
-    my ($hdcid, $tags) = ($row->{'hdcid'}, $global_xtoc_cache{'tags'}[$row->{'hdcid'}]);
-
-    $html = "<div class=\"constants\"><div class=\"header\">Constants</div>\n";
-    
-    $html .= "  <div class=\"constant\">\n";
-    $html .= "    <div class=\"identifier\"><a name=\"$global_xtoc_cache{'xref'}{$row->{'name'}}{'linkId'}\">$row->{'name'}</a></div>\n";
-    $html .= "    <div class=\"text\">$tags->{'abstract'}</div>\n";
-    $html .= "  </div>\n";
-
-    $html .= "</div>\n";
-  }
-  
-  return($html);
-}
 
 sub func_html {
   my $pid = shift(@_);
@@ -507,8 +463,8 @@ sub gen_xtoc_cache {
     push(@{$cache{'toc'}{'groupEntries'}{$row->{'tocName'}}[$row->{'pos'} - 1]}, $entry);
   }
   
-  for my $row (selectall_hash($dbh, "SELECT DISTINCT tbl, idCol, id, hdtype, tocName, linkId, href, linkText FROM t_xtoc WHERE tocName IS NOT NULL AND pos IS NOT NULL AND id IS NOT NULL AND href IS NOT NULL AND linkText IS NOT NULL ORDER BY linkText")) {
-    push(@{$cache{'toc'}{'contentsForToc'}{$row->{'tocName'}}}, {'table' => $row->{'tbl'}, 'idColumn' => $row->{'idCol'}, 'id' => $row->{'id'}, 'type' => $row->{'hdtype'}, 'href' => $row->{'href'}, 'linkId' => $row->{'linkId'},'linkText' => $row->{'linkText'}});
+  for my $row (selectall_hash($dbh, "SELECT DISTINCT tbl, idCol, id, hdcid, hdtype, tocName, groupName, linkId, href, linkText FROM t_xtoc WHERE tocName IS NOT NULL AND pos IS NOT NULL AND id IS NOT NULL AND href IS NOT NULL AND linkText IS NOT NULL ORDER BY linkText")) {
+    push(@{$cache{'toc'}{'contentsForToc'}{$row->{'tocName'}}}, {'groupName' => $row->{'groupName'}, 'table' => $row->{'tbl'}, 'idColumn' => $row->{'idCol'}, 'id' => $row->{'id'}, 'hdcid' => $row->{'hdcid'}, 'type' => $row->{'hdtype'}, 'href' => $row->{'href'}, 'linkId' => $row->{'linkId'},'linkText' => $row->{'linkText'}});
   }
 
   for my $row (selectall_hash($dbh, "SELECT * FROM v_hd_tags ORDER BY hdcid, tpos")) {
@@ -521,8 +477,8 @@ sub gen_xtoc_cache {
   for my $row (selectall_hash($dbh, "SELECT * FROM prototypes WHERE hdcid IS NOT NULL")) { $cache{'functions'}[$row->{'pid'}] = $row; }
   for my $row (selectall_hash($dbh, "SELECT * FROM typedefEnum WHERE hdcid IS NOT NULL")) { $cache{'typedefs'}[$row->{'tdeid'}] = $row; }
   for my $row (selectall_hash($dbh, "SELECT e.*, vhd.arg1 AS tagText FROM enumIdentifier AS e JOIN v_hd_tags AS vhd ON vhd.hdcid = e.hdcid AND vhd.keyword = 'constant' AND vhd.arg0 = e.identifier WHERE e.hdcid IS NOT NULL ORDER BY tdeid, position")) { $cache{'enums'}[$row->{'tdeid'}][$row->{'position'}] = $row; }
-  for my $row (selectall_hash($dbh, "SELECT * FROM constant WHERE hdcid IS NOT NULL ORDER BY name")) { push(@{$cache{'constants'}}, $row); }  
-  for my $row (selectall_hash($dbh, "SELECT * FROM define WHERE hdcid IS NOT NULL ORDER BY defineName")) { push(@{$cache{'defines'}}, $row); }
+  for my $row (selectall_hash($dbh, "SELECT * FROM constant WHERE hdcid IS NOT NULL ORDER BY name")) { push(@{$cache{'constants'}}, $row); $cache{'tables'}{'constant'}[$row->{'hdcid'}] = $row; }
+  for my $row (selectall_hash($dbh, "SELECT * FROM define WHERE hdcid IS NOT NULL ORDER BY defineName")) { push(@{$cache{'defines'}}, $row); $cache{'tables'}{'define'}[$row->{'hdcid'}] = $row; }
   for my $row (selectall_hash($dbh, "SELECT * FROM define WHERE hdcid IN (SELECT hdcid FROM t_xtoc WHERE tocName = 'Constants' AND groupName = 'Constants') ORDER BY defineName")) { push(@{$cache{'constantDefines'}}, $row); }
   for my $row (selectall_hash($dbh, "SELECT * FROM define WHERE hdcid IN (SELECT hdcid FROM t_xtoc WHERE tocName = 'Constants' AND groupName = 'Preprocessor Macros') ORDER BY defineName")) { push(@{$cache{'preprocessorDefines'}}, $row); }
   for my $row (selectall_hash($dbh, "SELECT * FROM headers")) { $cache{'headers'}[$row->{'hid'}] = $row; }

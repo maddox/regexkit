@@ -59,13 +59,15 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		1210C81F0D4F257B00A9E73B /* RK_stack_chk.c in Sources */ = {isa = PBXBuildFile; fileRef = 1210C7FE0D4F244600A9E73B /* RK_stack_chk.c */; };
+		1210C82E0D4F277C00A9E73B /* libStack Protector.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1210C8110D4F254C00A9E73B /* libStack Protector.a */; };
 		121140C50D139FE200EB8DF2 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 12BD45740CB6AA9400EBA014 /* LICENSE */; };
 		122401EC0CCD5D89006F56F9 /* timing.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5700C7A50100044B285 /* timing.m */; };
-		122401ED0CCD5E15006F56F9 /* multithreading.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D56C0C7A50100044B285 /* multithreading.m */; settings = {COMPILER_FLAGS = "-ISource/Headers/RegexKit"; }; };
+		122401ED0CCD5E15006F56F9 /* multithreading.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D56C0C7A50100044B285 /* multithreading.m */; settings = {COMPILER_FLAGS = "-ISource/Headers"; }; };
 		122E89DF0D0DD2FA00FCC2CB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 122E89DD0D0DD2FA00FCC2CB /* Localizable.strings */; };
 		122E8A360D0DE1D100FCC2CB /* pcre.strings in Resources */ = {isa = PBXBuildFile; fileRef = 122E8A340D0DE1D100FCC2CB /* pcre.strings */; };
 		122F45CB0CE097D600B25051 /* unicode.m in Sources */ = {isa = PBXBuildFile; fileRef = 122F45CA0CE097D600B25051 /* unicode.m */; };
-		124F5D370CEC06DB00AD798D /* RegexKitProbes.d in Sources */ = {isa = PBXBuildFile; fileRef = 124F5D360CEC06DB00AD798D /* RegexKitProbes.d */; };
+		123642830D4578F700416526 /* RegexKitProbes.d in Sources */ = {isa = PBXBuildFile; fileRef = 124F5D360CEC06DB00AD798D /* RegexKitProbes.d */; };
 		1264D7880C7A95F80044B285 /* NSDate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5640C7A50100044B285 /* NSDate.m */; };
 		1264D7890C7A95F80044B285 /* core.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5660C7A50100044B285 /* core.m */; };
 		1264D83B0C7A9D7D0044B285 /* collectionAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5680C7A50100044B285 /* collectionAdditions.m */; };
@@ -136,6 +138,13 @@
 			remoteGlobalIDString = 1264D5A00C7A59E10044B285;
 			remoteInfo = Documentation;
 		};
+		1210C82A0D4F274E00A9E73B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1210C8100D4F254C00A9E73B /* Stack Protector */;
+			remoteInfo = "Stack Protector";
+		};
 		1261B78D0CD27CE100F2E972 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -187,6 +196,8 @@
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		120291BE0CD1CDAD0045B036 /* buildDocSet.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = buildDocSet.sh; path = Source/Documentation/Scripts/buildDocSet.sh; sourceTree = "<group>"; };
 		120DCD160CE4E3A600616CEA /* ReleaseNotes.html */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = ReleaseNotes.html; path = Source/Documentation/Static/ReleaseNotes.html; sourceTree = "<group>"; };
+		1210C7FE0D4F244600A9E73B /* RK_stack_chk.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = RK_stack_chk.c; sourceTree = "<group>"; };
+		1210C8110D4F254C00A9E73B /* libStack Protector.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libStack Protector.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		121141A70D14DABD00EB8DF2 /* RegexKit_sortedCollection_timing.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_sortedCollection_timing.instrument; sourceTree = "<group>"; };
 		12222BC60CBB7F98001F0231 /* fileCheck.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = fileCheck.pl; sourceTree = "<group>"; };
 		12222BCC0CBB8077001F0231 /* files.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = files.sql; sourceTree = "<group>"; };
@@ -210,9 +221,9 @@
 		1261B6F20CD24E6900F2E972 /* createDocSet.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = createDocSet.pl; path = Source/Documentation/Scripts/createDocSet.pl; sourceTree = "<group>"; };
 		1261B7870CD27AF400F2E972 /* DocSet_desc.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = DocSet_desc.plist; sourceTree = "<group>"; };
 		1261B7880CD27AF400F2E972 /* DocSet_info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = DocSet_info.plist; sourceTree = "<group>"; };
-		1261B80D0CD28A7C00F2E972 /* docset.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = docset.sql; path = Source/Documentation/SQL/docset.sql; sourceTree = "<group>"; };
-		1264D5050C7A4DCC0044B285 /* config.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = config.sql; path = Source/Documentation/SQL/config.sql; sourceTree = "<group>"; };
-		1264D5060C7A4DCC0044B285 /* init.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = init.sql; path = Source/Documentation/SQL/init.sql; sourceTree = "<group>"; };
+		1261B80D0CD28A7C00F2E972 /* docset.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = docset.sql; sourceTree = "<group>"; };
+		1264D5050C7A4DCC0044B285 /* config.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = config.sql; sourceTree = "<group>"; };
+		1264D5060C7A4DCC0044B285 /* init.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = init.sql; sourceTree = "<group>"; };
 		1264D5070C7A4DDE0044B285 /* buildDocumentation.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = buildDocumentation.sh; path = Source/Documentation/Scripts/buildDocumentation.sh; sourceTree = "<group>"; };
 		1264D5080C7A4DDE0044B285 /* generateHTML.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = generateHTML.pl; path = Source/Documentation/Scripts/generateHTML.pl; sourceTree = "<group>"; };
 		1264D5090C7A4DDE0044B285 /* generatePCREToC.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; name = generatePCREToC.pl; path = Source/Documentation/Scripts/generatePCREToC.pl; sourceTree = "<group>"; };
@@ -306,6 +317,7 @@
 		12BD49A30CB75A6900EBA014 /* ReleaseNotes */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ReleaseNotes; sourceTree = "<group>"; };
 		12D0764B0D1832350081AFD7 /* RKThreadPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RKThreadPool.h; sourceTree = "<group>"; };
 		12D0764C0D1832350081AFD7 /* RKThreadPool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKThreadPool.m; sourceTree = "<group>"; };
+		12D340D40D489DBF007D35EA /* availability.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = availability.sql; sourceTree = "<group>"; };
 		12D5817F0C80B75500674FA2 /* enumeration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = enumeration.h; sourceTree = "<group>"; };
 		12D581800C80B75500674FA2 /* enumeration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = enumeration.m; sourceTree = "<group>"; };
 		12DB19EC0C787E1700735165 /* NSArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSArray.h; sourceTree = "<group>"; };
@@ -374,6 +386,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		1210C80F0D4F254C00A9E73B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1264D77C0C7A95B60044B285 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -388,6 +407,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1210C82E0D4F277C00A9E73B /* libStack Protector.a in Frameworks */,
 				8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -400,6 +420,7 @@
 			children = (
 				8DC2EF5B0486A6940098B216 /* RegexKit.framework */,
 				1264D77F0C7A95B60044B285 /* Unit Tests.octest */,
+				1210C8110D4F254C00A9E73B /* libStack Protector.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -529,11 +550,13 @@
 		1264D5040C7A4DB00044B285 /* SQL */ = {
 			isa = PBXGroup;
 			children = (
+				12D340D40D489DBF007D35EA /* availability.sql */,
 				1261B80D0CD28A7C00F2E972 /* docset.sql */,
 				1264D5050C7A4DCC0044B285 /* config.sql */,
 				1264D5060C7A4DCC0044B285 /* init.sql */,
 			);
 			name = SQL;
+			path = Source/Documentation/SQL;
 			sourceTree = "<group>";
 		};
 		1264D5100C7A4E110044B285 /* Resources */ = {
@@ -770,6 +793,7 @@
 				089C1665FE841158C02AAC07 /* Resources */,
 				12DB19EB0C787DF400735165 /* Headers */,
 				124BFAD60CAAEBF800D04C96 /* Foundation Additions */,
+				1210C7FE0D4F244600A9E73B /* RK_stack_chk.c */,
 				12DB1A110C787E3D00735165 /* RKAutoreleasedMemory.m */,
 				12DB1A120C787E3D00735165 /* RKCache.m */,
 				12DB1A130C787E3D00735165 /* RKCoder.m */,
@@ -901,6 +925,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		1210C80D0D4F254C00A9E73B /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8DC2EF500486A6940098B216 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -937,6 +968,23 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		1210C8100D4F254C00A9E73B /* Stack Protector */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1210C8140D4F256C00A9E73B /* Build configuration list for PBXNativeTarget "Stack Protector" */;
+			buildPhases = (
+				1210C80D0D4F254C00A9E73B /* Headers */,
+				1210C80E0D4F254C00A9E73B /* Sources */,
+				1210C80F0D4F254C00A9E73B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Stack Protector";
+			productName = "Stack Protector";
+			productReference = 1210C8110D4F254C00A9E73B /* libStack Protector.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		1264D77E0C7A95B60044B285 /* Unit Tests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1264D7810C7A95B70044B285 /* Build configuration list for PBXNativeTarget "Unit Tests" */;
@@ -970,6 +1018,7 @@
 			);
 			dependencies = (
 				1299AE7B0C78AC5C007F3859 /* PBXTargetDependency */,
+				1210C82B0D4F274E00A9E73B /* PBXTargetDependency */,
 			);
 			name = "RegexKit Framework";
 			productInstallPath = "$(HOME)/Library/Frameworks";
@@ -999,6 +1048,7 @@
 				120291B30CD1CC610045B036 /* DocSet */,
 				1264D6E40C7A79960044B285 /* Distribution */,
 				1264D77E0C7A95B60044B285 /* Unit Tests */,
+				1210C8100D4F254C00A9E73B /* Stack Protector */,
 			);
 		};
 /* End PBXProject section */
@@ -1115,6 +1165,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		1210C80E0D4F254C00A9E73B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1210C81F0D4F257B00A9E73B /* RK_stack_chk.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1264D77B0C7A95B60044B285 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1137,7 +1195,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				124F5D370CEC06DB00AD798D /* RegexKitProbes.d in Sources */,
+				123642830D4578F700416526 /* RegexKitProbes.d in Sources */,
 				12DB1A1A0C787E3D00735165 /* NSArray.m in Sources */,
 				12E04CDC0CF551A600794477 /* NSData.m in Sources */,
 				12DB1A1B0C787E3D00735165 /* NSDictionary.m in Sources */,
@@ -1165,6 +1223,11 @@
 			isa = PBXTargetDependency;
 			target = 1264D5A00C7A59E10044B285 /* Documentation */;
 			targetProxy = 120291BC0CD1CD4C0045B036 /* PBXContainerItemProxy */;
+		};
+		1210C82B0D4F274E00A9E73B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1210C8100D4F254C00A9E73B /* Stack Protector */;
+			targetProxy = 1210C82A0D4F274E00A9E73B /* PBXContainerItemProxy */;
 		};
 		1261B78E0CD27CE100F2E972 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1272,6 +1335,62 @@
 			};
 			name = Release;
 		};
+		1210C8120D4F254E00A9E73B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_CFLAGS = "";
+				PRODUCT_NAME = "Stack Protector";
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Winit-self",
+					"-Wnonnull",
+					"-Wformat=2",
+					"-Wsequence-point",
+					"-Wstrict-aliasing",
+					"-Wstrict-aliasing=2",
+					"-Wshadow",
+					"-Wsign-compare",
+					"-Wall",
+					"-Wextra",
+					"-Wdiv-by-zero",
+					"-Wmissing-field-initializers",
+					"-Wno-format-nonliteral",
+					"-Wshorten-64-to-32",
+					"-Wno-unused-function",
+				);
+			};
+			name = Debug;
+		};
+		1210C8130D4F254E00A9E73B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_CFLAGS = "";
+				PRODUCT_NAME = "Stack Protector";
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Winit-self",
+					"-Wnonnull",
+					"-Wformat=2",
+					"-Wsequence-point",
+					"-Wstrict-aliasing",
+					"-Wstrict-aliasing=2",
+					"-Wshadow",
+					"-Wsign-compare",
+					"-Wall",
+					"-Wextra",
+					"-Wdiv-by-zero",
+					"-Wmissing-field-initializers",
+					"-Wno-format-nonliteral",
+					"-Wshorten-64-to-32",
+					"-Wno-unused-function",
+				);
+			};
+			name = Release;
+		};
 		1264D5C20C7A59F50044B285 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1306,7 +1425,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"${BUILD_DIR}/${CONFIGURATION}",
 					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
 				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(DEVELOPER_FRAMEWORKS_DIR)\"";
 				GCC_ENABLE_OBJC_GC = YES;
@@ -1314,7 +1432,6 @@
 				HEADER_SEARCH_PATHS = Source/unitTests/Headers;
 				INFOPLIST_FILE = Source/unitTests/Resources/Info.plist;
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"${PCRE_TARGET_LIB_FILE}",
@@ -1330,7 +1447,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"${BUILD_DIR}/${CONFIGURATION}",
 					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
 				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(DEVELOPER_FRAMEWORKS_DIR)\"";
 				GCC_ENABLE_OBJC_GC = YES;
@@ -1338,7 +1454,6 @@
 				HEADER_SEARCH_PATHS = Source/unitTests/Headers;
 				INFOPLIST_FILE = Source/unitTests/Resources/Info.plist;
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"${PCRE_TARGET_LIB_FILE}",
@@ -1489,6 +1604,15 @@
 			buildConfigurations = (
 				120291B80CD1CC610045B036 /* Debug */,
 				120291B90CD1CC610045B036 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		1210C8140D4F256C00A9E73B /* Build configuration list for PBXNativeTarget "Stack Protector" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1210C8120D4F254E00A9E73B /* Debug */,
+				1210C8130D4F254E00A9E73B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

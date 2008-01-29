@@ -289,6 +289,7 @@ INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/NSObject.m', 'f', 3
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/NSSet.m', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/NSString.m', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/RegexKit_Prefix.pch', 'f', 33188);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/RK_stack_chk.c', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/RKAutoreleasedMemory.m', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/RKCache.m', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/RKCoder.m', 'f', 33188);
@@ -391,6 +392,7 @@ INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Scrip
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Scripts/parseHeaders.pl', 'f', 33261);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/Scripts/resolveLinks.pl', 'f', 33261);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/SQL', 'd', 16877);
+INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/SQL/availability.sql', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/SQL/config.sql', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/SQL/docset.sql', 'f', 33188);
 INSERT INTO file (cid, name, type, mode) VALUES (2, '/Source/Documentation/SQL/init.sql', 'f', 33188);

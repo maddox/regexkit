@@ -89,7 +89,7 @@ updateVersion()
   local POINT_VERSION="$4";
   local INSTALL_DIR="$5";
 
-  "${PLISTUTIL_SCRIPT}"   "${FILE_NAME}" CFBundleGetInfoString      "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}, Copyright 2007 John Engelhart" && \
+  "${PLISTUTIL_SCRIPT}"   "${FILE_NAME}" CFBundleGetInfoString      "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}, Copyright © 2007-2008, John Engelhart" && \
     "${PLISTUTIL_SCRIPT}" "${FILE_NAME}" CFBundleShortVersionString "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}" && \
     "${PLISTUTIL_SCRIPT}" "${FILE_NAME}" CFBundleVersion            "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}" && \
     "${PLISTUTIL_SCRIPT}" "${FILE_NAME}" IFMajorVersion             "${MAJOR_VERSION}" && \
@@ -106,7 +106,7 @@ updateRegexKitMpkgVersion()
   local MINOR_VERSION="$3";
   local POINT_VERSION="$4";
 
-  "${PLISTUTIL_SCRIPT}"   "${FILE_NAME}" CFBundleGetInfoString      "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}, Copyright 2007 John Engelhart" && \
+  "${PLISTUTIL_SCRIPT}"   "${FILE_NAME}" CFBundleGetInfoString      "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}, Copyright © 2007-2008, John Engelhart" && \
     "${PLISTUTIL_SCRIPT}" "${FILE_NAME}" CFBundleShortVersionString "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}" && \
     "${PLISTUTIL_SCRIPT}" "${FILE_NAME}" CFBundleVersion            "${MAJOR_VERSION}.${MINOR_VERSION}.${POINT_VERSION}"
 
@@ -122,7 +122,7 @@ updatePackageInfoPlists()
     updateVersion "$1/Documentation_info.plist"         ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/RegexKit/" && \
     updateVersion "$1/Sourcecode_info.plist"            ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT} "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/RegexKit/" && \
     updateVersion "$1/pcre_info.plist"                  ${PCRE_VERSION_MAJOR}    ${PCRE_VERSION_MINOR}    0                        "${DISTRIBUTION_DEFAULT_INSTALL_DIR}/RegexKit/" && \
-    "${PLISTUTIL_SCRIPT}" "$1/pcre_info.plist" CFBundleGetInfoString "${PCRE_VERSION_MAJOR}.${PCRE_VERSION_MINOR}.0, Copyright (c) 1997-2007 University of Cambridge" && \
+    "${PLISTUTIL_SCRIPT}" "$1/pcre_info.plist" CFBundleGetInfoString "${PCRE_VERSION_MAJOR}.${PCRE_VERSION_MINOR}.0, Copyright (c) 1997-2008 University of Cambridge" && \
     updateRegexKitMpkgVersion "$1/RegexKit_mpkg_info.plist" ${PROJECT_VERSION_MAJOR} ${PROJECT_VERSION_MINOR} ${PROJECT_VERSION_POINT}
 
   return $?

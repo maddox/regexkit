@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -60,7 +60,7 @@ NSString *RKStringFromNewlineOption(const int decodeNewlineOption, NSString *pre
   
   if(newlineOptionString != NULL) { newlineOptionString = [NSString stringWithFormat:@"%@%@", prefixString, newlineOptionString]; }
   
-  if((newlineOptionString == NULL) && (unknownNewline == YES)) { newlineOptionString = RKLocalizedFormat(@"/*Unknown Newline Option: 0x%8.8x*/", (unsigned int)newlineOption); }
+  if((newlineOptionString == NULL) && (unknownNewline == YES)) { newlineOptionString = RKLocalizedFormat(@"/* Unknown Newline Option: 0x%8.8x */", (unsigned int)newlineOption); }
   
   return(newlineOptionString);
 }

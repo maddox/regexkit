@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -69,7 +69,7 @@ static void updateCPUCounts(void) {
     time_t thisActiveCPUCoresCheck = time(NULL);
     if((thisActiveCPUCoresCheck - lastActiveCPUCoresCheck) > 5) {
       lastActiveCPUCoresCheck = thisActiveCPUCoresCheck;
-      if(sysctlbyname("hw.activecpu", &sysctlUInt, &sysctlUIntSize, NULL, 0) != 0) { sysctlUInt = cpuCores; }
+      if(sysctlbyname("hw.activecpu", &sysctlUInt, &sysctlUIntSize, NULL, 0) != 0) { sysctlUInt = (unsigned int)cpuCores; }
     }
 #endif // __MACOSX_RUNTIME__
   }
@@ -102,10 +102,12 @@ static RKUInteger activeCPUCores = 2;
   if(RK_EXPECTED(currentDefaultThreadPoolSingleton == NULL, 0)) {
     updateCPUCounts();
     threadPoolIsMultiThreaded = (cocoaIsMultiThreaded == NO) ? 0 : 1;
-    //RKThreadPool *tempThreadPoolSingleton = RKAutorelease([[self alloc] initWithThreadCount:((cocoaIsMultiThreaded == NO) || (cpuCores == 1)) ? 0 : cpuCores error:NULL]);
-#warning defaultThreadPool configured for debugging, artificially high thread counts enabled
-    RKThreadPool *tempThreadPoolSingleton = RKAutorelease([[self alloc] initWithThreadCount:((cocoaIsMultiThreaded == NO) || (cpuCores == 1)) ? 16 : cpuCores * 4 error:NULL]);
-    if(RKAtomicCompareAndSwapPtr(NULL, tempThreadPoolSingleton, &defaultThreadPoolSingleton)) { RKRetain(defaultThreadPoolSingleton); }
+    RKThreadPool *tempThreadPoolSingleton = RKAutorelease([[self alloc] initWithThreadCount:((cocoaIsMultiThreaded == NO) || (cpuCores == 1)) ? 0 : cpuCores error:NULL]);
+
+    // The thread yields allow the detached threads to execute and initialize before any attempts are made to hand jobs off to them.
+    // Otherwise threadFunction:argument: might find that there are no threads ready and print a warning message.  This is harmless because it falls back to
+    // executing the task inline, but yielding prevents the warning message from appearing.
+    if(RKAtomicCompareAndSwapPtr(NULL, tempThreadPoolSingleton, &defaultThreadPoolSingleton)) { RKRetain(defaultThreadPoolSingleton); RKThreadYield(); RKThreadYield(); }
     currentDefaultThreadPoolSingleton = defaultThreadPoolSingleton;
   }
 
@@ -113,9 +115,9 @@ static RKUInteger activeCPUCores = 2;
 }
 
 
-- (id)initWithThreadCount:(RKUInteger)initThreadCount error:(NSError **)outError
+- (id)initWithThreadCount:(RKUInteger)initThreadCount error:(NSError **)error
 {
-  if(outError != NULL) { *outError = NULL; }
+  if(error != NULL) { *error = NULL; }
   BOOL        outOfMemoryError = NO, unableToAllocateObjectError = NO;
   NSError    *initError        = NULL;
   RKUInteger  objectsCount     = 0;
@@ -154,7 +156,7 @@ static RKUInteger activeCPUCores = 2;
 errorExit:
   if((initError == NULL) && (unableToAllocateObjectError == YES))  { initError = [NSError rkErrorWithDomain:NSCocoaErrorDomain code:0 localizeDescription:@"Unable to allocate object."]; }
   if((initError == NULL) && (outOfMemoryError            == YES))  { initError = [NSError rkErrorWithDomain:NSPOSIXErrorDomain code:0 localizeDescription:@"Unable to allocate memory."]; }
-  if((initError != NULL) && (outError                    != NULL)) { *outError = initError; }
+  if((initError != NULL) && (error                       != NULL)) { *error    = initError; }
   return(NULL);
 }
 
@@ -189,6 +191,21 @@ errorExit:
 }
 #endif // ENABLE_MACOSX_GARBAGE_COLLECTION
 
+- (RKUInteger)hash
+{
+  return((RKUInteger)self);
+}
+
+- (BOOL)isEqual:(id)anObject
+{
+  if(self == anObject) { return(YES); } else { return(NO); }
+}
+
+- (NSString *)description
+{
+  return(RKLocalizedFormat(@"<%@: %p> CPU Count = %lu, Active CPUs = %lu, Multithreaded = %@, Threads in pool = %lu of %lu", [self className], self, (RKUInteger)cpuCores, (RKUInteger)activeCPUCores, RKYesOrNo(threadPoolIsMultiThreaded), liveThreads, threadCount));
+}
+
 - (BOOL)wakeThread:(RKUInteger)threadNumber
 {
   if(threadNumber > threadCount) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"The threadNumber argument is greater than the total threads in the pool."] raise]; return(NO); }
@@ -205,11 +222,8 @@ errorExit:
 { 
   updateCPUCounts();
   
-  // Single CPU fast case bypass removed to better excercise threading during development.
-  //
-#warning threadFunction configured for debugging, single CPU fast bypass disabled, will always thread jobs
-  //if((cpuCores == 1) || (activeCPUCores == 1) || (threadCount == 0) || (liveThreads == 0) || (threadPoolIsMultiThreaded == 0)) { function(argument); return(YES); }
-  //
+  if((cpuCores == 1) || (activeCPUCores == 1) || (threadCount == 0) || (liveThreads == 0) || (threadPoolIsMultiThreaded == 0)) { function(argument); return(YES); }
+
   RKUInteger startedJobThreads = 0, jobQueueDelayIndex = 0, threadStartDelayIndex = 0;
   
   RK_STRONG_REF RKThreadPoolJob *runJob = NULL;
@@ -296,7 +310,7 @@ exitLoop:
   threads[threadNumber] = thisThread;
   threadLock            = locks[threadNumber];
   
-#if       MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#if       MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && defined(THREAD_AFFINITY_POLICY)
   // Since we start a number of threads equal to the number of CPU's, give each thread a seperate CPU affinity if running on Mac OS X 10.5 or later.
   if(NSFoundationVersionNumber >= 677.0) {
     thread_affinity_policy_data_t threadAffinityPolicy;
@@ -306,7 +320,7 @@ exitLoop:
     kern_return_t kernalReturn = thread_policy_set(mach_thread_self(), THREAD_AFFINITY_POLICY, (integer_t *) &threadAffinityPolicy, THREAD_AFFINITY_POLICY_COUNT);
     if(kernalReturn != KERN_SUCCESS) { NSLog(@"Unable to set the threads CPU affinity.  thread_policy_set returned %d.", kernalReturn); }
   }
-#endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+#endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5 && defined(THREAD_AFFINITY_POLICY)
   
   RKAtomicIncrementIntegerBarrier(&liveThreads);
   

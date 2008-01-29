@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -101,7 +101,15 @@ extern "C" {
 */
 + (id)enumeratorWithRegex:(id)aRegex string:(NSString * const)string inRange:(const NSRange)range;
 
-+ (id)enumeratorWithRegex:(id)initRegex string:(NSString * const)initString inRange:(const NSRange)initRange error:(NSError **)outError;
+/*!
+ @method     enumeratorWithRegex:string:inRange:error:
+ @tocgroup   RKEnumerator Creating Regular Expression Enumerators
+ @abstract   Convenience method that returns an autoreleased @link RKEnumerator RKEnumerator @/link object initialized with the regular expression <span class="argument">regex</span> that will enumerate that matches of <span class="argument">string</span> within <span class="argument">range</span>.
+ @seealso    @link enumeratorWithRegex:string: - enumeratorWithRegex:string: @/link
+ @seealso    @link initWithRegex:string:inRange: - initWithRegex:string:inRange: @/link
+ @seealso    @link matchEnumeratorWithRegex:inRange: - matchEnumeratorWithRegex:inRange: @/link
+*/
++ (id)enumeratorWithRegex:(id)initRegex string:(NSString * const)initString inRange:(const NSRange)initRange error:(NSError **)error;
 
 /*!
  @method     initWithRegex:string:
@@ -131,7 +139,20 @@ extern "C" {
 */
 - (id)initWithRegex:(id)initRegex string:(NSString * const)initString inRange:(const NSRange)initRange;
 
-- (id)initWithRegex:(id)initRegex string:(NSString * const)initString inRange:(const NSRange)initRange error:(NSError **)outError;
+/*!
+ @method     initWithRegex:string:inRange:error:
+ @tocgroup   RKEnumerator Creating Regular Expression Enumerators
+ @abstract   Returns a @link RKEnumerator RKEnumerator @/link object initialized with the regular expression <span class="argument">initRegex</span> that will enumerate that matches of <span class="argument">initString</span> within <span class="argument">initRange</span>.
+ @param      initRegex A regular expression string or @link RKRegex RKRegex @/link object.
+ @param      initString A @link NSString NSString @/link to scan and return matches by <span class="argument">initRegex</span>.
+ @param      initRange The range of <span class="argument">initString</span> to enumerate matches.
+ @param      error An <i>optional</i> parameter that if set and an error occurs, will contain a @link NSError NSError @/link object that describes the problem.  This may be set to <span class="code">NULL</span> if information about any errors is not required.
+ @result     Returns a @link RKEnumerator RKEnumerator @/link object if successful, <span class="code">nil</span> otherwise.
+ @seealso    @link initWithRegex:string: - initWithRegex:string: @/link
+ @seealso    @link matchEnumeratorWithRegex:inRange: - matchEnumeratorWithRegex:inRange: @/link
+ @seealso    @link nextRanges - nextRanges @/link
+*/
+- (id)initWithRegex:(id)initRegex string:(NSString * const)initString inRange:(const NSRange)initRange error:(NSError **)error;
 
 /*!
  @method     regex

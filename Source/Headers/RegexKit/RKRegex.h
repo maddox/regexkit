@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -146,11 +146,23 @@ extern "C" {
 /*!
  @method    regexWithRegexString:options:
  @tocgroup   RKRegex Creating Regular Expressions
- @abstract   Convenience method for an autoreleased @link RKRegex RKRegex @/link object
+ @abstract   Convenience method for an autoreleased @link RKRegex RKRegex @/link object.
+ @discussion Currently creates a regular expression using the @link RKRegexPCRELibrary RKRegexPCRELibrary @/link PCRE library.
  @result Returns an autoreleased @link RKRegex RKRegex @/link object if successful, <span class="code">nil</span> otherwise.
  @seealso @link initWithRegexString:options: - initWithRegexString:options: @/link
 */
 + (id)regexWithRegexString:(NSString * const)regexString options:(const RKCompileOption)options;
+
+/*!
+ @method    regexWithRegexString:library:options:error:
+ @tocgroup   RKRegex Creating Regular Expressions
+ @abstract   Convenience method for an autoreleased @link RKRegex RKRegex @/link object.
+ @discussion Currently the only supported regular expression matching library is @link RKRegexPCRELibrary RKRegexPCRELibrary@/link.
+ @result Returns an autoreleased @link RKRegex RKRegex @/link object if successful, <span class="code">nil</span> otherwise.
+ @seealso @link initWithRegexString:library:options:error: - initWithRegexString:library:options:error: @/link
+*/
++ (id)regexWithRegexString:(NSString * const RK_C99(restrict))regexString library:(NSString * const RK_C99(restrict))libraryString options:(const RKCompileOption)libraryOptions error:(NSError **)error;
+
 /*!
  @method    initWithRegexString:options:
  @tocgroup   RKRegex Creating Regular Expressions
@@ -182,6 +194,7 @@ extern "C" {
    <tr><td><b>RKCompileErrorCodeString</b></td><td>@link NSString NSString @/link</td>
    <td>A human readable equivalent of the @link RKCompileErrorCode RKCompileErrorCode @/link name that the <a href="pcre/index.html"><i>PCRE</i></a> library returned.</td></tr>
    </table>
+   <p>Currently creates a regular expression using the @link RKRegexPCRELibrary RKRegexPCRELibrary @/link PCRE library.</p>
  @param regexString The regular expression to compile.
    <div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">Raises a @link NSInvalidArgumentException NSInvalidArgumentException @/link if <span class="argument">regexString</span> is <span class="code">nil</span>.</div></div></div></div>
  @param options A mask of options specified by combining @link RKCompileOption RKCompileOption @/link flags with the C bitwise OR operator.
@@ -189,10 +202,22 @@ extern "C" {
  @result Returns a @link RKRegex RKRegex @/link object if successful, <span class="code">nil</span> otherwise.
 */
 - (id)initWithRegexString:(NSString * const RK_C99(restrict))regexString options:(const RKCompileOption)options;
-
-+ (id)regexWithRegexString:(NSString * const RK_C99(restrict))regexString library:(NSString * const RK_C99(restrict))libraryString options:(const RKCompileOption)libraryOptions error:(NSError **)outError;
-
-- (id)initWithRegexString:(NSString * const RK_C99(restrict))regexString library:(NSString * const RK_C99(restrict))libraryString options:(const RKCompileOption)libraryOptions error:(NSError **)outError;
+/*!
+ @method    initWithRegexString:library:options:error:
+ @tocgroup   RKRegex Creating Regular Expressions
+ @abstract   Returns a @link RKRegex RKRegex @/link object initialized with the regular expression <span class="argument">regexString</span> using the regular expression pattern matching <span class="argument">library</span> with @link RKCompileOption RKCompileOption @/link <span class="argument">options</span>.
+ @param regexString The regular expression to compile.
+ @param library The regular expression pattern matching library to use. See <a href="Constants.html#Regular_Expression_Libraries" class="section-link">Regular Expression Libraries</a> for a list of valid constants.
+ <div class="box note"><div class="table"><div class="row"><div class="label cell">Note:</div><div class="message cell">Currently the only supported regular expression matching library is the @link RKRegexPCRELibrary RKRegexPCRELibrary @/link PCRE library.</div></div></div></div>
+ @param libraryOptions A mask of options specified by combining @link RKCompileOption RKCompileOption @/link flags with the C bitwise OR operator.
+ @param error An <i>optional</i> parameter that if set and an error occurs, will contain a @link NSError NSError @/link object that describes the problem.  This may be set to <span class="code">NULL</span> if information about any errors is not required.
+ @discussion <p>Unlike @link initWithRegexString:options: initWithRegexString:options:@/link, this method does not throw an exception on errors.  Instead, a @link NSError NSError @/link object is created and returned via the optional <span class="argument">error</span> parameter.</p>
+ <div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">Exceptions are still thrown for invalid argument conditions, such as passing <span class="code">nil</span> for <span class="argument">regexString</span> or <span class="argument">library</span>.</div></div></div></div>
+ @result Returns a @link RKRegex RKRegex @/link object if successful, <span class="code">nil</span> otherwise.
+ @seealso @link initWithRegexString:options: - initWithRegexString:options: @/link
+ @seealso @link regexWithRegexString:library:options:error: + regexWithRegexString:library:options:error: @/link
+*/
+- (id)initWithRegexString:(NSString * const RK_C99(restrict))regexString library:(NSString * const RK_C99(restrict))library options:(const RKCompileOption)libraryOptions error:(NSError **)error;
 
 /*!
  @method     regexString
@@ -266,7 +291,16 @@ extern "C" {
 */
 - (RKUInteger)captureIndexForCaptureName:(NSString * const RK_C99(restrict))captureNameString inMatchedRanges:(const NSRange * const RK_C99(restrict))matchedRanges;
 
-- (RKUInteger)captureIndexForCaptureName:(NSString * const RK_C99(restrict))captureNameString inMatchedRanges:(const NSRange * const RK_C99(restrict))matchedRanges error:(NSError **)outError;
+/*!
+ @method     captureIndexForCaptureName:inMatchedRanges:error:
+ @tocgroup   RKRegex Named Capture Information
+ @abstract   Returns the capture index for <span class="argument">captureNameString</span> from a match operation, or the capture index of the first successful match for <span class="argument">captureNameString</span> if @link RKCompileDupNames RKCompileDupNames @/link is used and there are multiple instances of <span class="argument">captureNameString</span> in the receivers regular expression.
+ @discussion <p>This method is similar to @link captureIndexForCaptureName:inMatchedRanges: captureIndexForCaptureName:inMatchedRanges: @/link except that it <i>optionally</i> returns a @link NSError NSError @/link object for error conditions instead of throwing an exception.  The <span class="argument">error</span> parameter may be set to <span class="code">nil</span> if information about the error is not required.</p>
+ <div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">Exceptions are still thrown for invalid argument conditions, such as passing <span class="code">nil</span> for <span class="argument">captureNameString</span> or <span class="argument">matchedRanges</span>.</div></div></div></div>
+ @seealso    @link captureIndexForCaptureName:inMatchedRanges: - captureIndexForCaptureName:inMatchedRanges: @/link
+ @seealso    @link getRanges:withCharacters:length:inRange:options: - getRanges:withCharacters:length:inRange:options: @/link
+*/
+- (RKUInteger)captureIndexForCaptureName:(NSString * const RK_C99(restrict))captureNameString inMatchedRanges:(const NSRange * const RK_C99(restrict))matchedRanges error:(NSError **)error;
 
 /*!
  @method     matchesCharacters:length:inRange:options:

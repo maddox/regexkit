@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -40,9 +40,9 @@
 
 @implementation sortedRegexCollection
 
-#define RKSortedRegexCollectionDefaultRegexEngine RKRegexPCRELibrary
-#define RKSortedRegexCollectionDefaultRegexEngineOptions (RKCompileUTF8 | RKCompileNoUTF8Check)
-#define RKSortedRegexCollectionHashForCollection(collection, regexEngine, libraryOptions) ((RKUInteger)([collection hash] ^ (RKUInteger)collection ^ (RKUInteger)[regexEngine hash] ^ libraryOptions))
+#define RKSortedRegexCollectionDefaultRegexLibrary RKRegexPCRELibrary
+#define RKSortedRegexCollectionDefaultRegexLibraryOptions (RKCompileUTF8 | RKCompileNoUTF8Check)
+#define RKSortedRegexCollectionHashForCollection(collection, regexLibrary, libraryOptions) ((RKUInteger)([collection hash] ^ (RKUInteger)collection ^ (RKUInteger)[regexLibrary hash] ^ libraryOptions))
 
 - (void)testRKSortedRegexCollectionInitError
 {
@@ -68,10 +68,10 @@
 {
   return;
   NSSet *regexSet = [NSSet setWithObjects:@"/ad/.*", @".*/ads/", @"./banners/", @"doubleclick", @"adtech", @"announce", @"banner", @"(dblclk|double)", NULL];
-  //NSLog(@"regexSet: hash 0x%8.8lx / setListHash: 0x%8.8lx / %@", (unsigned long)[regexSet hash], (unsigned long)RKSortedRegexCollectionHashForCollection(regexSet, RKSortedRegexCollectionDefaultRegexEngine, RKSortedRegexCollectionDefaultRegexEngineOptions), regexSet);
+  //NSLog(@"regexSet: hash 0x%8.8lx / setListHash: 0x%8.8lx / %@", (unsigned long)[regexSet hash], (unsigned long)RKSortedRegexCollectionHashForCollection(regexSet, RKSortedRegexCollectionDefaultRegexLibrary, RKSortedRegexCollectionDefaultRegexLibraryOptions), regexSet);
   //NSSet *regex2Set = [NSSet setWithObjects:@"/ad/", @"/ads/", @"./banners/", @"doubleclick", @"adtech", @"announce", @"banner", @"(dblclk|double)", NULL];
-  //NSLog(@"regex2Set: hash 0x%8.8lx / setListHash: 0x%8.8lx / %@", (unsigned long)[regex2Set hash], (unsigned long)RKSortedRegexCollectionHashForCollection(regex2Set, RKSortedRegexCollectionDefaultRegexEngine, RKSortedRegexCollectionDefaultRegexEngineOptions), regex2Set);
-  //NSLog(@"regexSet hash == regex2 hash: %@ isEqual: %@ regexSet setListHash == regex2 setListHash: %@", RKYesOrNo([regexSet hash] == [regex2Set hash]), RKYesOrNo([regexSet isEqualToSet:regex2Set]), RKYesOrNo((RKSortedRegexCollectionHashForCollection(regexSet, RKSortedRegexCollectionDefaultRegexEngine, RKSortedRegexCollectionDefaultRegexEngineOptions) == RKSortedRegexCollectionHashForCollection(regex2Set, RKSortedRegexCollectionDefaultRegexEngine, RKSortedRegexCollectionDefaultRegexEngineOptions))));
+  //NSLog(@"regex2Set: hash 0x%8.8lx / setListHash: 0x%8.8lx / %@", (unsigned long)[regex2Set hash], (unsigned long)RKSortedRegexCollectionHashForCollection(regex2Set, RKSortedRegexCollectionDefaultRegexLibrary, RKSortedRegexCollectionDefaultRegexLibraryOptions), regex2Set);
+  //NSLog(@"regexSet hash == regex2 hash: %@ isEqual: %@ regexSet setListHash == regex2 setListHash: %@", RKYesOrNo([regexSet hash] == [regex2Set hash]), RKYesOrNo([regexSet isEqualToSet:regex2Set]), RKYesOrNo((RKSortedRegexCollectionHashForCollection(regexSet, RKSortedRegexCollectionDefaultRegexLibrary, RKSortedRegexCollectionDefaultRegexLibraryOptions) == RKSortedRegexCollectionHashForCollection(regex2Set, RKSortedRegexCollectionDefaultRegexLibrary, RKSortedRegexCollectionDefaultRegexLibraryOptions))));
 
   BOOL matchedBySet = NO;
   for(int x = 0; x < 1; x++) {
@@ -109,8 +109,14 @@
   RKCPUTime startTime = [NSDate cpuTimeUsed];
   RKUInteger x = 0;
 
-  for(x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:blacklistArray]; } }
-
+  //for(x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:blacklistArray]; } }
+  for(x = 0; x < 1; x++) {
+    NSString *URLString = NULL;
+    NSEnumerator *urlArrayEnumerator = [urlArray objectEnumerator];
+    
+    while((URLString = [urlArrayEnumerator nextObject]) != NULL) { [URLString isMatchedByAnyRegexInArray:blacklistArray]; }
+  }
+  
   x *= [urlArray count];
   
   RKCPUTime elapsedTime = [NSDate differenceOfStartingTime:startTime endingTime:[NSDate cpuTimeUsed]];
@@ -125,7 +131,13 @@
   RKCPUTime startTime = [NSDate cpuTimeUsed];
   RKUInteger x = 0;
   
-  for(x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:whitelistArray]; } }
+  //for(x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:whitelistArray]; } }
+  for(x = 0; x < 1; x++) {
+    NSString *URLString = NULL;
+    NSEnumerator *urlArrayEnumerator = [urlArray objectEnumerator];
+    
+    while((URLString = [urlArrayEnumerator nextObject]) != NULL) { [URLString isMatchedByAnyRegexInArray:whitelistArray]; }
+  }
   
   x *= [urlArray count];
   
@@ -142,7 +154,17 @@
   RKCPUTime startTime = [NSDate cpuTimeUsed];
   RKUInteger x = 0;
 
-  for(x = 0; x < 1; x++) { for(id URLString in urlArray) { for(id blacklistString in blacklistArray) { [URLString isMatchedByRegex:blacklistString]; } } }
+  
+  for(x = 0; x < 1; x++) {
+    NSString *URLString = NULL;
+    NSEnumerator *urlArrayEnumerator = [urlArray objectEnumerator];
+    
+    while((URLString = [urlArrayEnumerator nextObject]) != NULL) {
+      NSString *blacklistString = NULL;
+      NSEnumerator *blacklistArrayEnumerator = [blacklistArray objectEnumerator];
+      while((blacklistString = [blacklistArrayEnumerator nextObject]) != NULL) { [URLString isMatchedByRegex:blacklistString]; }
+    }
+  }
 
   x *= [urlArray count];
   
@@ -158,7 +180,17 @@
   RKCPUTime startTime = [NSDate cpuTimeUsed];
   RKUInteger x = 0;
   
-  for(x = 0; x < 1; x++) { for(id URLString in urlArray) { for(id whitelistString in whitelistArray) { [URLString isMatchedByRegex:whitelistString]; } } }
+  //for(x = 0; x < 1; x++) { for(id URLString in urlArray) { for(id whitelistString in whitelistArray) { [URLString isMatchedByRegex:whitelistString]; } } }
+  for(x = 0; x < 1; x++) {
+    NSString *URLString = NULL;
+    NSEnumerator *urlArrayEnumerator = [urlArray objectEnumerator];
+    
+    while((URLString = [urlArrayEnumerator nextObject]) != NULL) {
+      NSString *whitelistString = NULL;
+      NSEnumerator *whitelistArrayEnumerator = [whitelistArray objectEnumerator];
+      while((whitelistString = [whitelistArrayEnumerator nextObject]) != NULL) { [URLString isMatchedByRegex:whitelistString]; }
+    }
+  }
   
   x *= [urlArray count];
   

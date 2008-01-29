@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -51,10 +51,13 @@ extern "C" {
 @class NSString;
 
 /*!
- @toc        Constants
- @group      Constants
- @group      Exceptions
- @group      Preprocessor Macros
+ @toc   Constants
+ @group Constants
+ @group Error Domains
+ @group Error Keys in User Info Dictionaries
+ @group Exceptions
+ @group Preprocessor Macros
+ @group Regular Expression Libraries
 */
 
 // Defined in RKRegex.m  Constants added here MUST be included in 'exports_list' to be visible!
@@ -80,31 +83,126 @@ extern NSString * const RKRegexUnsupportedException;
 */
 extern NSString * const RKRegexCaptureReferenceException;
 
+/*!
+@const RKRegexPCRELibrary
+ @tocgroup   Constants Regular Expression Libraries
+ @abstract   The PCRE regular expression pattern matching library.
+*/
 extern NSString * const RKRegexPCRELibrary;
 
+/*!
+@const RKRegexPCRELibraryErrorDomain
+ @tocgroup   Constants Error Domains
+ @abstract   PCRE Library errors.
+*/
 extern NSString * const RKRegexPCRELibraryErrorDomain;
+/*!
+@const RKRegexErrorDomain
+ @tocgroup   Constants Error Domains
+ @abstract   RegexKit Framework errors.
+*/
 extern NSString * const RKRegexErrorDomain;
 
-extern NSString * const RKRegexEngineErrorKey;
-extern NSString * const RKRegexEngineErrorStringErrorKey;
+/*!
+@const RKRegexLibraryErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is the regular expression library that caused the error.
+*/
+extern NSString * const RKRegexLibraryErrorKey;
+/*!
+@const RKRegexLibraryErrorStringErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is the error string provided by the regular expression library that caused the error.
+*/
+extern NSString * const RKRegexLibraryErrorStringErrorKey;
 
+/*!
+@const RKRegexStringErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is the regular expression that caused the error.
+*/
 extern NSString * const RKRegexStringErrorKey;
+/*!
+@const RKRegexStringErrorRangeErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is a @link NSValue NSValue @/link with the @link NSRange NSRange @/link of @link RKRegexStringErrorKey RKRegexStringErrorKey @/link where the error occurred.
+*/
 extern NSString * const RKRegexStringErrorRangeErrorKey;
+/*!
+@const RKAttributedRegexStringErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is a @link NSAttributedString NSAttributedString @/link that contains the regular expression that caused the error with attributes highlightling the location of the error.
+*/
 extern NSString * const RKAttributedRegexStringErrorKey;
 
+/*!
+@const RKAbreviatedRegexStringErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is a truncated version of the regular expression that caused the error which is composed of a small number of characters to the left and to the right of the position that caused the error.  Intended for errors displayed to the user in which there is only a limited amount of space available or the display of a lengthy regular expression may be inappropriate.
+*/
 extern NSString * const RKAbreviatedRegexStringErrorKey;
+/*!
+@const RKAbreviatedRegexStringErrorRangeErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is a @link NSValue NSValue @/link of the @link NSRange NSRange @/link of the character in @link RKAbreviatedRegexStringErrorKey RKAbreviatedRegexStringErrorKey @/link that caused the error.
+*/
 extern NSString * const RKAbreviatedRegexStringErrorRangeErrorKey;
+/*!
+@const RKAbreviatedAttributedRegexStringErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is a @link NSAttributedString NSAttributedString @/link that contains the string from @link RKAbreviatedRegexStringErrorKey RKAbreviatedRegexStringErrorKey @/link with attributes highlightling the location of the error.  Intended for errors displayed to the user in which there is only a limited amount of space available or the display of a lengthy regular expression may be inappropriate.
+*/
 extern NSString * const RKAbreviatedAttributedRegexStringErrorKey;
 
+/*!
+@const RKCompileOptionErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is a @link NSNumber NSNumber @/link containing the @link RKCompileOption RKCompileOption @/link for the regular expression that cause the error.
+*/
 extern NSString * const RKCompileOptionErrorKey;
+/*!
+@const RKCompileOptionArrayErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is a @link NSArray NSArray @/link of @link NSString NSString @/link objects representing the @link RKCompileOption RKCompileOption @/link bits for the regular expression that cause the error.
+*/
 extern NSString * const RKCompileOptionArrayErrorKey;
+/*!
+@const RKCompileOptionArrayStringErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is a @link NSString NSString @/link representation of the @link RKCompileOption RKCompileOption @/link bits joined together with the C bitwise OR operator for the regular expression that cause the error.
+*/
 extern NSString * const RKCompileOptionArrayStringErrorKey;
 
+/*!
+@const RKCompileErrorCodeErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is a @link NSNumber NSNumber @/link of the @link RKCompileErrorCode RKCompileErrorCode @/link for the regular expression that caused the error.
+*/
 extern NSString * const RKCompileErrorCodeErrorKey;
+/*!
+@const RKCompileErrorCodeStringErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is a @link NSString NSString @/link representation of the @link RKCompileErrorCode RKCompileErrorCode @/link for the regular expression that caused the error.
+*/
 extern NSString * const RKCompileErrorCodeStringErrorKey;
 
+/*!
+@const RKArrayIndexErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is a @link NSNumber NSNumber @/link containing the array index for the regular expression that caused the error.  This error key is only set by the sorted regex collection methods.
+*/
 extern NSString * const RKArrayIndexErrorKey;
+/*!
+@const RKObjectErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is the regular expression object from the collection that caused the error.  This error key is only set by the sorted regex collection methods.
+*/
 extern NSString * const RKObjectErrorKey;
+/*!
+@const RKCollectionErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is the collection that contains the regular expression that caused the error.  This error key is only set by the sorted regex collection methods.
+*/
 extern NSString * const RKCollectionErrorKey;
 
 /*!

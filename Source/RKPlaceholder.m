@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -89,9 +89,9 @@ static RKRegexPlaceholder *singletonRKRegexPlaceholder = NULL;
   return(RKRegexFromStringOrRegex(self, _cmd, regexString, options, NO));
 }
 
-- (id)initWithRegexString:(NSString * const RK_C99(restrict))regexString library:(NSString * const RK_C99(restrict))libraryString options:(const RKCompileOption)libraryOptions error:(NSError **)outError
+- (id)initWithRegexString:(NSString * const RK_C99(restrict))regexString library:(NSString * const RK_C99(restrict))libraryString options:(const RKCompileOption)libraryOptions error:(NSError **)error
 {
-  return(RKRegexFromStringOrRegexWithError(self, _cmd, regexString, libraryString, libraryOptions, outError, NO));
+  return(RKRegexFromStringOrRegexWithError(self, _cmd, regexString, libraryString, libraryOptions, error, NO));
 }
 
 - (id)initWithCoder:(NSCoder *)coder

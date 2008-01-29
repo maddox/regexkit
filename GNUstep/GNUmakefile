@@ -30,7 +30,7 @@ LIBRARY_NAME = libRegexKit
 PACKAGE_NAME = RegexKit
 
 libRegexKit_HEADER_FILES             = NSArray.h NSData.h NSDictionary.h NSObject.h NSSet.h NSString.h RKEnumerator.h RKCache.h RKEnumerator.h RKRegex.h RKUtility.h RegexKit.h RegexKitDefines.h RegexKitTypes.h pcre.h
-libRegexKit_OBJC_FILES               = NSArray.m NSData.m NSDictionary.m NSObject.m NSSet.m NSString.m RKAutoreleasedMemory.m RKCache.m RKCoder.m RKEnumerator.m RKLock.m RKPlaceholder.m RKPrivate.m RKRegex.m RKUtility.m
+libRegexKit_OBJC_FILES               = NSArray.m NSData.m NSDictionary.m NSObject.m NSSet.m NSString.m RKAutoreleasedMemory.m RKCache.m RKCoder.m RKEnumerator.m RKLock.m RKPlaceholder.m RKPrivate.m RKRegex.m RKSortedRegexCollection.m RKThreadPool.m RKUtility.m
 libRegexKit_HEADER_FILES_DIR         = ${REGEXKIT_HEADERS_DIR}/RegexKit
 libRegexKit_HEADER_FILES_INSTALL_DIR = /RegexKit
 

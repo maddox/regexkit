@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -37,8 +37,6 @@
 */
 
 #import "timing.h"
-#import <objc/objc-auto.h>
-#import <objc/objc-runtime.h>
 
 
 @implementation timing

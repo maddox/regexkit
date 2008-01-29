@@ -3,7 +3,7 @@
 use strict;
 use DBI;
 require DBD::SQLite;
-#use Data::Dumper;
+use Data::Dumper;
 use HTML::Entities;
 $| = 1;
 
@@ -160,7 +160,7 @@ print $FH <<END_PLIST;
     <key>CFBundleDevelopmentRegion</key>
     <string>English</string>
     <key>CFBundleGetInfoString</key>
-    <string>$ENV{'PROJECT_CURRENT_VERSION'}, Copyright © 2007 John Engelhart</string>
+    <string>$ENV{'PROJECT_CURRENT_VERSION'}, Copyright © 2007-2008, John Engelhart</string>
     <key>CFBundleIdentifier</key>
     <string>$docset</string>
     <key>CFBundleInfoDictionaryVersion</key>
@@ -176,7 +176,7 @@ print $FH <<END_PLIST;
     <key>DocSetFeedURL</key>
     <string>$ENV{'DOCUMENTATION_DOCSET_FEED_SCHEME'}//$ENV{'DOCUMENTATION_DOCSET_FEED_URL'}</string>
     <key>NSHumanReadableCopyright</key>
-    <string>Copyright © 2007, John Engelhart</string>
+    <string>Copyright © 2007-2008, John Engelhart</string>
 </dict>
 </plist>
 END_PLIST
@@ -212,19 +212,19 @@ print($FH "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 print($FH "<Tokens version=\"1.0\">\n");
 
 # Preprocessor macros (ENABLE_MACOSX_GARBAGE_COLLECTION, RKInteger, etc)
-for my $row (@{$global_xtoc_cache{'preprocessorDefines'}}) { print $FH common_token("  ", {apple_ref => $apple_ref{$row->{'defineName'}}, hdcid => $row->{hdcid}, declaration => $row->{'cppText'}, header => $row->{'hid'}, addRefID => $row->{'defineName'}, abstract => $global_xtoc_cache{'tags'}[$row->{'hdcid'}]->{'abstract'}, path => $global_xtoc_cache{'xref'}{$row->{'defineName'}}{'file'}, anchor => $apple_ref{$row->{'defineName'}}}); }
+for my $row (@{$global_xtoc_cache{'preprocessorDefines'}}) { my $xref = $global_xtoc_cache{'xhdcid'}->{$row->{'hdcid'}}; my $avail = $global_xtoc_cache{'avail'}->{$xref->{'tbl'}}[$xref->{'id'}]; print $FH common_token("  ", {apple_ref => $apple_ref{$row->{'defineName'}}, hdcid => $row->{hdcid}, declaration => $row->{'cppText'}, header => $row->{'hid'}, addRefID => $row->{'defineName'}, abstract => $global_xtoc_cache{'tags'}[$row->{'hdcid'}]->{'abstract'}, path => $global_xtoc_cache{'xref'}{$row->{'defineName'}}{'file'}, avail => $avail, anchor => $apple_ref{$row->{'defineName'}}}); }
 
 # Constant defines (RKReplaceAll) (only one?)
-for my $row (@{$global_xtoc_cache{'constantDefines'}}) { print $FH common_token("  ", {apple_ref => $apple_ref{$row->{'defineName'}}, hdcid => $row->{hdcid}, declaration => $row->{'cppText'}, header => $row->{'hid'}, addRefID => $row->{'defineName'}, abstract => $global_xtoc_cache{'tags'}[$row->{'hdcid'}]->{'abstract'}, path => $global_xtoc_cache{'xref'}{$row->{'defineName'}}{'file'}, anchor => $apple_ref{$row->{'defineName'}}}); }
+for my $row (@{$global_xtoc_cache{'constantDefines'}}) { my $xref = $global_xtoc_cache{'xhdcid'}->{$row->{'hdcid'}}; my $avail = $global_xtoc_cache{'avail'}->{$xref->{'tbl'}}[$xref->{'id'}]; print $FH common_token("  ", {apple_ref => $apple_ref{$row->{'defineName'}}, hdcid => $row->{hdcid}, declaration => $row->{'cppText'}, header => $row->{'hid'}, addRefID => $row->{'defineName'}, abstract => $global_xtoc_cache{'tags'}[$row->{'hdcid'}]->{'abstract'}, path => $global_xtoc_cache{'xref'}{$row->{'defineName'}}{'file'}, avail => $avail, anchor => $apple_ref{$row->{'defineName'}}}); }
 
 # Constants (RKRegexCaptureReferenceException, etc)
-for my $row (@{$global_xtoc_cache{'constants'}}) { print $FH common_token("  ", {apple_ref => $apple_ref{$row->{'name'}}, hdcid => $row->{hdcid}, declaration => $row->{'fullText'}, header => $row->{'hid'}, addRefID => $row->{'name'}, abstract => $global_xtoc_cache{'tags'}[$row->{'hdcid'}]->{'abstract'}, avail => 1, path => $global_xtoc_cache{'xref'}{$row->{'name'}}{'file'}, anchor => $apple_ref{$row->{'name'}}}); }
+for my $row (@{$global_xtoc_cache{'constants'}}) { my $xref = $global_xtoc_cache{'xhdcid'}->{$row->{'hdcid'}}; my $avail = $global_xtoc_cache{'avail'}->{$xref->{'tbl'}}[$xref->{'id'}]; print $FH common_token("  ", {apple_ref => $apple_ref{$row->{'name'}}, hdcid => $row->{hdcid}, declaration => $row->{'fullText'}, header => $row->{'hid'}, addRefID => $row->{'name'}, abstract => $global_xtoc_cache{'tags'}[$row->{'hdcid'}]->{'abstract'}, avail => $avail, path => $global_xtoc_cache{'xref'}{$row->{'name'}}{'file'}, anchor => $apple_ref{$row->{'name'}}}); }
 
 # Category extensions to existing classes
-for my $row (selectall_hash($dbh, "SELECT DISTINCT ocm.hid AS hid, occl.class AS class, occat.category AS category, toc.tocName AS tocName FROM toc JOIN objCMethods AS ocm ON ocm.tocid = toc.tocid AND ocm.hdcid IS NOT NULL JOIN objCClassCategory AS occat ON occat.occlid = ocm.occlid AND ocm.startsAt >= occat.startsAt AND (occat.startsAt + occat.length) >= (ocm.startsAt) join objCClass AS occl ON ocm.occlid = occl.occlid;")) { print $FH common_token("  ", {apple_ref => "//apple_ref/occ/cat/$row->{'class'}($row->{'category'})", header => $row->{'hid'}, refid => $nodeRefHash{"$row->{'tocName'}.html"}, avail => 1, path => "$row->{'tocName'}.html"}); }
+for my $row (selectall_hash($dbh, "SELECT DISTINCT ocm.hid AS hid, occl.class AS class, occl.occlid AS occlid, occat.category AS category, toc.tocName AS tocName FROM toc JOIN objCMethods AS ocm ON ocm.tocid = toc.tocid AND ocm.hdcid IS NOT NULL JOIN objCClassCategory AS occat ON occat.occlid = ocm.occlid AND ocm.startsAt >= occat.startsAt AND (occat.startsAt + occat.length) >= (ocm.startsAt) join objCClass AS occl ON ocm.occlid = occl.occlid;")) { my $avail = $global_xtoc_cache{'avail'}->{'objCClass'}[$row->{'occlid'}]; print $FH common_token("  ", {apple_ref => "//apple_ref/occ/cat/$row->{'class'}($row->{'category'})", header => $row->{'hid'}, refid => $nodeRefHash{"$row->{'tocName'}.html"}, avail => $avail, path => "$row->{'tocName'}.html"}); }
 
 # New classes.
-for my $row (selectall_hash($dbh, "SELECT ocdef.hid AS hid, occl.class AS class, vt2.text AS filename FROM objCClassDefinition AS ocdef JOIN objcclass AS occl ON ocdef.occlid = occl.occlid JOIN v_tagid AS vt1 ON vt1.hid = ocdef.hid AND vt1.keyword = 'class' AND vt1.text = occl.class JOIN v_tagid AS vt2 ON vt2.hdcid = vt1.hdcid AND vt2.keyword = 'toc' and vt2.arg = 0")) { print $FH common_token("  ", {apple_ref => "//apple_ref/occ/cl/$row->{'class'}", header => $row->{'hid'}, refid => $nodeRefHash{"$row->{'class'}.html"}, avail => 1, path => "$row->{'filename'}.html"}); }
+for my $row (selectall_hash($dbh, "SELECT ocdef.hid AS hid, occl.class AS class, occl.occlid AS occlid, vt2.text AS filename FROM objCClassDefinition AS ocdef JOIN objcclass AS occl ON ocdef.occlid = occl.occlid JOIN v_tagid AS vt1 ON vt1.hid = ocdef.hid AND vt1.keyword = 'class' AND vt1.text = occl.class JOIN v_tagid AS vt2 ON vt2.hdcid = vt1.hdcid AND vt2.keyword = 'toc' and vt2.arg = 0")) { my $avail = $global_xtoc_cache{'avail'}->{'objCClass'}[$row->{'occlid'}]; print $FH common_token("  ", {apple_ref => "//apple_ref/occ/cl/$row->{'class'}", header => $row->{'hid'}, refid => $nodeRefHash{"$row->{'class'}.html"}, avail => $avail, path => "$row->{'filename'}.html"}); }
 
 
 # We borrow this from the HTML build doc code.  Basically, grab the items
@@ -235,10 +235,12 @@ for my $tocName (keys %{$global_xtoc_cache{'toc'}{'contentsForToc'}}) {
   for my $tx (0 .. $#{$global_xtoc_cache{'toc'}{'contentsForToc'}{$tocName}}) {
     my $at = $global_xtoc_cache{'toc'}{'contentsForToc'}{$tocName}[$tx];
     if($at->{'table'} eq "objCMethods") {
-      print $FH common_token("    ", {apple_ref => $at->{apple_ref}, hdcid => $at->{hdcid}, declaration => addLinks($global_xtoc_cache{'methods'}[$at->{id}]->{'prettyText'}), header => $global_xtoc_cache{'methods'}[$at->{id}]->{'hid'}, addRefID => $at->{apple_ref}, abstract => $at->{titleText}, avail => 1, anchor => $at->{apple_ref}});
+      my $xref = $global_xtoc_cache{'xhdcid'}->{$at->{'hdcid'}}; my $avail = $global_xtoc_cache{'avail'}->{$xref->{'tbl'}}[$xref->{'id'}]; 
+      print $FH common_token("    ", {apple_ref => $at->{apple_ref}, hdcid => $at->{hdcid}, declaration => addLinks($global_xtoc_cache{'methods'}[$at->{id}]->{'prettyText'}), header => $global_xtoc_cache{'methods'}[$at->{id}]->{'hid'}, addRefID => $at->{apple_ref}, abstract => $at->{titleText}, avail => $avail, anchor => $at->{apple_ref}});
     }
     elsif($at->{'table'} eq "prototypes") {
-      print $FH common_token("    ", {apple_ref => $at->{apple_ref}, hdcid => $at->{hdcid}, declaration => addLinks($global_xtoc_cache{'functions'}[$at->{id}]->{'prettyText'}), header => $global_xtoc_cache{'functions'}[$at->{id}]->{'hid'}, addRefID => $global_xtoc_cache{'tags'}[$at->{hdcid}]->{function}, abstract => $at->{titleText}, avail => 1, anchor => $at->{apple_ref}});
+      my $xref = $global_xtoc_cache{'xhdcid'}->{$at->{'hdcid'}}; my $avail = $global_xtoc_cache{'avail'}->{$xref->{'tbl'}}[$xref->{'id'}]; 
+      print $FH common_token("    ", {apple_ref => $at->{apple_ref}, hdcid => $at->{hdcid}, declaration => addLinks($global_xtoc_cache{'functions'}[$at->{id}]->{'prettyText'}), header => $global_xtoc_cache{'functions'}[$at->{id}]->{'hid'}, addRefID => $global_xtoc_cache{'tags'}[$at->{hdcid}]->{function}, abstract => $at->{titleText}, avail => $avail, anchor => $at->{apple_ref}});
 
     }
     elsif($at->{'table'} eq "typedefEnum") { print($FH typedef_token("    ",$at->{'id'})); }
@@ -447,17 +449,15 @@ sub common_token {
                                     $token .= $sp . "    <HeaderPath>RegexKit.framework/Headers/$header</HeaderPath>\n";
                                     $token .= $sp . "    <FrameworkName>RegexKit</FrameworkName>\n";
                                     $token .= $sp . "  </DeclaredIn>\n"; }
-  if(defined($th->{refid}) && ($th->{apple_ref} =~ /RKConvertUTF/)) { # Cheap hack until we put a real system in place.
-    if(defined($th->{avail}))     { $token .= $sp . "  <Availability distribution=\"RegexKit\">\n";
-                                    $token .= $sp . "    <IntroducedInVersion bitsize=\"32\">0.4.0</IntroducedInVersion>\n";
-                                    $token .= $sp . "    <IntroducedInVersion bitsize=\"64\">0.4.0</IntroducedInVersion>\n";
+  if(defined($th->{avail}))       { $token .= $sp . "  <Availability distribution=\"RegexKit\">\n";
+    if(defined($th->{avail}->{i32})){ $token .= $sp . "    <IntroducedInVersion bitsize=\"32\">" . $th->{avail}->{i32} . "</IntroducedInVersion>\n"; }
+    if(defined($th->{avail}->{i64})){ $token .= $sp . "    <IntroducedInVersion bitsize=\"64\">" . $th->{avail}->{i64} . "</IntroducedInVersion>\n"; }
+    if(defined($th->{avail}->{d32})){ $token .= $sp . "    <DeprecatedInVersion bitsize=\"32\">" . $th->{avail}->{d32} . "</DeprecatedInVersion>\n"; }
+    if(defined($th->{avail}->{d64})){ $token .= $sp . "    <DeprecatedInVersion bitsize=\"64\">" . $th->{avail}->{d64} . "</DeprecatedInVersion>\n"; }
+    if(defined($th->{avail}->{ds})) { $token .= $sp . "    <DeprecationSummary type=\"html\">"   . $th->{avail}->{ds}  . "</DeprecationSummary>\n"; }
+    if(defined($th->{avail}->{r32})){ $token .= $sp . "    <RemovedAfterVersion bitsize=\"32\">" . $th->{avail}->{r32} . "</RemovedAfterVersion>\n"; }
+    if(defined($th->{avail}->{r64})){ $token .= $sp . "    <RemovedAfterVersion bitsize=\"64\">" . $th->{avail}->{r64} . "</RemovedAfterVersion>\n"; }
                                     $token .= $sp . "  </Availability>\n"; }
-  } else {
-    if(defined($th->{avail}))     { $token .= $sp . "  <Availability distribution=\"RegexKit\">\n";
-                                    $token .= $sp . "    <IntroducedInVersion bitsize=\"32\">0.2.0</IntroducedInVersion>\n";
-                                    $token .= $sp . "    <IntroducedInVersion bitsize=\"64\">0.3.0</IntroducedInVersion>\n";
-                                    $token .= $sp . "  </Availability>\n"; }
-  }
   if(defined($th->{refid}))       { $token .= $sp . "  <NodeRef refid=\"$th->{refid}\" />\n"; }
   $token .= seealso_tokens($sp . "  ", $th->{hdcid});
   if(defined($th->{path}))        { $token .= $sp . "  <Path>" . $th->{path} . "</Path>\n"; }
@@ -474,10 +474,11 @@ sub typedef_token {
   if(defined($global_xtoc_cache{'typedefs'}[$tdeid])) {
     my $row = $global_xtoc_cache{'typedefs'}[$tdeid]; 
     my ($token, $tags, $hdcid, $hid, $name, @enums) = ("", $global_xtoc_cache{'tags'}[$row->{'hdcid'}], $row->{'hdcid'}, $row->{'hid'}, $row->{'name'}, @{$global_xtoc_cache{'enums'}[$row->{'tdeid'}]});
+    my $xref = $global_xtoc_cache{'xhdcid'}->{$row->{'hdcid'}}; my $avail = $global_xtoc_cache{'avail'}->{$xref->{'tbl'}}[$xref->{'id'}]; 
     
-    $token .= common_token($sp, {apple_ref => $apple_ref{$row->{'name'}}, hdcid => $hdcid, declaration => $row->{'name'}, header => $hid, addRefID => $name, abstract => $tags->{'abstract'}, avail => 1, anchor => $apple_ref{$row->{'name'}}});
+    $token .= common_token($sp, {apple_ref => $apple_ref{$row->{'name'}}, hdcid => $hdcid, declaration => $row->{'name'}, header => $hid, addRefID => $name, abstract => $tags->{'abstract'}, avail => $avail, anchor => $apple_ref{$row->{'name'}}});
     
-    for my $e (@enums) { my $id = $e->{'identifier'}; my $ar = $apple_ref{$id}; $token .= common_token($sp, {apple_ref => $ar, declaration => $id, header => $hid, addRefID => $name, abstract => $e->{'tagText'}, avail => 1, anchor => $ar}); }
+    for my $e (@enums) { my $xref = $global_xtoc_cache{'xhdcid'}->{$row->{'hdcid'}}; my $avail = $global_xtoc_cache{'avail'}->{$xref->{'tbl'}}[$xref->{'id'}]; my $id = $e->{'identifier'}; my $ar = $apple_ref{$id}; $token .= common_token($sp, {apple_ref => $ar, declaration => $id, header => $hid, addRefID => $name, abstract => $e->{'tagText'}, avail => $avail, anchor => $ar}); }
     return($token);
   }
 }  
@@ -562,14 +563,17 @@ sub addLinks {
 sub gen_xtoc_cache {
   my (%cache);
   
-  for my $row (selectall_hash($dbh, "SELECT DISTINCT xref, linkId, href, apple_ref, file FROM t_xtoc WHERE xref IS NOT NULL AND linkId IS NOT NULL AND href IS NOT NULL")) {
+  for my $row (selectall_hash($dbh, "SELECT DISTINCT xref, linkId, href, apple_ref, file, hdcid, tbl, id FROM t_xtoc WHERE xref IS NOT NULL AND linkId IS NOT NULL AND href IS NOT NULL")) {
     $cache{'xref'}->{$row->{'xref'}}{'linkId'} = $row->{'linkId'};
     $cache{'xref'}->{$row->{'xref'}}{'href'} = $row->{'href'};
     $cache{'xref'}->{$row->{'xref'}}{'apple_ref'} = $row->{'apple_ref'};
     $cache{'xref'}->{$row->{'xref'}}{'apple_href'} = $row->{'file'} . '#' . $row->{'apple_ref'};
     $cache{'xref'}->{$row->{'xref'}}{'file'} = $row->{'file'};
+    $cache{'xref'}->{$row->{'xref'}}{'tbl'} = $row->{'tbl'};
+    $cache{'xref'}->{$row->{'xref'}}{'id'} = $row->{'id'};
     $cache{'xref'}->{$row->{'xref'}}{'class'} = "code";
-
+    $cache{'xhdcid'}->{$row->{'hdcid'}} = {'tbl' => $row->{'tbl'}, 'id' => $row->{'id'}};
+    
     $apple_ref{$row->{'xref'}} = $row->{'apple_ref'};
   }
 
@@ -605,6 +609,13 @@ sub gen_xtoc_cache {
   for my $row (selectall_hash($dbh, "SELECT * FROM define WHERE hdcid IN (SELECT hdcid FROM t_xtoc WHERE tocName = 'Constants' AND groupName = 'Constants') ORDER BY defineName")) { push(@{$cache{'constantDefines'}}, $row); }
   for my $row (selectall_hash($dbh, "SELECT * FROM define WHERE hdcid IN (SELECT hdcid FROM t_xtoc WHERE tocName = 'Constants' AND groupName = 'Preprocessor Macros') AND cppText IS NOT NULL ORDER BY defineName")) { push(@{$cache{'preprocessorDefines'}}, $row); }
   for my $row (selectall_hash($dbh, "SELECT * FROM headers")) { $cache{'headers'}[$row->{'hid'}] = $row; }
+
+  for my $row (selectall_hash($dbh, "SELECT * FROM v_versionXRef")) {
+    $cache{'avail'}->{$row->{'tbl'}}[$row->{'id'}]->{"i$row->{'bitSize'}"} = $row->{'intro'};
+    if(defined($row->{'dvid'})) { $cache{'avail'}->{$row->{'tbl'}}[$row->{'id'}]->{"d$row->{'bitSize'}"} = $row->{'depre'}; }
+    if(defined($row->{'rvid'})) { $cache{'avail'}->{$row->{'tbl'}}[$row->{'id'}]->{"r$row->{'bitSize'}"} = $row->{'removed'}; }
+    if(defined($row->{'deprecatedSummary'})) { $cache{'avail'}->{$row->{'tbl'}}[$row->{'id'}]->{'ds'} = $row->{'deprecatedSummary'}; }
+  }
   
   return(%cache);
 }

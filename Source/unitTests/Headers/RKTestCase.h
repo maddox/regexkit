@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -40,9 +40,13 @@
 #import <Foundation/NSDebug.h>
 #import <SenTestingKit/SenTestingKit.h>
 #import <stdint.h>
-#import <sys/types.h>
 #import <unistd.h>
 #import <pthread.h>
+#import <sys/types.h>
+#import <sys/time.h>
+#import <sys/resource.h>
+#import <objc/objc-auto.h>
+#import <objc/objc-runtime.h>
 #import "NSDate.h"
 
 #define RKPrettyObjectMethodString(stringArg, ...) [NSString stringWithFormat:[NSString stringWithFormat:@"%p [%@ %@]: %@", self, NSStringFromClass([(id)self class]), NSStringFromSelector(_cmd), stringArg], ##__VA_ARGS__]
@@ -83,3 +87,10 @@ void (*objc_collect_function)(unsigned long);
 }
 
 @end
+
+@interface RKSortedRegexCollection : NSObject
++ (RKCache *)sortedRegexCollectionCache;
++ (RKSortedRegexCollection *)sortedRegexCollectionForCollection:(id const RK_C99(restrict))collection;
++ (RKSortedRegexCollection *)sortedRegexCollectionForCollection:(id const RK_C99(restrict))collection library:(NSString * const RK_C99(restrict))initRegexLibraryString options:(const RKCompileOption)initRegexLibraryOptions error:(NSError ** const RK_C99(restrict))error;
+@end
+

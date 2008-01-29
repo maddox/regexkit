@@ -7,7 +7,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -109,7 +109,7 @@ typedef struct threadPoolJob RK_STRONG_REF RKThreadPoolJob;
 }
 
 + (id)defaultThreadPool;
-- (id)initWithThreadCount:(RKUInteger)initThreadCount error:(NSError **)outError;
+- (id)initWithThreadCount:(RKUInteger)initThreadCount error:(NSError **)error;
 - (void)reapThreads;
 - (BOOL)wakeThread:(RKUInteger)threadNumber;
 - (BOOL)threadFunction:(int(*)(void *))function argument:(void *)argument;

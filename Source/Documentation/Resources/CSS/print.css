@@ -28,10 +28,12 @@ table, .box, .figure, .seealso, li, p { page-break-inside: avoid; }
 
 
 .bodyTop { margin-left: 0.75in; }
-h1, h2, h3, .overview > .masthead, .guide .seealso > .header { margin-left: -0.75in; }
+.security { padding-left: 0.75in; }
+.security > .inner { margin-left: 0.5ex; }
+h1, h2, h3, .overview > .masthead, .guide .seealso > .header, .security { margin-left: -0.75in; }
 .printNegLeft { font-size: 0.5em; }
 
-.guide .sourceLicense pre { margin-left: -0.25in; }
+.sourceLicense pre { margin-left: -0.25in; }
 
 .printImg { width: 100%; }
 .guide .seealso > .header { margin-top: 2.0em; margin-bottom: 0.5000em; font-size: 1.5834em; }

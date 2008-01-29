@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -34,7 +34,7 @@
  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/ 
+*/
 
 #import <RegexKit/NSObject.h>
 #import <RegexKit/RegexKitPrivate.h>
@@ -67,19 +67,19 @@
   return([[RKSortedRegexCollection sortedRegexCollectionForCollection:regexArray library:RKRegexPCRELibrary options:RKPCREDefaultOptions error:NULL] regexMatching:self lowestIndexInCollection:YES]);
 }
 
-- (BOOL)isMatchedByAnyRegexInArray:(NSArray *)regexArray library:(NSString *)libraryString options:(RKCompileOption)libraryOptions error:(NSError **)outError
+- (BOOL)isMatchedByAnyRegexInArray:(NSArray *)regexArray library:(NSString *)library options:(RKCompileOption)libraryOptions error:(NSError **)error
 {
-  return([[RKSortedRegexCollection sortedRegexCollectionForCollection:regexArray library:libraryString options:libraryOptions error:outError] regexMatching:self lowestIndexInCollection:NO] == NULL ? NO : YES);
+  return([[RKSortedRegexCollection sortedRegexCollectionForCollection:regexArray library:library options:libraryOptions error:error] regexMatching:self lowestIndexInCollection:NO] == NULL ? NO : YES);
 }
 
-- (RKRegex *)anyMatchingRegexInArray:(NSArray *)regexArray library:(NSString *)libraryString options:(RKCompileOption)libraryOptions error:(NSError **)outError
+- (RKRegex *)anyMatchingRegexInArray:(NSArray *)regexArray library:(NSString *)library options:(RKCompileOption)libraryOptions error:(NSError **)error
 {
-  return([[RKSortedRegexCollection sortedRegexCollectionForCollection:regexArray library:libraryString options:libraryOptions error:outError] regexMatching:self lowestIndexInCollection:NO]);
+  return([[RKSortedRegexCollection sortedRegexCollectionForCollection:regexArray library:library options:libraryOptions error:error] regexMatching:self lowestIndexInCollection:NO]);
 }
 
-- (RKRegex *)firstMatchingRegexInArray:(NSArray *)regexArray library:(NSString *)libraryString options:(RKCompileOption)libraryOptions error:(NSError **)outError
+- (RKRegex *)firstMatchingRegexInArray:(NSArray *)regexArray library:(NSString *)library options:(RKCompileOption)libraryOptions error:(NSError **)error
 {
-  return([[RKSortedRegexCollection sortedRegexCollectionForCollection:regexArray library:libraryString options:libraryOptions error:outError] regexMatching:self lowestIndexInCollection:YES]);
+  return([[RKSortedRegexCollection sortedRegexCollectionForCollection:regexArray library:library options:libraryOptions error:error] regexMatching:self lowestIndexInCollection:YES]);
 }
 
 //
@@ -96,14 +96,14 @@
   return([[RKSortedRegexCollection sortedRegexCollectionForCollection:regexSet library:RKRegexPCRELibrary options:RKPCREDefaultOptions error:NULL] regexMatching:self lowestIndexInCollection:NO]);
 }
 
-- (BOOL)isMatchedByAnyRegexInSet:(NSSet *)regexSet library:(NSString *)libraryString options:(RKCompileOption)libraryOptions error:(NSError **)outError
+- (BOOL)isMatchedByAnyRegexInSet:(NSSet *)regexSet library:(NSString *)library options:(RKCompileOption)libraryOptions error:(NSError **)error
 {
-  return([[RKSortedRegexCollection sortedRegexCollectionForCollection:regexSet library:libraryString options:libraryOptions error:outError] regexMatching:self lowestIndexInCollection:NO] == NULL ? NO : YES);
+  return([[RKSortedRegexCollection sortedRegexCollectionForCollection:regexSet library:library options:libraryOptions error:error] regexMatching:self lowestIndexInCollection:NO] == NULL ? NO : YES);
 }
 
-- (RKRegex *)anyMatchingRegexInSet:(NSSet *)regexSet library:(NSString *)libraryString options:(RKCompileOption)libraryOptions error:(NSError **)outError
+- (RKRegex *)anyMatchingRegexInSet:(NSSet *)regexSet library:(NSString *)library options:(RKCompileOption)libraryOptions error:(NSError **)error
 {
-  return([[RKSortedRegexCollection sortedRegexCollectionForCollection:regexSet library:libraryString options:libraryOptions error:outError] regexMatching:self lowestIndexInCollection:NO]);
+  return([[RKSortedRegexCollection sortedRegexCollectionForCollection:regexSet library:library options:libraryOptions error:error] regexMatching:self lowestIndexInCollection:NO]);
 }
 
 @end

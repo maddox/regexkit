@@ -267,7 +267,7 @@
   <ul class="seealso">
     <li><a href="RegexKitImplementationTopics.html#MultithreadingSafety" class="section-link">Multithreading Safety</a></li>
     <li><a href="pcre/pcrepattern.html" class="section-link">PCRE Regular Expression Syntax</a></li>
-    <li><a href="RKRegex.html" class="section-link">RKRegex class</a></li>
+    <li><a href="RKRegex.html" class="section-link">RKRegex Class</a></li>
   </ul>
 </div>
 
@@ -1115,6 +1115,8 @@ shell% </div>
 <caption>Description of RegexKit Instruments for Instruments.app</caption>
 <tr><th>Instrument</th><th>Description</th></tr>
 <tr><td>Cache Lookup Timing</td><td>Records the time it takes to retrieve a regular expression from the cache in microseconds.</td></tr>
+<tr><td>Collection Cache</td><td>Records the effectiveness of the Least Recently Used negative-hit sorted regex collection cache.</td></tr>
+<tr><td>Collection Timing</td><td>Records the time it takes to determine if a regular expression in a collection matches a target string in microseconds.</td></tr>
 <tr><td>Compile Errors</td><td>Records regular expressions that failed to compile due to an error.</td></tr>
 <tr><td>Compile Timing</td><td>Records the time it takes to compile a regular expression in microseconds.</td></tr>
 <tr><td>Lock Timing</td><td>Records timing information for multithreaded locks in microseconds.</td></tr>
@@ -1244,8 +1246,8 @@ shell% </div>
 //  myController.h
 //  My New App
 //
-//  Created by You on 1/1/07.
-//  Copyright 2007 __MyCompanyName__. All rights reserved.
+//  Created by You on 1/1/08.
+//  Copyright 2008 __MyCompanyName__. All rights reserved.
 //
 
 #import &lt;Cocoa/Cocoa.h&gt;
@@ -1286,7 +1288,7 @@ shell% </div>
 
 <h3>License</h3>
 
-<div class="sourceLicense"><p>Copyright &copy; 2007, John Engelhart</p>
+<div class="sourceLicense"><p>Copyright &copy; 2007-2008, John Engelhart</p>
 
 <p>All rights reserved.</p>
 
@@ -1301,38 +1303,6 @@ shell% </div>
 <p class="disclaimer">THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 </div>
 
-<!--
-<div class="sourceLicense"><pre>Copyright &copy; 2007, John Engelhart
-
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-    * Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-    * Neither the name of the Zang Industries nor the names of its
-contributors may be used to endorse or promote products derived from
-this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-</pre></div>
--->
 <!-- ____________________________________________ -->
 </div>
 

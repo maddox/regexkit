@@ -1,5 +1,11 @@
+//
+//  NSDate.m
+//  RegexKit
+//  http://regexkit.sourceforge.net/
+//
+
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -44,12 +50,12 @@ int dummyDateFunction(int dummyInt) {
   RKCPUTime timeUsed; memset(&timeUsed, 0, sizeof(RKCPUTime));
   
   getrusage(RUSAGE_SELF, &currentRusage);
-  timeUsed.userCPUTime   = ((((NSHighResTimeInterval)currentRusage.ru_utime.tv_sec) * 1000000.0) + ((NSHighResTimeInterval)currentRusage.ru_utime.tv_usec));// / 1000000.0;
-  timeUsed.systemCPUTime = ((((NSHighResTimeInterval)currentRusage.ru_stime.tv_sec) * 1000000.0) + ((NSHighResTimeInterval)currentRusage.ru_stime.tv_usec));// / 1000000.0;
+  timeUsed.userCPUTime   = ((((NSTimeInterval)currentRusage.ru_utime.tv_sec) * 1000000.0) + ((NSTimeInterval)currentRusage.ru_utime.tv_usec));// / 1000000.0;
+  timeUsed.systemCPUTime = ((((NSTimeInterval)currentRusage.ru_stime.tv_sec) * 1000000.0) + ((NSTimeInterval)currentRusage.ru_stime.tv_usec));// / 1000000.0;
   timeUsed.CPUTime = timeUsed.userCPUTime + timeUsed.systemCPUTime;
 
 #ifdef __MACOSX_RUNTIME__
-  malloc_zone_statistics(malloc_default_zone(), &timeUsed.zoneStats);
+  //malloc_zone_statistics(malloc_default_zone(), &timeUsed.zoneStats);
   timeUsed.mach_time = mach_absolute_time();
 #endif //__MACOSX_RUNTIME__
   
@@ -65,11 +71,12 @@ int dummyDateFunction(int dummyInt) {
   diffTime.CPUTime       = (endingTime.CPUTime       - startingTime.CPUTime);
 
 #ifdef __MACOSX_RUNTIME__
+  /*
   diffTime.zoneStats.blocks_in_use   = endingTime.zoneStats.blocks_in_use   - startingTime.zoneStats.blocks_in_use;
   diffTime.zoneStats.size_in_use     = endingTime.zoneStats.size_in_use     - startingTime.zoneStats.size_in_use;
   diffTime.zoneStats.max_size_in_use = endingTime.zoneStats.max_size_in_use - startingTime.zoneStats.max_size_in_use;
   diffTime.zoneStats.size_allocated  = endingTime.zoneStats.size_allocated  - startingTime.zoneStats.size_allocated;
-
+   */
   diffTime.mach_time       = (endingTime.mach_time       - startingTime.mach_time);
   Nanoseconds elapsed_nanoSeconds = AbsoluteToNanoseconds( *(AbsoluteTime *) &diffTime.mach_time );
   diffTime.nanoSeconds = * (uint64_t *) &elapsed_nanoSeconds;
@@ -94,6 +101,7 @@ int dummyDateFunction(int dummyInt) {
   return([NSString stringWithFormat:@"<< %llu / %llu >>", CPUTime.mach_time, CPUTime.nanoSeconds]);
 }
 
+/*
 + (NSString *)stringFromCPUTimeMemory:(RKCPUTime)CPUTime
 {
   char membuf[4096];
@@ -101,8 +109,7 @@ int dummyDateFunction(int dummyInt) {
 
   return([NSString stringWithFormat:@"%s", &membuf[0]]);
 }
-#else
-#warning "Mac OSX runtime not defined"
+*/
 #endif //__MACOSX_RUNTIME__
 
 @end

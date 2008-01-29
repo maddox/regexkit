@@ -5,7 +5,7 @@
 //
 
 /*
- Copyright © 2007, John Engelhart
+ Copyright © 2007-2008, John Engelhart
  
  All rights reserved.
  
@@ -40,8 +40,6 @@
 
 #import "multithreading.h"
 #import "RegexKitPrivateAtomic.h"
-#include <sys/time.h>
-#include <sys/resource.h>
 
 @implementation multithreading
 
@@ -277,6 +275,8 @@ exitNow:
   
   [self flushLog];
 
+  [objc_getClass("RKSortedRegexCollection") initialize];
+
   if([multithreadingEnvString intValue] < 1) { [self thread:0 log:@"Multithreading testing was not requested\n"]; return; }
   setpriority(PRIO_PROCESS, 0, 20);
   
@@ -286,6 +286,7 @@ exitNow:
     [self flushLog];
   }
 
+  usleep(10000);
   [self thread:0 log:[NSString stringWithFormat:@"Threads launched\n"]];
   [self flushLog];
     
@@ -2361,27 +2362,43 @@ exitNow:
 - (void)mt_sortedRegex_bl1
 {
   return;
-  for(RKUInteger x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:blacklistArray]; } }
+  //for(RKUInteger x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:blacklistArray]; } }
+  NSString *URLString = NULL;
+  NSEnumerator *urlArrayEnumerator = [urlArray objectEnumerator];
+  
+  while((URLString = [urlArrayEnumerator nextObject]) != NULL) { [URLString isMatchedByAnyRegexInArray:blacklistArray]; }
 }
 
 - (void)mt_sortedRegex_bl2
 {
   return;
   NSArray *localBlacklistArray = [[[NSArray alloc] initWithArray:blacklistArray copyItems:YES] autorelease];
-  for(RKUInteger x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:localBlacklistArray]; } }
+  //for(RKUInteger x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:localBlacklistArray]; } }
+  NSString *URLString = NULL;
+  NSEnumerator *urlArrayEnumerator = [localBlacklistArray objectEnumerator];
+  
+  while((URLString = [urlArrayEnumerator nextObject]) != NULL) { [URLString isMatchedByAnyRegexInArray:blacklistArray]; }
 }
 
 - (void)mt_sortedRegex_wl1
 {
   //return;
-  for(RKUInteger x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:whitelistArray]; } }
+  //for(RKUInteger x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:whitelistArray]; } }
+  NSString *URLString = NULL;
+  NSEnumerator *urlArrayEnumerator = [urlArray objectEnumerator];
+  
+  while((URLString = [urlArrayEnumerator nextObject]) != NULL) { [URLString isMatchedByAnyRegexInArray:whitelistArray]; }  
 }
 
 - (void)mt_sortedRegex_wl2
 {
   //return;
   NSArray *localWhitelistArray = [[[NSArray alloc] initWithArray:whitelistArray copyItems:YES] autorelease];
-  for(RKUInteger x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:localWhitelistArray]; } }
+  //for(RKUInteger x = 0; x < 1; x++) { for(id URLString in urlArray) { [URLString isMatchedByAnyRegexInArray:localWhitelistArray]; } }
+  NSString *URLString = NULL;
+  NSEnumerator *urlArrayEnumerator = [localWhitelistArray objectEnumerator];
+  
+  while((URLString = [urlArrayEnumerator nextObject]) != NULL) { [URLString isMatchedByAnyRegexInArray:localWhitelistArray]; }
 }
 
 

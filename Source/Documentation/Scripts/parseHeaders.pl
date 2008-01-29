@@ -69,6 +69,7 @@ $preparedObjCClassCategory = $dbh->prepare("INSERT INTO objCClassCategory (hid, 
 
 $preparedObjCClassDefinition = $dbh->prepare("INSERT INTO objCClassDefinition (hid, occlid, scclid, startsAt, length, protocols, ivars, methodsStart, methodsLength) VALUES (?, classid(?), classid(?), ?, ?, ?, ?, ?, ?)");
 my $preparedConstantInsert = $dbh->prepare("INSERT OR IGNORE INTO constant (hid, startsAt, length, name, fullText) VALUES (?, ?, ?, (SELECT v1.text FROM v_tagid AS v1 WHERE v1.keyword = 'const' AND ? LIKE '%'||v1.text||'%'), ?)");
+my $preparedConstantExactInsert = $dbh->prepare("INSERT OR IGNORE INTO constant (hid, startsAt, length, name, fullText) VALUES (?, ?, ?, (SELECT v1.text FROM v_tagid AS v1 WHERE v1.keyword = 'const' AND ? = v1.text), ?)");
 my $preparedDefineInsert = $dbh->prepare("INSERT OR IGNORE INTO define (hid, startsAt, length, defineName, leftHandSide, rightHandSide, fullText) VALUES (?, ?, ?, ?, ?, ?, ?)");
 my $preparedDefineUpdate = $dbh->prepare("UPDATE define SET cppLeftHandSide = ?, cppRightHandSide = ?, cppText = ? WHERE did = ?");
 
@@ -149,6 +150,9 @@ $dbh->do("ANALYZE");
 print("Creating table of contents cross reference table.\n");
 
 $dbh->do("CREATE TABLE t_xtoc AS SELECT * FROM v_xtoc");
+$dbh->do("CREATE INDEX t_xtoc_xref_idx ON t_xtoc (xref)");
+
+$dbh->do("ANALYZE");
 
 $dbh->commit;
 #($seconds, $microseconds) = gettimeofday;
@@ -169,6 +173,7 @@ undef($preparedObjCClass);
 undef($preparedObjCClassCategory);
 undef($preparedObjCClassDefinition);
 undef($preparedClassIDSelect);
+undef($preparedConstantExactInsert);
 undef($preparedConstantInsert);
 undef($preparedDefineInsert);
 undef($preparedDefineUpdate);
@@ -548,7 +553,14 @@ sub processFile {
 	my $mtxt = $1;
 	pos($in) = $eom;
 	substr($in, $som, $eom-$som) =~ s/[^\n]/ /sg;
-	$preparedConstantInsert->execute($hid, $som, $eom-$som, $mtxt, $mtxt);
+  if($mtxt =~ /extern\s.*?\s+($ident_re);/) {
+    my $ctxt = $1;
+    #printf(STDERR "[$name@%5d: %5d %5d %5d] Parsed constant - '%s' '%s'\n", $fh_line_num, $som, $eom, $eom-$som, $ctxt, $mtxt);
+    $preparedConstantExactInsert->execute($hid, $som, $eom-$som, $ctxt, $mtxt);
+  } else {
+    #printf(STDERR "[$name@%5d: %5d %5d %5d] Parsed constant - '%s'\n", $fh_line_num, $som, $eom, $eom-$som, $mtxt);
+    $preparedConstantInsert->execute($hid, $som, $eom-$som, $mtxt, $mtxt);
+  }
       }
     }
 
