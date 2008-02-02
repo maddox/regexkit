@@ -1070,4 +1070,281 @@
   
 }
 
+- (void) testStringByMatchingBug2
+{
+  /* 
+   Bug report and unit test provided by: Doug Dickinson
+   See SourceForge forum message 'Problem matching $ (end of string)'
+   URL: http://sourceforge.net/forum/forum.php?thread_id=1929326&forum_id=731002
+   Description: rangeOfRegex: @"$" does not report the expected range.
+  */
+
+  NSString *subject = @"foo", *newString = NULL;
+  
+  NSString *subjectUnicodeStart      = [NSString stringWithUTF8String:"\xC6\x92oo"];         // ƒoo               ƒ == \xC6\x92
+  NSString *subjectUnicodeMiddle     = [NSString stringWithUTF8String:"f\xC3\xB6o"];         // föo               ö == \xC3\xB6
+  NSString *subjectUnicodeEnd        = [NSString stringWithUTF8String:"fo\xC3\xB6"];         // foö               ö == \xC3\xB6
+
+  // 𐀀 == \xF0\x90\x80\x80
+  NSString *subjectUnicodeHardStart  = [NSString stringWithUTF8String:"\xF0\x90\x80\x80oo"]; // 𐀀oo
+  NSString *subjectUnicodeHardMiddle = [NSString stringWithUTF8String:"f\xF0\x90\x80\x80o"]; // f𐀀o
+  NSString *subjectUnicodeHardEnd    = [NSString stringWithUTF8String:"fo\xF0\x90\x80\x80"]; // fo𐀀
+
+  NSRange r = NSMakeRange(NSNotFound, 0);
+  
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subject rangeOfRegex:@"^"]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 0), @"Range: %@", NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subject rangeOfRegex:@"^."]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 1), @"Range: %@", NSStringFromRange(r));
+  
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeStart rangeOfRegex:@"^"]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 0), @"Range: %@", NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeMiddle rangeOfRegex:@"^"]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 0), @"Range: %@", NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeEnd rangeOfRegex:@"^"]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 0), @"Range: %@", NSStringFromRange(r));
+  //
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeStart rangeOfRegex:@"^."]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 1), @"Range: %@", NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeMiddle rangeOfRegex:@"^."]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 1), @"Range: %@", NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeEnd rangeOfRegex:@"^."]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 1), @"Range: %@", NSStringFromRange(r));
+  
+  
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeHardStart rangeOfRegex:@"^"]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 0), @"Range: %@", NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeHardMiddle rangeOfRegex:@"^"]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 0), @"Range: %@", NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeHardEnd rangeOfRegex:@"^"]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 0), @"Range: %@", NSStringFromRange(r));
+  //
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeHardStart rangeOfRegex:@"^."]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 2), @"Range: %@", NSStringFromRange(r)); // Length of 2 is correct
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeHardMiddle rangeOfRegex:@"^."]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 1), @"Range: %@", NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeHardEnd rangeOfRegex:@"^."]), NULL);
+  STAssertTrue((r.location == 0 && r.length == 1), @"Range: %@", NSStringFromRange(r));
+  
+  // This test excercises the bug reported.  The STAssertTrue() gives the expected values, where as NSRange r is {2147483647, 0} with the bug present.
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subject rangeOfRegex:@"$"]), NULL);
+  STAssertTrue((r.location == [subject length] && r.length == 0), @"Range: %@", NSStringFromRange(r));
+
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subject rangeOfRegex:@".$"]), NULL);
+  STAssertTrue(((r.location == ([subject length] - 1)) && (r.length == 1)), @"Range: %@", NSStringFromRange(r));
+  
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeStart rangeOfRegex:@"$"]), NULL);
+  STAssertTrue((r.location == [subjectUnicodeStart length] && r.length == 0), @"Range: %@", NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeMiddle rangeOfRegex:@"$"]), NULL);
+  STAssertTrue((r.location == [subjectUnicodeMiddle length] && r.length == 0), @"Range: %@", NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeEnd rangeOfRegex:@"$"]), NULL);
+  STAssertTrue((r.location == [subjectUnicodeEnd length] && r.length == 0), @"Range: %@", NSStringFromRange(r));
+
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeStart rangeOfRegex:@".$"]), NULL);
+  STAssertTrue(((r.location == ([subjectUnicodeStart length] - 1)) && (r.length == 1)), @"Range: %@", NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeMiddle rangeOfRegex:@".$"]), NULL);
+  STAssertTrue(((r.location == ([subjectUnicodeMiddle length] - 1)) && (r.length == 1)), @"Range: %@", NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeEnd rangeOfRegex:@".$"]), NULL);
+  STAssertTrue(((r.location == ([subjectUnicodeEnd length] - 1)) && (r.length == 1)), @"Range: %@", NSStringFromRange(r));
+  
+
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeHardStart rangeOfRegex:@"$"]), NULL);
+  STAssertTrue((r.location == [subjectUnicodeHardStart length] && r.length == 0), @"Length: %lu Range: %@", (unsigned long)[subjectUnicodeHardStart length], NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeHardMiddle rangeOfRegex:@"$"]), NULL);
+  STAssertTrue((r.location == [subjectUnicodeHardMiddle length] && r.length == 0), @"Length: %lu Range: %@", (unsigned long)[subjectUnicodeHardStart length], NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeHardEnd rangeOfRegex:@"$"]), NULL);
+  STAssertTrue((r.location == [subjectUnicodeHardEnd length] && r.length == 0), @"Length: %lu Range: %@", (unsigned long)[subjectUnicodeHardStart length], NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeHardStart rangeOfRegex:@".$"]), NULL);
+  STAssertTrue(((r.location == ([subjectUnicodeHardStart length] - 1)) && (r.length == 1)), @"Length: %lu Range: %@", (unsigned long)[subjectUnicodeHardStart length], NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeHardMiddle rangeOfRegex:@".$"]), NULL);
+  STAssertTrue(((r.location == ([subjectUnicodeHardMiddle length] - 1)) && (r.length == 1)), @"Length: %lu Range: %@", (unsigned long)[subjectUnicodeHardStart length], NSStringFromRange(r));
+  r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
+  STAssertNoThrow((r = [subjectUnicodeHardEnd rangeOfRegex:@".$"]), NULL); // The number 2 below is correct.
+  STAssertTrue(((r.location == ([subjectUnicodeHardEnd length] - 2)) && (r.length == 2)), @"Length: %lu Range: %@", (unsigned long)[subjectUnicodeHardStart length], NSStringFromRange(r));
+  
+  
+  
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"bar" stringByMatching:@"^" replace:1 withReferenceString:@"foo"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:@"foobar"] == YES), @"String: %@", newString);
+
+  ///
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"\xC6\x80""ar"] stringByMatching:@"^" replace:1 withReferenceString:@"foo"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"foo\xC6\x80""ar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"b\xC3\xA4r"] stringByMatching:@"^" replace:1 withReferenceString:@"foo"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"foob\xC3\xA4r"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"ba\xC5\x95"] stringByMatching:@"^" replace:1 withReferenceString:@"foo"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"fooba\xC5\x95"]] == YES), @"String: %@", newString);
+  ///
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"\xC6\x80""ar"] stringByMatching:@"^." replace:1 withReferenceString:[NSString stringWithUTF8String:"foo""\xC6\x80"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"foo\xC6\x80""ar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"b\xC3\xA4r"] stringByMatching:@"^." replace:1 withReferenceString:@"foob"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"foob\xC3\xA4r"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"ba\xC5\x95"] stringByMatching:@"^." replace:1 withReferenceString:@"foob"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"fooba\xC5\x95"]] == YES), @"String: %@", newString);
+  
+
+  
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"bar" stringByMatching:@"^" replace:1 withReferenceString:[NSString stringWithUTF8String:"\xC6\x92oo"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"\xC6\x92oobar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"bar" stringByMatching:@"^" replace:1 withReferenceString:[NSString stringWithUTF8String:"f\xC3\xB6o"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"f\xC3\xB6obar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"bar" stringByMatching:@"^" replace:1 withReferenceString:[NSString stringWithUTF8String:"fo\xC3\xB6"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"fo\xC3\xB6""bar"]] == YES), @"String: %@", newString);
+
+
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"\xF0\x90\x80\x80""ar"] stringByMatching:@"^" replace:1 withReferenceString:@"foo"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"foo\xF0\x90\x80\x80""ar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"b\xF0\x90\x80\x80r"] stringByMatching:@"^" replace:1 withReferenceString:@"foo"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"foob\xF0\x90\x80\x80r"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"ba\xF0\x90\x80\x80"] stringByMatching:@"^" replace:1 withReferenceString:@"foo"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"fooba\xF0\x90\x80\x80"]] == YES), @"String: %@", newString);
+  //
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"\xF0\x90\x80\x80""ar"] stringByMatching:@"^." replace:1 withReferenceString:[NSString stringWithUTF8String:"foo""\xF0\x90\x80\x80"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"foo\xF0\x90\x80\x80""ar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"b\xF0\x90\x80\x80r"] stringByMatching:@"^." replace:1 withReferenceString:@"foob"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"foob\xF0\x90\x80\x80r"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"ba\xF0\x90\x80\x80"] stringByMatching:@"^." replace:1 withReferenceString:@"foob"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"fooba\xF0\x90\x80\x80"]] == YES), @"String: %@", newString);
+  
+
+  
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"bar" stringByMatching:@"^" replace:1 withReferenceString:[NSString stringWithUTF8String:"\xF0\x90\x80\x80oo"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"\xF0\x90\x80\x80oobar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"bar" stringByMatching:@"^" replace:1 withReferenceString:[NSString stringWithUTF8String:"f\xF0\x90\x80\x80o"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"f\xF0\x90\x80\x80obar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"bar" stringByMatching:@"^" replace:1 withReferenceString:[NSString stringWithUTF8String:"fo\xF0\x90\x80\x80"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"fo\xF0\x90\x80\x80""bar"]] == YES), @"String: %@", newString);
+  
+  
+  
+
+  
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"foo" stringByMatching:@"$" replace:1 withReferenceString:@"bar"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:@"foobar"] == YES), @"String: %@", newString);
+
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"\xC6\x92oo"] stringByMatching:@"$" replace:1 withReferenceString:@"bar"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"\xC6\x92oobar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"f\xC3\xB6o"] stringByMatching:@"$" replace:1 withReferenceString:@"bar"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"f\xC3\xB6obar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"fo\xC3\xB6"] stringByMatching:@"$" replace:1 withReferenceString:@"bar"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"fo\xC3\xB6""bar"]] == YES), @"String: %@", newString);
+  //
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"\xC6\x92oo"] stringByMatching:@".$" replace:1 withReferenceString:@"obar"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"\xC6\x92oobar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"f\xC3\xB6o"] stringByMatching:@".$" replace:1 withReferenceString:@"obar"]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"f\xC3\xB6obar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"fo\xC3\xB6"] stringByMatching:@".$" replace:1 withReferenceString:[NSString stringWithUTF8String:"\xC3\xB6""bar"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"fo\xC3\xB6""bar"]] == YES), @"String: %@", newString);
+  
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"foo" stringByMatching:@"$" replace:1 withReferenceString:[NSString stringWithUTF8String:"\xC6\x80""ar"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"foo\xC6\x80""ar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"foo" stringByMatching:@"$" replace:1 withReferenceString:[NSString stringWithUTF8String:"b\xC3\xA4r"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"foob\xC3\xA4r"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"foo" stringByMatching:@"$" replace:1 withReferenceString:[NSString stringWithUTF8String:"ba\xC5\x95"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"fooba\xC5\x95"]] == YES), @"String: %@", newString);
+  //
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"foo" stringByMatching:@".$" replace:1 withReferenceString:[NSString stringWithUTF8String:"o\xC6\x80""ar"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"foo\xC6\x80""ar"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"foo" stringByMatching:@".$" replace:1 withReferenceString:[NSString stringWithUTF8String:"ob\xC3\xA4r"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"foob\xC3\xA4r"]] == YES), @"String: %@", newString);
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [@"foo" stringByMatching:@".$" replace:1 withReferenceString:[NSString stringWithUTF8String:"oba\xC5\x95"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"fooba\xC5\x95"]] == YES), @"String: %@", newString);
+
+  newString = (NSString *)0xdeadbeef;
+  STAssertNoThrow((newString = [[NSString stringWithUTF8String:"fo\xF0\x90\x80\x80"] stringByMatching:@".$" replace:1 withReferenceString:[NSString stringWithUTF8String:"\xF0\x90\x80\x80\xC6\x80""ar"]]), NULL);
+  STAssertNotNil(newString, NULL);
+  STAssertTrue(([newString isEqualToString:[NSString stringWithUTF8String:"fo\xF0\x90\x80\x80\xC6\x80""ar"]] == YES), @"String: %@", newString);
+}
+
 @end

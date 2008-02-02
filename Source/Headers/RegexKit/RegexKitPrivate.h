@@ -156,7 +156,7 @@ const char *RKCharactersFromMatchErrorCode(  const RKMatchErrorCode   decodeErro
 #define NSLocationInRange(loc, r)                     ({ (__typeof__(NSRange.location)) _loc = (loc); NSRange _r = (r); (_lpc - _r.location) < _r.length; })
 #define NSMakeRange(loc, len)                         ((NSRange){(RKUInteger)(loc), (RKUInteger)(len)})
 #define NSMaxRange(r)                                 ({ NSRange _r = (r); _r.location + _r.length; })
-#define RKRangeInsideRange(inside, within)            (((inside.location - within.location) < within.length) && ((NSMaxRange(inside) - within.location) <= within.length))
+#define RKRangeInsideRange(inside, within)            (((inside.location - within.location) <= within.length) && ((NSMaxRange(inside) - within.location) <= within.length))
 
 #define RKYesOrNo(yesOrNo)                            (((yesOrNo) == YES) ? RKLocalizedString(@"Yes"):RKLocalizedString(@"No"))
 
