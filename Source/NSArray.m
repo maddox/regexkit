@@ -40,13 +40,13 @@
 #import <RegexKit/RegexKitPrivate.h>
 
 typedef enum {
-  RKArrayActionIndexOfFirstMatch = 0,
-  RKArrayActionArrayOfMatchingObjects = 1,
-  RKArrayActionCountOfMatchingObjects = 2,
-  RKArrayActionAddMatches = 3,
-  RKArrayActionRemoveMatches = 4,
+  RKArrayActionIndexOfFirstMatch         = 0,
+  RKArrayActionArrayOfMatchingObjects    = 1,
+  RKArrayActionCountOfMatchingObjects    = 2,
+  RKArrayActionAddMatches                = 3,
+  RKArrayActionRemoveMatches             = 4,
   RKArrayActionIndexSetOfMatchingObjects = 5,
-  RKArrayActionArrayMaxAction = 5
+  RKArrayActionArrayMaxAction            = 5
 } RKArrayAction;
 
 static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange *againstRange, id regexObject, const RKArrayAction performAction, RKUInteger *UIntegerResult);
@@ -54,13 +54,13 @@ static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange
 @implementation NSArray (RegexKitAdditions)
 
 static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange *againstRange, id regexObject, const RKArrayAction performAction, RKUInteger *UIntegerResult) {
-  RKUInteger arrayCount = 0, atIndex = 0, matchedCount = 0, matchAgainstArrayCount = 0, *matchedIndexes = NULL, tempUIntegerResult = 23;
-  RKRegex *regex = RKRegexFromStringOrRegex(self, _cmd, regexObject, (RKCompileUTF8 | RKCompileNoUTF8Check), YES);
-  id returnObject = NULL, *arrayObjects = NULL, *matchedObjects = NULL;
-  NSRange matchRange = NSMakeRange(NSNotFound, 0);
+  RKUInteger arrayCount   = 0,     atIndex      = 0,     matchedCount   = 0, matchAgainstArrayCount = 0, *matchedIndexes = NULL, tempUIntegerResult = 23;
+  RKRegex   *regex        = RKRegexFromStringOrRegex(self, _cmd, regexObject, (RKCompileUTF8 | RKCompileNoUTF8Check), YES);
+  id         returnObject = NULL, *arrayObjects = NULL, *matchedObjects = NULL;
+  NSRange    matchRange   = NSMakeRange(NSNotFound, 0);
 
-  if(RK_EXPECTED(self == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"self == NULL."] raise]; }
-  if(RK_EXPECTED(_cmd == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"_cmd == NULL."] raise]; }
+  if(RK_EXPECTED(self              == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"self == NULL."]              raise]; }
+  if(RK_EXPECTED(_cmd              == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"_cmd == NULL."]              raise]; }
   if(RK_EXPECTED(matchAgainstArray == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"matchAgainstArray == NULL."] raise]; }
   if(RK_EXPECTED(performAction > RKArrayActionArrayMaxAction, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"Unknown performAction = %lu.", (unsigned long)performAction] raise]; }
 
@@ -88,7 +88,7 @@ static id RKDoArrayAction(id self, SEL _cmd, id matchAgainstArray, const NSRange
   
   for(atIndex = 0; atIndex < arrayCount; atIndex++) {
     if([arrayObjects[atIndex] isMatchedByRegex:regex] == YES) {
-      if(performAction == RKArrayActionIndexOfFirstMatch)    { tempUIntegerResult = (atIndex + matchRange.location); goto exitNow; }
+      if(performAction == RKArrayActionIndexOfFirstMatch) { tempUIntegerResult = (atIndex + matchRange.location); goto exitNow; }
       matchedIndexes[matchedCount]   = (atIndex + matchRange.location);
       matchedObjects[matchedCount++] = arrayObjects[atIndex];
     }
@@ -111,7 +111,7 @@ doAction:
       for(RKUInteger x = 0; x < matchedCount; x++) { [indexSet addIndex:matchedIndexes[x]]; }
       returnObject = [[NSIndexSet alloc] initWithIndexSet:indexSet];
       RKRelease(indexSet);
-      }
+    }
       break;
     default: returnObject = NULL; NSCAssert1(1 == 0, @"Unknown RKArrayAction in switch block, performAction = %lu", (unsigned long)performAction);             break;
   }

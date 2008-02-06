@@ -62,33 +62,6 @@ typedef struct _RKStringBuffer {
 
 #define RKMakeStringBuffer(bufferString, stringBufferCharacters, stringBufferLength, stringBufferEncoding) ((RKStringBuffer){bufferString, stringBufferCharacters, stringBufferLength, stringBufferEncoding})
 
-
-RKREGEX_STATIC_INLINE char *RKGetUTF8String(NSString *string, char *temporaryBuffer, size_t length) RK_ATTRIBUTES(nonnull(1, 2), pure);
-
-#ifdef    USE_CORE_FOUNDATION
-RKREGEX_STATIC_INLINE char *RKGetUTF8String(NSString *string, char *temporaryBuffer, size_t length) {
-  NSCParameterAssert(string != NULL); NSCParameterAssert(temporaryBuffer != NULL); NSCParameterAssert(length > 0);
-  CFIndex copiedLength = 0;
-  
-  if(RK_EXPECTED(string != NULL, 1)) {
-    //char *fastBuffer = (char *)CFStringGetCStringPtr((CFStringRef)string, kCFStringEncodingUTF8);
-    //if(fastBuffer != NULL) { return(fastBuffer); }
-    copiedLength = CFStringGetBytes((CFStringRef)string, (CFRange){0, CFStringGetLength((CFStringRef)string)}, kCFStringEncodingUTF8, '?', false, (UInt8 *)temporaryBuffer, (CFIndex)(length - 1), NULL);
-  }
-  temporaryBuffer[copiedLength] = 0;
-  
-  return(temporaryBuffer);
-}
-#else
-RKREGEX_STATIC_INLINE char *RKGetUTF8String(NSString *string, char *temporaryBuffer, size_t length) {
-  NSCParameterAssert(string != NULL); NSCParameterAssert(temporaryBuffer != NULL); NSCParameterAssert(length > 0);
-  temporaryBuffer[0] = 0;
-  [string getCString:temporaryBuffer maxLength:(RKUInteger)length encoding:NSUTF8StringEncoding];
-  
-  return(temporaryBuffer);
-}
-#endif // USE_CORE_FOUNDATION
-
 RKREGEX_STATIC_INLINE RKStringBuffer RKStringBufferWithString(NSString * const string) RK_ATTRIBUTES(nonnull(1), const);
 
 RKREGEX_STATIC_INLINE RKStringBuffer RKStringBufferWithString(NSString * const RK_C99(restrict) string) {
@@ -207,17 +180,11 @@ typedef struct copyInstructionsBuffer      RKCopyInstructionsBuffer;
 
 /*************** End match and replace operations ***************/
 
-#define RKutf16to8(a,b) RKConvertUTF16ToUTF8RangeForString(a, b)
-#define RKutf8to16(a,b) RKConvertUTF8ToUTF16RangeForString(a, b)
-
-// In NSString.m
-unsigned char RKLengthOfUTF8Character(const unsigned char *p)  RK_ATTRIBUTES(nonnull, pure, used, visibility("hidden"));
-NSRange       RKConvertUTF8ToUTF16RangeForStringBuffer(RKStringBuffer *stringBuffer, NSRange utf8Range);
-NSRange       RKConvertUTF16ToUTF8RangeForStringBuffer(RKStringBuffer *stringBuffer, NSRange utf16Range);
-NSRange       RKRangeForUTF8CharacterAtLocation(RKStringBuffer *stringBuffer, RKUInteger utf8Location);
 
 NSString     *RKStringFromReferenceString(id self, const SEL _cmd, RKRegex * const RK_C99(restrict) regex, RK_STRONG_REF const NSRange * const RK_C99(restrict) matchRanges, RK_STRONG_REF const RKStringBuffer * const RK_C99(restrict) matchStringBuffer, RK_STRONG_REF const RKStringBuffer * const RK_C99(restrict) referenceStringBuffer) RK_ATTRIBUTES(malloc, used, visibility("hidden"));
+NSString     *RKStringFromReferenceStringX(id self, const SEL _cmd, RKRegex * const RK_C99(restrict) regex, RK_STRONG_REF const NSRange * const RK_C99(restrict) matchRanges, RK_STRONG_REF const RKStringBuffer * const RK_C99(restrict) matchStringBuffer, RK_STRONG_REF const RKStringBuffer * const RK_C99(restrict) referenceStringBuffer, NSError **error) RK_ATTRIBUTES(malloc, used, visibility("hidden"));
 BOOL          RKExtractCapturesFromMatchesWithKeyArguments(id self, const SEL _cmd, RK_STRONG_REF const RKStringBuffer * const RK_C99(restrict) stringBuffer, RKRegex * const RK_C99(restrict) regex, RK_STRONG_REF const NSRange * const RK_C99(restrict) matchRanges, const RKCaptureExtractOptions captureExtractOptions, NSString * const firstKey, va_list useVarArgsList) RK_ATTRIBUTES(used, visibility("hidden"));
+BOOL          RKExtractCapturesFromMatchesWithKeyArgumentsX(id self, const SEL _cmd, RK_STRONG_REF const RKStringBuffer * const RK_C99(restrict) stringBuffer, RKRegex * const RK_C99(restrict) regex, RK_STRONG_REF const NSRange * const RK_C99(restrict) matchRanges, const RKCaptureExtractOptions captureExtractOptions, NSString * const firstKey, va_list useVarArgsList, NSError **error) RK_ATTRIBUTES(used, visibility("hidden"));
 
 #endif _REGEXKIT_NSSTRINGPRIVATE_H_
   

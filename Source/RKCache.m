@@ -204,9 +204,9 @@ const char *cacheUTF8String(RKCache *self) {
 
 - (BOOL)clearCache
 {
-  RK_STRONG_REF NSMapTable * RK_C99(restrict) newMapTable = NULL, * RK_C99(restrict) oldMapTable = NULL;
+  NSMapTable RK_STRONG_REF * RK_C99(restrict) newMapTable = NULL, RK_STRONG_REF * RK_C99(restrict) oldMapTable = NULL;
   RKUInteger cacheHitsCopy = 0, cacheMissesCopy = 0, cacheClearedCountCopy = 0;
-  BOOL didClearCache = NO;
+  BOOL       didClearCache = NO;
   
 #ifdef ENABLE_MACOSX_GARBAGE_COLLECTION
   if(RK_EXPECTED(RKRegexGarbageCollect == 1, 0)) { if(RK_EXPECTED((newMapTable = [[objc_getClass("NSMapTable") alloc] initWithKeyPointerFunctions:RKCacheIntegerKeyPointerFunctions valuePointerFunctions:RKCacheObjectValuePointerFunctions capacity:256]) == NULL, 0)) { goto exitNow; } } else
@@ -268,9 +268,9 @@ exitNow:
 id RKFastCacheLookup(RKCache * const self, const SEL _cmd RK_ATTRIBUTES(unused), const RKUInteger objectHash, NSString * const objectString, const BOOL shouldAutorelease) {
   if(RK_EXPECTED(self == NULL, 0)) { return(NULL); }
 
-  BOOL endCacheLookupProbeEnabled = RK_PROBE_ENABLED(ENDCACHELOOKUP);
-  RK_STRONG_REF id returnObject = NULL;
-  RKUInteger currentCount = 0;
+  BOOL       endCacheLookupProbeEnabled = RK_PROBE_ENABLED(ENDCACHELOOKUP);
+  id         returnObject               = NULL;
+  RKUInteger currentCount               = 0;
 #ifdef    ENABLE_DTRACE_INSTRUMENTATION
   char objectBuffer[1024];
 #else
@@ -300,7 +300,6 @@ id RKFastCacheLookup(RKCache * const self, const SEL _cmd RK_ATTRIBUTES(unused),
     { currentCount = NSCountMapTable(self->cacheMapTable); }
   }
 
-
   // ^^^^^^^^^^^^^ END LOCK CRITICAL PATH ^^^^^^^^^^^^^
   RKFastReadWriteUnlock(self->cacheRWLock);
   
@@ -323,8 +322,8 @@ exitNow:
   BOOL didCache = NO;
   if(RK_EXPECTED(object == NULL, 0)) { goto exitNow; }
 
-  BOOL endCacheAddProbeEnabled = RK_PROBE_ENABLED(ENDCACHEADD); 
-  RKUInteger currentCount = 0;
+  BOOL       endCacheAddProbeEnabled = RK_PROBE_ENABLED(ENDCACHEADD); 
+  RKUInteger currentCount            = 0;
   
   RK_PROBE(BEGINCACHEADD, self, (char *)cacheUTF8String(self), object, objectHash, (char *)regexUTF8String(object), cacheIsEnabled);
   

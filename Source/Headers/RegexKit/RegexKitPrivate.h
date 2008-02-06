@@ -62,9 +62,6 @@ extern "C" {
  Compile unit global variables should /NOT/ be defined here.
 */
 
-// Switches between #defines vs. RKREGEX_STATIC_INLINE functions for some things
-#define _USE_DEFINES
-
 #import <objc/objc.h>
 #import <objc/objc-api.h>
 
@@ -117,38 +114,35 @@ extern "C" {
 
 
 // In RKRegex.m
-//RKRegex *RKRegexFromStringOrRegex(id self, const SEL _cmd, id aRegex, const RKCompileOption compileOptions, const BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3), pure, used, visibility("hidden"));
-RKRegex *RKRegexFromStringOrRegexWithError(id self, const SEL _cmd, id aRegex, NSString * const RK_C99(restrict)libraryString, const RKCompileOption compileOptions, NSError **error, const BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3, 4), used, visibility("hidden"));
-RKRegex *RKRegexFromStringOrRegex(id self, SEL _cmd, id aRegex, RKCompileOption compileOptions, BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3), used, visibility("hidden"));
-//RKRegex *RKRegexFromStringOrRegexWithError(id self, SEL _cmd, id aRegex, NSString *libraryString, RKCompileOption compileOptions, NSError **error, BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3, 4), pure, used, visibility("hidden"));
-
-NSException *RKExceptionFromInitFailureForOlderAPI(id self, const SEL _cmd, NSError *initError) RK_ATTRIBUTES(used, visibility("hidden"), nonnull);
-NSError *RKErrorForCompileInitFailure(id self, const SEL _cmd, RKStringBuffer *regexStringBuffer, RKUInteger errorOffset, RKCompileErrorCode compileErrorCode, RKCompileOption compileOption, RKUInteger abreviatedPadding) RK_ATTRIBUTES(nonnull(3), used, visibility("hidden"));
-const char *regexUTF8String(RKRegex *self) RK_ATTRIBUTES(used, visibility("hidden"), nonnull(1));
-RKUInteger RKCaptureIndexForCaptureNameCharacters(RKRegex * const aRegex, const SEL _cmd, const char * const RK_C99(restrict) captureNameCharacters, const RKUInteger length, const NSRange * const RK_C99(restrict) matchedRanges, const BOOL raiseExceptionOnDoesNotExist) RK_ATTRIBUTES(used, visibility("hidden"));
-RKUInteger RKCaptureIndexForCaptureNameCharactersWithError(RKRegex * const aRegex, const SEL _cmd, const char * const RK_C99(restrict) captureNameCharacters, const RKUInteger length, const NSRange * const RK_C99(restrict) matchedRanges, NSError **error);
+RKRegex     * RKRegexFromStringOrRegexWithError(id self, const SEL _cmd, id aRegex, NSString * const RK_C99(restrict)libraryString, const RKCompileOption compileOptions, NSError **error, const BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3, 4), used, visibility("hidden"));
+RKRegex     * RKRegexFromStringOrRegex(id self, SEL _cmd, id aRegex, RKCompileOption compileOptions, BOOL shouldAutorelease) RK_ATTRIBUTES(nonnull(3), used, visibility("hidden"));
+NSException * RKExceptionFromInitFailureForOlderAPI(id self, const SEL _cmd, NSError *initError) RK_ATTRIBUTES(used, visibility("hidden"), nonnull);
+NSError     * RKErrorForCompileInitFailure(id self, const SEL _cmd, RKStringBuffer *regexStringBuffer, RKUInteger errorOffset, RKCompileErrorCode compileErrorCode, RKCompileOption compileOption, RKUInteger abreviatedPadding) RK_ATTRIBUTES(nonnull(3), used, visibility("hidden"));
+const char  * regexUTF8String(RKRegex *self) RK_ATTRIBUTES(used, visibility("hidden"), nonnull(1));
+RKUInteger    RKCaptureIndexForCaptureNameCharacters(RKRegex * const aRegex, const SEL _cmd, const char * const RK_C99(restrict) captureNameCharacters, const RKUInteger length, const NSRange * const RK_C99(restrict) matchedRanges, const BOOL raiseExceptionOnDoesNotExist) RK_ATTRIBUTES(used, visibility("hidden"));
+RKUInteger    RKCaptureIndexForCaptureNameCharactersWithError(RKRegex * const aRegex, const SEL _cmd, const char * const RK_C99(restrict) captureNameCharacters, const RKUInteger length, const NSRange * const RK_C99(restrict) matchedRanges, NSError **error);
 
 @interface RKRegex (Private)
-- (RKMatchErrorCode)getRanges:(NSRange * const RK_C99(restrict))ranges count:(const RKUInteger)rangeCount withCharacters:(const void * const RK_C99(restrict))charactersBuffer length:(const RKUInteger)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options;
+- (RKMatchErrorCode)getRanges:(NSRange * const RK_C99(restrict))ranges count:(const RKUInteger)rangeCount withCharacters:(const void * const RK_C99(restrict))charactersBuffer length:(const RKUInteger)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options error:(NSError **)error;
 @end
 
 
 // In RKCache.m
-id RKFastCacheLookup(RKCache * const self, const SEL _cmd RK_ATTRIBUTES(unused), const RKUInteger objectHash, NSString * const objectDescription, const BOOL shouldAutorelease) RK_ATTRIBUTES(used, visibility("hidden"), nonnull(1));
-const char *cacheUTF8String(RKCache *self) RK_ATTRIBUTES(used, visibility("hidden"), nonnull(1));
+id           RKFastCacheLookup(RKCache * const self, const SEL _cmd RK_ATTRIBUTES(unused), const RKUInteger objectHash, NSString * const objectDescription, const BOOL shouldAutorelease) RK_ATTRIBUTES(used, visibility("hidden"), nonnull(1));
+const char * cacheUTF8String(RKCache *self) RK_ATTRIBUTES(used, visibility("hidden"), nonnull(1));
 
 
 // In RKPrivate.m
-void      nsprintf( NSString * const formatString, ...)                                                           RK_ATTRIBUTES(visibility("hidden"));
-void      vnsprintf(NSString * const formatString, va_list ap)                                                    RK_ATTRIBUTES(visibility("hidden"));
-int       RKRegexPCRECallout(pcre_callout_block * const callout_block)                                            RK_ATTRIBUTES(visibility("hidden"), used);
-NSArray  *RKArrayOfPrettyNewlineTypes(NSString * const prefixString)                                              RK_ATTRIBUTES(visibility("hidden"), used);
-NSString *RKPrettyObjectMethodStringFunction( id self, SEL _cmd, NSString * const formatString, ...)              RK_ATTRIBUTES(visibility("hidden"), used);
-NSString *RKVPrettyObjectMethodStringFunction(id self, SEL _cmd, NSString * const formatString, va_list argList)  RK_ATTRIBUTES(visibility("hidden"), used);
+void       nsprintf( NSString * const formatString, ...)                                                           RK_ATTRIBUTES(visibility("hidden"));
+void       vnsprintf(NSString * const formatString, va_list ap)                                                    RK_ATTRIBUTES(visibility("hidden"));
+int        RKRegexPCRECallout(pcre_callout_block * const callout_block)                                            RK_ATTRIBUTES(visibility("hidden"), used);
+NSArray  * RKArrayOfPrettyNewlineTypes(NSString * const prefixString)                                              RK_ATTRIBUTES(visibility("hidden"), used);
+NSString * RKPrettyObjectMethodStringFunction( id self, SEL _cmd, NSString * const formatString, ...)              RK_ATTRIBUTES(visibility("hidden"), used);
+NSString * RKVPrettyObjectMethodStringFunction(id self, SEL _cmd, NSString * const formatString, va_list argList)  RK_ATTRIBUTES(visibility("hidden"), used);
 
 // In RKUtility.m
-const char *RKCharactersFromCompileErrorCode(const RKCompileErrorCode decodeErrorCode);
-const char *RKCharactersFromMatchErrorCode(  const RKMatchErrorCode   decodeErrorCode);
+const char * RKCharactersFromCompileErrorCode(const RKCompileErrorCode decodeErrorCode);
+const char * RKCharactersFromMatchErrorCode(  const RKMatchErrorCode   decodeErrorCode);
 
 
 // NSRange related macros
@@ -174,6 +168,7 @@ const char *RKCharactersFromMatchErrorCode(  const RKMatchErrorCode   decodeErro
 #import <RegexKit/RKCoder.h>
 #import <RegexKit/RKSortedRegexCollection.h>
 #import <RegexKit/RKThreadPool.h>
+#import <RegexKit/RKUnicode.h>
 
 #endif // _REGEXKIT_REGEXKITPRIVATE_H_
 

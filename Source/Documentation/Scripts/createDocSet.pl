@@ -478,7 +478,14 @@ sub typedef_token {
     
     $token .= common_token($sp, {apple_ref => $apple_ref{$row->{'name'}}, hdcid => $hdcid, declaration => $row->{'name'}, header => $hid, addRefID => $name, abstract => $tags->{'abstract'}, avail => $avail, anchor => $apple_ref{$row->{'name'}}});
     
-    for my $e (@enums) { my $xref = $global_xtoc_cache{'xhdcid'}->{$row->{'hdcid'}}; my $avail = $global_xtoc_cache{'avail'}->{$xref->{'tbl'}}[$xref->{'id'}]; my $id = $e->{'identifier'}; my $ar = $apple_ref{$id}; $token .= common_token($sp, {apple_ref => $ar, declaration => $id, header => $hid, addRefID => $name, abstract => $e->{'tagText'}, avail => $avail, anchor => $ar}); }
+    for my $e (@enums) {
+      my $id = $e->{'identifier'};
+      my $ar = $apple_ref{$id};
+      my $xref = $global_xtoc_cache{'xref'}->{$id};
+      my $avail = $global_xtoc_cache{'avail'}->{$xref->{'tbl'}}[$xref->{'id'}];
+      $token .= common_token($sp, {apple_ref => $ar, declaration => $id, header => $hid, addRefID => $name, abstract => $e->{'tagText'}, avail => $avail, anchor => $ar});
+    }
+    
     return($token);
   }
 }  

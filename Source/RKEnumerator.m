@@ -53,6 +53,11 @@
   return(RKAutorelease([[RKEnumerator alloc] initWithRegex:aRegex string:string inRange:NSMakeRange(0, [string length])]));
 }
 
++ (id)enumeratorWithRegex:(id)aRegex string:(NSString * const)string error:(NSError **)error;
+{
+  return(RKAutorelease([[RKEnumerator alloc] initWithRegex:aRegex string:string inRange:NSMakeRange(0, [string length]) error:error]));
+}
+
 + (id)enumeratorWithRegex:(id)aRegex string:(NSString * const)string inRange:(const NSRange)range;
 {
   return(RKAutorelease([[RKEnumerator alloc] initWithRegex:aRegex string:string inRange:range]));
@@ -66,6 +71,11 @@
 - (id)initWithRegex:(id)initRegex string:(NSString * const)initString
 {
   return([self initWithRegex:initRegex string:initString inRange:NSMakeRange(0, [initString length])]);
+}
+
+- (id)initWithRegex:(id)initRegex string:(NSString * const)initString error:(NSError **)error
+{
+  return([self initWithRegex:initRegex string:initString inRange:NSMakeRange(0, [initString length]) error:error]);
 }
 
 - (id)initWithRegex:(id)initRegex string:(NSString * const)initString inRange:(const NSRange)initRange
@@ -94,7 +104,7 @@
   
   string = RKRetain(initString);
 
-  RK_STRONG_REF RKStringBuffer stringBuffer = RKStringBufferWithString(string);
+  RKStringBuffer stringBuffer = RKStringBufferWithString(string);
   searchUTF16Range  = initRange;
   searchByteRange   = RKutf16to8(string, initRange);
   atBufferLocation  = searchByteRange.location;
@@ -164,7 +174,7 @@ errorExit:
 {
   if(RK_EXPECTED(atBufferLocation == NSNotFound, 0)) { return(NSMakeRange(NSNotFound, 0)); }
   if(RK_EXPECTED(hasPerformedMatch == 0, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"A 'next...' method must be invoked before information about the current match is available."] raise]; }
-  if(RK_EXPECTED(capture >= regexCaptureCount, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"The capture number %@ is greater than the %@ capture%s in the regular expression.", [NSNumber numberWithUnsignedLong:(unsigned long)capture], [NSNumber numberWithUnsignedLong:(unsigned long)(regexCaptureCount + 1)], (regexCaptureCount + 1) > 1 ? "s":""] raise]; }
+  if(RK_EXPECTED(capture >= regexCaptureCount, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"The capture number %lu is greater than the %lu capture%s in the regular expression.", (unsigned long)capture, (unsigned long)(regexCaptureCount + 1), (regexCaptureCount + 1) > 1 ? "s":""] raise]; }
   
   return(resultUTF16Ranges[capture]);
 }
@@ -186,11 +196,11 @@ errorExit:
   if(RK_EXPECTED(atBufferLocation == NSNotFound, 0)) { return(NSMakeRange(NSNotFound, 0)); }
   NSError *enumeratorError = NULL; NSRange range = NSMakeRange(NSNotFound, 0);
   if(RK_EXPECTED(hasPerformedMatch == 0, 0)) { enumeratorError = [NSError rkErrorWithCode:0 localizeDescription:@"A 'next...' method must be invoked before information about the current match is available."]; goto exitNow; } 
-  RKUInteger captureIndex = [regex captureIndexForCaptureName:captureNameString inMatchedRanges:resultUTF8Ranges error:error];
+  RKUInteger captureIndex = [regex captureIndexForCaptureName:captureNameString inMatchedRanges:resultUTF8Ranges error:&enumeratorError];
   if(RK_EXPECTED(error == NULL, 1)) { range = resultUTF16Ranges[captureIndex]; }
   
 exitNow:
-  if(RK_EXPECTED(enumeratorError != NULL, 0) && (error != NULL)) { *error = enumeratorError; }
+  if(error != NULL) { *error = enumeratorError; }
   return(range);
 }
 
@@ -207,11 +217,10 @@ exitNow:
 - (id)nextObject
 {
   if((RK_EXPECTED(atBufferLocation == NSNotFound, 0)) || (RK_EXPECTED([self _updateToNextMatch] == NO, 0))) { return(NULL); }
-  RK_STRONG_REF NSValue **rangeValues = NULL;
-  RKUInteger x;
+  NSValue **rangeValues = NULL;
   
   if(RK_EXPECTED((rangeValues = alloca(regexCaptureCount * sizeof(NSValue *))) == NULL, 0)) { return(NULL); }
-  for(x = 0; x < regexCaptureCount; x++) { rangeValues[x] = [NSValue valueWithRange:resultUTF16Ranges[x]]; }
+  for(RKUInteger x = 0; x < regexCaptureCount; x++) { rangeValues[x] = [NSValue valueWithRange:resultUTF16Ranges[x]]; }
   return([NSArray arrayWithObjects:rangeValues count:regexCaptureCount]);
 }
 
@@ -225,7 +234,7 @@ exitNow:
 - (NSRange)nextRangeForCapture:(RKUInteger)capture
 {
   if(RK_EXPECTED(atBufferLocation == NSNotFound, 0)) { return(NSMakeRange(NSNotFound, 0)); }
-  if(RK_EXPECTED(capture >= regexCaptureCount, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"The capture number %@ is greater than the %@ capture%s in the regular expression.", [NSNumber numberWithUnsignedLong:(unsigned long)capture], [NSNumber numberWithUnsignedLong:(unsigned long)(regexCaptureCount + 1)], (regexCaptureCount + 1) > 1 ? "s":""] raise]; }
+  if(RK_EXPECTED(capture >= regexCaptureCount, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"The capture number %lu is greater than the %lu capture%s in the regular expression.", (unsigned long)capture, (unsigned long)(regexCaptureCount + 1), (regexCaptureCount + 1) > 1 ? "s":""] raise]; }
   [self _updateToNextMatch];
   return([self currentRangeForCapture:capture]);
 }
@@ -256,6 +265,15 @@ exitNow:
   return(RKExtractCapturesFromMatchesWithKeyArguments(self, _cmd, (const RKStringBuffer *)&stringBuffer, regex, resultUTF8Ranges, (RKCaptureExtractAllowConversions | RKCaptureExtractStrictReference), firstReference, varArgsList));
 }
 
+- (BOOL)getCapturesError:(NSError **)error references:(NSString * const)firstReference, ...
+{
+  if(RK_EXPECTED(firstReference == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"firstReference == NULL."] raise]; } 
+  if(RK_EXPECTED(atBufferLocation == NSNotFound, 0)) { return(NO); }
+  va_list varArgsList; va_start(varArgsList, firstReference);
+  RKStringBuffer stringBuffer = RKStringBufferWithString(string);
+  return(RKExtractCapturesFromMatchesWithKeyArgumentsX(self, _cmd, (const RKStringBuffer *)&stringBuffer, regex, resultUTF8Ranges, (RKCaptureExtractAllowConversions | RKCaptureExtractStrictReference), firstReference, varArgsList, error));
+}
+
 
 - (NSString *)stringWithReferenceString:(NSString * const)referenceString
 {
@@ -266,6 +284,15 @@ exitNow:
   return(RKStringFromReferenceString(self, _cmd, regex, resultUTF8Ranges, &stringBuffer, &referenceStringBuffer));
 }
 
+- (NSString *)stringWithReferenceString:(NSString * const)referenceString error:(NSError **)error
+{
+  if(RK_EXPECTED(referenceString == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"referenceString == NULL."] raise]; } 
+  if(RK_EXPECTED(atBufferLocation == NSNotFound, 0)) { return(NULL); }
+  RKStringBuffer stringBuffer          = RKStringBufferWithString(string);
+  RKStringBuffer referenceStringBuffer = RKStringBufferWithString(referenceString);
+  return(RKStringFromReferenceStringX(self, _cmd, regex, resultUTF8Ranges, &stringBuffer, &referenceStringBuffer, error));
+}
+
 
 - (NSString *)stringWithReferenceFormat:(NSString * const)referenceFormatString, ...
 {
@@ -274,6 +301,7 @@ exitNow:
   va_list argList; va_start(argList, referenceFormatString);
   return([self stringWithReferenceFormat:referenceFormatString arguments:argList]);
 }
+//- (NSString *)stringByMatching:(id)aRegex error:(NSError **)error withReferenceFormat:(NSString * const)referenceFormatString, ...;
 
 - (NSString *)stringWithReferenceFormat:(NSString * const)referenceFormatString arguments:(va_list)argList
 {
@@ -283,6 +311,7 @@ exitNow:
   RKStringBuffer referenceFormatStringBuffer = RKStringBufferWithString(RKAutorelease([[NSString alloc] initWithFormat:referenceFormatString arguments:argList]));
   return(RKStringFromReferenceString(self, _cmd, regex, resultUTF8Ranges, &stringBuffer, &referenceFormatStringBuffer));
 }
+//- (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range error:(NSError **)error withReferenceFormat:(NSString * const)referenceFormatString arguments:(va_list)argList;
 
 @end
 

@@ -40,12 +40,12 @@
 #import <RegexKit/RegexKitPrivate.h>
 
 typedef enum {
-  RKSetActionObjectOfFirstMatch = 0,
-  RKSetActionSetOfMatchingObjects = 1,
+  RKSetActionObjectOfFirstMatch     = 0,
+  RKSetActionSetOfMatchingObjects   = 1,
   RKSetActionCountOfMatchingObjects = 2,
-  RKSetActionAddMatches = 3,
-  RKSetActionRemoveMatches = 4,
-  RKSetActionSetMaxAction = 4
+  RKSetActionAddMatches             = 3,
+  RKSetActionRemoveMatches          = 4,
+  RKSetActionSetMaxAction           = 4
 } RKSetAction;
 
 static id RKDoSetAction(id self, SEL _cmd, id matchAgainstSet, id regexObject, const RKSetAction performAction, RKUInteger *UIntegerResult);
@@ -53,12 +53,12 @@ static id RKDoSetAction(id self, SEL _cmd, id matchAgainstSet, id regexObject, c
 @implementation NSSet (RegexKitAdditions)
 
 static id RKDoSetAction(id self, SEL _cmd, id matchAgainstSet, id regexObject, const RKSetAction performAction, RKUInteger *UIntegerResult) {
-  RKRegex *regex = RKRegexFromStringOrRegex(self, _cmd, regexObject, (RKCompileUTF8 | RKCompileNoUTF8Check), YES);
-  id returnObject = NULL, *setObjects = NULL, *matchedObjects = NULL;
-  RKUInteger setCount = 0, atIndex = 0, matchedCount = 0, tempUIntegerResult = 0;
+  RKRegex    *regex        = RKRegexFromStringOrRegex(self, _cmd, regexObject, (RKCompileUTF8 | RKCompileNoUTF8Check), YES);
+  RKUInteger  setCount     = 0,     atIndex    = 0,     matchedCount   = 0, tempUIntegerResult = 0;
+  id          returnObject = NULL, *setObjects = NULL, *matchedObjects = NULL;
   
-  if(RK_EXPECTED(self == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"self == NULL."] raise]; }
-  if(RK_EXPECTED(_cmd == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"_cmd == NULL."] raise]; }
+  if(RK_EXPECTED(self            == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"self == NULL."]            raise]; }
+  if(RK_EXPECTED(_cmd            == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"_cmd == NULL."]            raise]; }
   if(RK_EXPECTED(matchAgainstSet == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"matchAgainstSet == NULL."] raise]; }
   if(RK_EXPECTED(performAction > RKSetActionSetMaxAction, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"Unknown performAction = %lu.", (unsigned long)performAction] raise]; }
   
@@ -67,7 +67,7 @@ static id RKDoSetAction(id self, SEL _cmd, id matchAgainstSet, id regexObject, c
 #ifdef USE_CORE_FOUNDATION
   if((setCount = (RKUInteger)CFSetGetCount((CFSetRef)matchAgainstSet)) == 0) { goto doAction; }
 #else
-  if((setCount = [matchAgainstSet count]) == 0) { goto doAction; }
+  if((setCount = [matchAgainstSet count])                              == 0) { goto doAction; }
 #endif
   
   if(RK_EXPECTED((setObjects     = alloca(sizeof(id *) * setCount)) == NULL, 0)) { goto exitNow; }
@@ -95,11 +95,11 @@ doAction:
 #ifdef USE_CORE_FOUNDATION
     case RKSetActionSetOfMatchingObjects:   returnObject = (id)RKMakeCollectable(CFSetCreate(kCFAllocatorDefault, (const void **)(&matchedObjects[0]), (CFIndex)matchedCount, &kCFTypeSetCallBacks)); break;
 #else
-    case RKSetActionSetOfMatchingObjects:   returnObject = [[NSSet alloc] initWithObjects:&matchedObjects[0] count:matchedCount]; break;
+    case RKSetActionSetOfMatchingObjects:   returnObject = [[NSSet alloc] initWithObjects:&matchedObjects[0] count:matchedCount];                 break;
 #endif // USE_CORE_FOUNDATION
     case RKSetActionAddMatches:             for(RKUInteger x = 0; x < matchedCount; x++) { [self addObject:matchedObjects[x]];    } goto exitNow; break;
     case RKSetActionRemoveMatches:          for(RKUInteger x = 0; x < matchedCount; x++) { [self removeObject:matchedObjects[x]]; } goto exitNow; break;
-    default: returnObject = NULL; NSCAssert1(1 == 0, @"Unknown RKSetAction in switch block, performAction = %lu", (unsigned long)performAction); break;
+    default: returnObject = NULL; NSCAssert1(1 == 0, @"Unknown RKSetAction in switch block, performAction = %lu", (unsigned long)performAction);  break;
   }
 
   RKAutorelease(returnObject);

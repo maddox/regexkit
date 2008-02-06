@@ -434,4 +434,68 @@ INSERT INTO t_intro (xref) VALUES ('RKRegexStringErrorRangeErrorKey');
 INSERT OR REPLACE INTO versionCrossRef (ivid, bitSize, tbl, id) SELECT DISTINCT v.vid, 32, tx.tbl, tx.id FROM t_intro AS ti JOIN t_xtoc AS tx ON tx.xref = ti.xref, version AS v WHERE (v.major = 0 AND v.minor = 6 AND v.point = 0);
 INSERT OR REPLACE INTO versionCrossRef (ivid, bitSize, tbl, id) SELECT DISTINCT v.vid, 64, tx.tbl, tx.id FROM t_intro AS ti JOIN t_xtoc AS tx ON tx.xref = ti.xref, version AS v WHERE (v.major = 0 AND v.minor = 6 AND v.point = 0);
 
+
+--
+--
+--                0.6.1
+--
+--
+
+DELETE FROM t_intro;
+
+
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-getCapturesWithRegex:error:references:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-getCapturesWithRegex:inRange:error:references:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-getCapturesWithRegex:inRange:error:arguments:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-rangesOfRegex:error:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-rangesOfRegex:inRange:error:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-rangeOfRegex:error:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-rangeOfRegex:inRange:capture:error:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-isMatchedByRegex:error:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-isMatchedByRegex:inRange:error:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-matchEnumeratorWithRegex:error:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-matchEnumeratorWithRegex:inRange:error:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-stringByMatching:withReferenceString:error:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-stringByMatching:inRange:withReferenceString:error:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-stringByMatching:error:withReferenceFormat:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-stringByMatching:inRange:error:withReferenceFormat:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-stringByMatching:inRange:error:withReferenceFormat:arguments:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-stringByMatching:replace:withReferenceString:error:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-stringByMatching:inRange:replace:withReferenceString:error:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-stringByMatching:replace:error:withReferenceFormat:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-stringByMatching:inRange:replace:error:withReferenceFormat:');
+INSERT INTO t_intro (xref) VALUES ('NSString(RegexKitAdditions)/-stringByMatching:inRange:replace:error:withReferenceFormat:arguments:');
+
+INSERT INTO t_intro (xref) VALUES ('NSMutableString(RegexKitAdditions)/-match:replace:withString:error:');
+INSERT INTO t_intro (xref) VALUES ('NSMutableString(RegexKitAdditions)/-match:inRange:replace:withString:error:');
+INSERT INTO t_intro (xref) VALUES ('NSMutableString(RegexKitAdditions)/-match:inRange:replace:error:withFormat:');
+INSERT INTO t_intro (xref) VALUES ('NSMutableString(RegexKitAdditions)/-match:inRange:replace:error:withFormat:arguments:');
+
+INSERT INTO t_intro (xref) VALUES ('RKEnumerator/+enumeratorWithRegex:string:error:');
+INSERT INTO t_intro (xref) VALUES ('RKEnumerator/-initWithRegex:string:error:');
+INSERT INTO t_intro (xref) VALUES ('RKEnumerator/-getCapturesError:references:');
+INSERT INTO t_intro (xref) VALUES ('RKEnumerator/-stringWithReferenceString:error:');
+
+
+INSERT INTO t_intro (xref) VALUES ('RKRegexErrorKey');
+INSERT INTO t_intro (xref) VALUES ('RKRegexCaptureReferenceStringErrorKey');
+INSERT INTO t_intro (xref) VALUES ('RKRegexCaptureStringErrorKey');
+INSERT INTO t_intro (xref) VALUES ('RKRegexConversionStringErrorKey');
+INSERT INTO t_intro (xref) VALUES ('RKRegexReferenceStringErrorKey');
+INSERT INTO t_intro (xref) VALUES ('RKRegexCaptureReferenceRangeErrorKey');
+INSERT INTO t_intro (xref) VALUES ('RKRegexCaptureRangeErrorKey');
+INSERT INTO t_intro (xref) VALUES ('RKRegexConversionRangeErrorKey');
+INSERT INTO t_intro (xref) VALUES ('RKRegexReferenceRangeErrorKey');
+INSERT INTO t_intro (xref) VALUES ('RKRegexCaptureIndexErrorKey');
+
+INSERT INTO t_intro (xref) VALUES ('RKCompileErrorCode/RKCompileErrorVERBWithAnArgumentIsNotSupported');
+INSERT INTO t_intro (xref) VALUES ('RKCompileErrorCode/RKCompileErrorVERBNotRecognized');
+INSERT INTO t_intro (xref) VALUES ('RKCompileErrorCode/RKCompileErrorNumberIsTooBig');
+INSERT INTO t_intro (xref) VALUES ('RKCompileErrorCode/RKCompileErrorSubpatternNameExpected');
+INSERT INTO t_intro (xref) VALUES ('RKCompileErrorCode/RKCompileErrorDigitExpectedAfterRelativeSubpattern');
+
+
+INSERT OR REPLACE INTO versionCrossRef (ivid, bitSize, tbl, id) SELECT DISTINCT v.vid, 32, tx.tbl, tx.id FROM t_intro AS ti JOIN t_xtoc AS tx ON tx.xref = ti.xref, version AS v WHERE (v.major = 0 AND v.minor = 6 AND v.point = 1);
+INSERT OR REPLACE INTO versionCrossRef (ivid, bitSize, tbl, id) SELECT DISTINCT v.vid, 64, tx.tbl, tx.id FROM t_intro AS ti JOIN t_xtoc AS tx ON tx.xref = ti.xref, version AS v WHERE (v.major = 0 AND v.minor = 6 AND v.point = 1);
+
 COMMIT;

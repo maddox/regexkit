@@ -16,7 +16,7 @@ INSERT INTO version (major, minor, point) VALUES (0, 3, 0);
 INSERT INTO version (major, minor, point) VALUES (0, 4, 0);
 INSERT INTO version (major, minor, point) VALUES (0, 5, 0);
 INSERT INTO version (major, minor, point) VALUES (0, 6, 0);
-
+INSERT INTO version (major, minor, point) VALUES (0, 6, 1);
 
 
 CREATE TABLE versionCrossRef (
@@ -44,19 +44,6 @@ JOIN version AS iv ON iv.vid = vcr.ivid
 LEFT JOIN version AS dv ON dv.vid = vcr.dvid
 LEFT JOIN version AS rv ON rv.vid = vcr.rvid
 ;
-
-/*
-CREATE TRIGGER ins_v_vcr BEFORE INSERT ON versionCrossRef BEGIN SELECT CASE 
-WHEN (SELECT count(*) FROM version AS v1, versionCrossRef AS vcr JOIN version AS v2 ON vcr.ivid = v2.vid WHERE v1.vid = NEW.ivid AND vcr.tbl = NEW.tbl AND vcr.id = NEW.id AND v1.bitSize = v2.bitSize) > 0 THEN RAISE(ABORT,'Only a single "Introduced in Version" per bit size permitted.')
-WHEN (SELECT count(*) FROM version AS v1, versionCrossRef AS vcr JOIN version AS v2 ON vcr.dvid = v2.vid WHERE v1.vid = NEW.dvid AND vcr.tbl = NEW.tbl AND vcr.id = NEW.id AND v1.bitSize = v2.bitSize) > 0 THEN RAISE(ABORT,'Only a single "Deprecated in Version" per bit size permitted.')
-END; END;
-
-CREATE TRIGGER upd_v_vcr BEFORE UPDATE ON versionCrossRef BEGIN SELECT CASE 
-WHEN (SELECT count(*) FROM version AS v1, versionCrossRef AS vcr JOIN version AS v2 ON vcr.ivid = v2.vid WHERE v1.vid = NEW.ivid AND vcr.tbl = NEW.tbl AND vcr.id = NEW.id AND v1.bitSize = v2.bitSize) > 0 THEN RAISE(ABORT,'Only a single "Introduced in Version" per bit size permitted.')
-WHEN (SELECT count(*) FROM version AS v1, versionCrossRef AS vcr JOIN version AS v2 ON vcr.dvid = v2.vid WHERE v1.vid = NEW.dvid AND vcr.tbl = NEW.tbl AND vcr.id = NEW.id AND v1.bitSize = v2.bitSize) > 0 THEN RAISE(ABORT,'Only a single "Deprecated in Version" per bit size permitted.')
-END; END;
-*/
-
 
 
 

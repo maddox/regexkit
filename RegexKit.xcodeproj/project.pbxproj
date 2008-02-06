@@ -73,6 +73,8 @@
 		1264D83B0C7A9D7D0044B285 /* collectionAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D5680C7A50100044B285 /* collectionAdditions.m */; };
 		1264D8560C7A9DF90044B285 /* stringConversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D56E0C7A50100044B285 /* stringConversion.m */; };
 		1264D8580C7A9E0F0044B285 /* functionality.m in Sources */ = {isa = PBXBuildFile; fileRef = 1264D56A0C7A50100044B285 /* functionality.m */; };
+		126567D50D5246E00016F267 /* RKUnicode.h in Headers */ = {isa = PBXBuildFile; fileRef = 126567D30D5246E00016F267 /* RKUnicode.h */; };
+		126567D60D5246E00016F267 /* RKUnicode.m in Sources */ = {isa = PBXBuildFile; fileRef = 126567D40D5246E00016F267 /* RKUnicode.m */; };
 		1279EA240D1D4262004B3F13 /* blacklist.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1279EA210D1D424F004B3F13 /* blacklist.txt */; };
 		1279EA250D1D4262004B3F13 /* url.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1279EA220D1D424F004B3F13 /* url.txt */; };
 		1279EA260D1D4262004B3F13 /* whitelist.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1279EA230D1D424F004B3F13 /* whitelist.txt */; };
@@ -142,7 +144,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 1210C8100D4F254C00A9E73B /* Stack Protector */;
+			remoteGlobalIDString = 1210C8100D4F254C00A9E73B;
 			remoteInfo = "Stack Protector";
 		};
 		1261B78D0CD27CE100F2E972 /* PBXContainerItemProxy */ = {
@@ -271,6 +273,8 @@
 		1264D68D0C7A67960044B285 /* index.html */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = index.html; path = Source/Documentation/Static/index.html; sourceTree = "<group>"; };
 		1264D77F0C7A95B60044B285 /* Unit Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1264DC100C7B3BFA0044B285 /* RegexKitImplementationTopics.html */ = {isa = PBXFileReference; explicitFileType = text.html; fileEncoding = 4; name = RegexKitImplementationTopics.html; path = Source/Documentation/Static/RegexKitImplementationTopics.html; sourceTree = "<group>"; };
+		126567D30D5246E00016F267 /* RKUnicode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RKUnicode.h; sourceTree = "<group>"; };
+		126567D40D5246E00016F267 /* RKUnicode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKUnicode.m; sourceTree = "<group>"; };
 		1279E95E0D1D15C2004B3F13 /* RegexKit_sortedCollection_cache.instrument */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = RegexKit_sortedCollection_cache.instrument; sourceTree = "<group>"; };
 		1279EA210D1D424F004B3F13 /* blacklist.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = blacklist.txt; sourceTree = "<group>"; };
 		1279EA220D1D424F004B3F13 /* url.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = url.txt; sourceTree = "<group>"; };
@@ -340,7 +344,7 @@
 		12DB1A0D0C787E3D00735165 /* NSDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDictionary.m; sourceTree = "<group>"; };
 		12DB1A0E0C787E3D00735165 /* NSObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSObject.m; sourceTree = "<group>"; };
 		12DB1A0F0C787E3D00735165 /* NSSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSSet.m; sourceTree = "<group>"; };
-		12DB1A100C787E3D00735165 /* NSString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSString.m; sourceTree = "<group>"; };
+		12DB1A100C787E3D00735165 /* NSString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSString.m; sourceTree = "<group>"; wrapsLines = 1; };
 		12DB1A110C787E3D00735165 /* RKAutoreleasedMemory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKAutoreleasedMemory.m; sourceTree = "<group>"; };
 		12DB1A120C787E3D00735165 /* RKCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKCache.m; sourceTree = "<group>"; };
 		12DB1A130C787E3D00735165 /* RKCoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RKCoder.m; sourceTree = "<group>"; };
@@ -805,6 +809,7 @@
 				127DE38C0D120B1000F1B037 /* RKSortedRegexCollection.m */,
 				12D0764C0D1832350081AFD7 /* RKThreadPool.m */,
 				12DB1A190C787E3D00735165 /* RKUtility.m */,
+				126567D40D5246E00016F267 /* RKUnicode.m */,
 			);
 			name = RegexKit;
 			path = Source;
@@ -845,6 +850,7 @@
 				12DB19F70C787E1700735165 /* RKPlaceholder.h */,
 				127DE38B0D120B1000F1B037 /* RKSortedRegexCollection.h */,
 				12D0764B0D1832350081AFD7 /* RKThreadPool.h */,
+				126567D30D5246E00016F267 /* RKUnicode.h */,
 				12DB19F80C787E1700735165 /* RegexKitPrivate.h */,
 				12A0132A0D16209E00B751C9 /* RegexKitPrivateAtomic.h */,
 				12A013330D162E4100B751C9 /* RegexKitPrivateDTrace.h */,
@@ -962,6 +968,7 @@
 				12A013340D162E4100B751C9 /* RegexKitPrivateDTrace.h in Headers */,
 				12A013700D1633E400B751C9 /* RegexKitPrivateLocalization.h in Headers */,
 				12A0138C0D1638EE00B751C9 /* NSStringPrivate.h in Headers */,
+				126567D50D5246E00016F267 /* RKUnicode.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1213,6 +1220,7 @@
 				127DE38E0D120B1100F1B037 /* RKSortedRegexCollection.m in Sources */,
 				12D0764E0D1832350081AFD7 /* RKThreadPool.m in Sources */,
 				12DB1A270C787E3D00735165 /* RKUtility.m in Sources */,
+				126567D60D5246E00016F267 /* RKUnicode.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

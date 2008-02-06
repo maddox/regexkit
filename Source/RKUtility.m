@@ -40,9 +40,9 @@
 #import <RegexKit/RegexKitPrivate.h>
 
 NSString *RKStringFromNewlineOption(const int decodeNewlineOption, NSString *prefixString) {
-  RKInteger newlineOption = decodeNewlineOption & RKMatchNewlineMask;
+  RKInteger newlineOption       = decodeNewlineOption & RKMatchNewlineMask;
   NSString *newlineOptionString = NULL;
-  BOOL unknownNewline = NO;
+  BOOL      unknownNewline      = NO;
   
   if(prefixString == NULL) { prefixString = @""; }
   
@@ -51,9 +51,9 @@ NSString *RKStringFromNewlineOption(const int decodeNewlineOption, NSString *pre
     case PCRE_NEWLINE_CR:       newlineOptionString = @"NewlineCR";               break;
     case PCRE_NEWLINE_LF:       newlineOptionString = @"NewlineLF";               break;
     case PCRE_NEWLINE_CRLF:     newlineOptionString = @"NewlineCRLF";             break;
-#if PCRE_MAJOR >= 7 && PCRE_MINOR >= 1
+#if       PCRE_MAJOR >= 7 && PCRE_MINOR >= 1
     case PCRE_NEWLINE_ANYCRLF:  newlineOptionString = @"NewlineAnyCRLF";          break;
-#endif // >= 7.1
+#endif // PCRE_MAJOR >= 7 && PCRE_MINOR >= 1>= 7.1
     case PCRE_NEWLINE_ANY:      newlineOptionString = @"NewlineAny";              break;
     default:                    newlineOptionString = NULL; unknownNewline = YES; break;
   }
@@ -66,10 +66,10 @@ NSString *RKStringFromNewlineOption(const int decodeNewlineOption, NSString *pre
 }
 
 NSArray *RKArrayFromMatchOption(const RKMatchOption decodeMatchOption) {
-  RKUInteger atString = 0;
-  NSString *strings[256];
-  memset(strings, 0, sizeof(NSString *) * 256);
   RKMatchOption decodedOptions = RKMatchNewlineMask;
+  RKUInteger    atString       = 0;
+  NSString     *strings[256];
+  memset(strings, 0, sizeof(NSString *) * 256);
   
   if(decodeMatchOption & RKMatchAnchored)           { strings[atString] = @"RKMatchAnchored";           atString++; decodedOptions |= RKMatchAnchored;           }
   if(decodeMatchOption & RKMatchNotBeginningOfLine) { strings[atString] = @"RKMatchNotBeginningOfLine"; atString++; decodedOptions |= RKMatchNotBeginningOfLine; }
@@ -77,10 +77,10 @@ NSArray *RKArrayFromMatchOption(const RKMatchOption decodeMatchOption) {
   if(decodeMatchOption & RKMatchNotEmpty)           { strings[atString] = @"RKMatchNotEmpty";           atString++; decodedOptions |= RKMatchNotEmpty;           }
   if(decodeMatchOption & RKMatchNoUTF8Check)        { strings[atString] = @"RKMatchNoUTF8Check";        atString++; decodedOptions |= RKMatchNoUTF8Check;        }
   if(decodeMatchOption & RKMatchPartial)            { strings[atString] = @"RKMatchPartial";            atString++; decodedOptions |= RKMatchPartial;            }
-#if PCRE_MAJOR >= 7 && PCRE_MINOR >= 4
+#if       PCRE_MAJOR >= 7 && PCRE_MINOR >= 4
   if(decodeMatchOption & RKMatchBackslashRAnyCRLR)  { strings[atString] = @"RKMatchBackslashRAnyCRLR";  atString++; decodedOptions |= RKMatchBackslashRAnyCRLR;  }
   if(decodeMatchOption & RKMatchBackslashRUnicode)  { strings[atString] = @"RKMatchBackslashRUnicode";  atString++; decodedOptions |= RKMatchBackslashRUnicode;  }
-#endif // >= 7.4
+#endif // PCRE_MAJOR >= 7 && PCRE_MINOR >= 4
   
   if((decodeMatchOption & RKMatchNewlineMask) != RKMatchNewlineDefault) {
     strings[atString] = RKStringFromNewlineOption(decodeMatchOption, @"RKMatch"); if(strings[atString] != NULL) { atString++; }
@@ -101,10 +101,10 @@ NSArray *RKArrayFromMatchOption(const RKMatchOption decodeMatchOption) {
 }
 
 NSArray *RKArrayFromCompileOption(const RKCompileOption decodeCompileOption) {
-  RKUInteger atString = 0;
-  NSString *strings[256];
-  memset(strings, 0, sizeof(NSString *) * 256);
   RKCompileOption decodedOptions = RKCompileNewlineMask;
+  RKUInteger      atString       = 0;
+  NSString       *strings[256];
+  memset(strings, 0, sizeof(NSString *) * 256);
   
   if(decodeCompileOption & RKCompileNoOptions)         { strings[atString] = @"RKCompileNoOptions";         atString++; decodedOptions |= RKCompileNoOptions;         }
   if(decodeCompileOption & RKCompileCaseless)          { strings[atString] = @"RKCompileCaseless";          atString++; decodedOptions |= RKCompileCaseless;          }
@@ -145,10 +145,10 @@ NSArray *RKArrayFromCompileOption(const RKCompileOption decodeCompileOption) {
 }
 
 NSArray *RKArrayFromBuildConfig(const RKBuildConfig decodeBuildConfig) {
-  RKUInteger atString = 0;
-  NSString *strings[256];
-  memset(strings, 0, sizeof(NSString *) * 256);
   RKBuildConfig decodedBuildConfig = RKBuildConfigNoOptions;
+  RKUInteger    atString           = 0;
+  NSString     *strings[256];
+  memset(strings, 0, sizeof(NSString *) * 256);
   
   if(decodeBuildConfig & RKBuildConfigUTF8)              { strings[atString] = @"RKBuildConfigUTF8";              atString++; decodedBuildConfig |= RKBuildConfigUTF8;              }
   if(decodeBuildConfig & RKBuildConfigUnicodeProperties) { strings[atString] = @"RKBuildConfigUnicodeProperties"; atString++; decodedBuildConfig |= RKBuildConfigUnicodeProperties; }
@@ -235,6 +235,11 @@ NSString *RKStringFromCompileErrorCode(const RKCompileErrorCode decodeErrorCode)
     case RKCompileErrorInconsistentNewlineOptions:                  errorCodeString = @"RKCompileErrorInconsistentNewlineOptions";                  break;
     case RKCompileErrorReferenceMustBeNonZeroNumberOrBraced:        errorCodeString = @"RKCompileErrorReferenceMustBeNonZeroNumberOrBraced";        break;
     case RKCompileErrorRelativeSubpatternNumberMustNotBeZero:       errorCodeString = @"RKCompileErrorRelativeSubpatternNumberMustNotBeZero";       break;
+    case RKCompileErrorVERBWithAnArgumentIsNotSupported:            errorCodeString = @"RKCompileErrorVERBWithAnArgumentIsNotSupported";            break;
+    case RKCompileErrorVERBNotRecognized:                           errorCodeString = @"RKCompileErrorVERBNotRecognized";                           break;
+    case RKCompileErrorNumberIsTooBig:                              errorCodeString = @"RKCompileErrorNumberIsTooBig";                              break;
+    case RKCompileErrorSubpatternNameExpected:                      errorCodeString = @"RKCompileErrorSubpatternNameExpected";                      break;
+    case RKCompileErrorDigitExpectedAfterRelativeSubpattern:        errorCodeString = @"RKCompileErrorDigitExpectedAfterRelativeSubpattern";        break;
     default:                                                        errorCodeString = RKLocalizedFormat(@"Unknown error code (#%d)", (int)decodeErrorCode); break;
   }
   

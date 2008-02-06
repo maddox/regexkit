@@ -40,32 +40,31 @@
 #import <RegexKit/RegexKitPrivate.h>
 
 typedef enum {
-  RKDictionaryActionBooleanYesOnAnyKeyMatch = 0,
-  RKDictionaryActionBooleanYesOnAnyObjectMatch = 1,
-  RKDictionaryActionArrayOfMatchedKeys = 2,
-  RKDictionaryActionArrayOfMatchedObjects = 3,
+  RKDictionaryActionBooleanYesOnAnyKeyMatch      = 0,
+  RKDictionaryActionBooleanYesOnAnyObjectMatch   = 1,
+  RKDictionaryActionArrayOfMatchedKeys           = 2,
+  RKDictionaryActionArrayOfMatchedObjects        = 3,
   RKDictionaryActionArrayOfObjectsForMatchedKeys = 4,
   RKDictionaryActionArrayOfKeysForMatchedObjects = 5,
-  RKDictionaryActionDictionaryWithMatchedKeys = 6,
+  RKDictionaryActionDictionaryWithMatchedKeys    = 6,
   RKDictionaryActionDictionaryWithMatchedObjects = 7,
-  RKDictionaryActionAddMatches = 8,
-  RKDictionaryActionRemoveMatches = 9,
-  RKDictionaryActionDictionaryMaxAction = 9
+  RKDictionaryActionAddMatches                   = 8,
+  RKDictionaryActionRemoveMatches                = 9,
+  RKDictionaryActionDictionaryMaxAction          = 9
 } RKDictionaryAction;
 
 static id RKDoDictionaryAction(id self, SEL _cmd, id matchAgainstDictionary, id aKeyRegex, id aObjectRegex, const RKDictionaryAction performAction, BOOL matchKeyAndObjectRegex);
 
 static id RKDoDictionaryAction(id self, SEL _cmd, id matchAgainstDictionary, id aKeyRegex, id aObjectRegex, const RKDictionaryAction performAction, BOOL matchKeyAndObjectRegex) {
-  id returnObject = NULL;
-  RK_STRONG_REF id *keys = NULL, *objects = NULL, *matchedKeys = NULL, *matchedObjects = NULL;
-  RKUInteger dictionaryCount = 0, atMatchIndex = 0, matchedCount = 0;
-  RK_STRONG_REF RKRegex *keyRegex = NULL, *objectRegex = NULL;
-  BOOL exitOnAnyMatch = NO;
+  id         *keys            = NULL, *objects      = NULL, *matchedKeys  = NULL, *matchedObjects = NULL, returnObject = NULL;
+  RKUInteger  dictionaryCount = 0,     atMatchIndex = 0,     matchedCount = 0;
+  RKRegex    *keyRegex        = NULL, *objectRegex  = NULL;
+  BOOL        exitOnAnyMatch  = NO;
   
   NSCParameterAssert(!((aKeyRegex == NULL) && (aObjectRegex == NULL)));
   
-  if(RK_EXPECTED(self == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"self == NULL."] raise]; }
-  if(RK_EXPECTED(_cmd == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"_cmd == NULL."] raise]; }
+  if(RK_EXPECTED(self                   == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"self == NULL."] raise]; }
+  if(RK_EXPECTED(_cmd                   == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"_cmd == NULL."] raise]; }
   if(RK_EXPECTED(matchAgainstDictionary == NULL, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"matchAgainstDictionary == NULL."] raise]; }
   if(RK_EXPECTED(performAction > RKDictionaryActionDictionaryMaxAction, 0)) { [[NSException rkException:NSInternalInconsistencyException for:self selector:_cmd localizeReason:@"Unknown performAction = %lu.", (unsigned long)performAction] raise]; }
   
@@ -77,7 +76,7 @@ static id RKDoDictionaryAction(id self, SEL _cmd, id matchAgainstDictionary, id 
 #ifdef USE_CORE_FOUNDATION
   if((dictionaryCount = (RKUInteger)CFDictionaryGetCount((CFDictionaryRef)matchAgainstDictionary)) == 0) { goto doAction; }
 #else
-  if((dictionaryCount = [matchAgainstDictionary count]) == 0) { goto doAction; }
+  if((dictionaryCount = [matchAgainstDictionary count])                                            == 0) { goto doAction; }
 #endif
   
   if(RK_EXPECTED((keys           = alloca(sizeof(id *) * dictionaryCount)) == NULL, 0)) { return(NULL); }
@@ -138,9 +137,9 @@ doAction:
       break;
 #else
     case RKDictionaryActionArrayOfKeysForMatchedObjects: // Fall-thru
-    case RKDictionaryActionArrayOfMatchedKeys:           returnObject = [[NSArray alloc] initWithObjects:&matchedKeys[0] count:matchedCount];      break;
+    case RKDictionaryActionArrayOfMatchedKeys:           returnObject = [[NSArray alloc]      initWithObjects:&matchedKeys[0]                            count:matchedCount]; break;
     case RKDictionaryActionArrayOfMatchedObjects:        // Fall-thru
-    case RKDictionaryActionArrayOfObjectsForMatchedKeys: returnObject = [[NSArray alloc] initWithObjects:&matchedObjects[0] count:matchedCount];   break;
+    case RKDictionaryActionArrayOfObjectsForMatchedKeys: returnObject = [[NSArray alloc]      initWithObjects:&matchedObjects[0]                         count:matchedCount]; break;
     case RKDictionaryActionDictionaryWithMatchedObjects: // Fall-thru
     case RKDictionaryActionDictionaryWithMatchedKeys:    returnObject = [[NSDictionary alloc] initWithObjects:&matchedObjects[0] forKeys:&matchedKeys[0] count:matchedCount]; break;
 #endif // USE_CORE_FOUNDATION

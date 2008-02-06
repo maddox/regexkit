@@ -142,6 +142,7 @@ extern "C" {
 */
 
 + (BOOL)isValidRegexString:(NSString * const)regexString options:(const RKCompileOption)options;
++ (BOOL)isValidRegexString:(NSString * const)regexString options:(const RKCompileOption)options error:(NSError **)error;
 
 /*!
  @method    regexWithRegexString:options:
@@ -259,6 +260,7 @@ extern "C" {
  @param      captureNameString A @link NSString NSString @/link of the name of the desired capture index.
 */
 - (BOOL)isValidCaptureName:(NSString * const)captureNameString;
+- (BOOL)isValidCaptureName:(NSString * const)captureNameString error:(NSError **)error;
 /*!
  @method     captureIndexForCaptureName:
  @tocgroup   RKRegex Named Capture Information
@@ -267,6 +269,7 @@ extern "C" {
  <div class="box important"><div class="table"><div class="row"><div class="label cell">Important:</div><div class="message cell">Raises a @link NSInvalidArgumentException NSInvalidArgumentException @/link if <span class="argument">captureNameString</span> is <span class="code">nil</span> or is not a valid capture name for the receivers regular expression.</div></div></div></div>
 */
 - (RKUInteger)captureIndexForCaptureName:(NSString * const)captureNameString;
+- (RKUInteger)captureIndexForCaptureName:(NSString * const)captureNameString error:(NSError **)error;
 /*!
  @method     captureNameForCaptureIndex:
  @tocgroup   RKRegex Named Capture Information
@@ -276,6 +279,7 @@ extern "C" {
  @result     Returns the capture name for <span class="argument">captureIndex</span>, otherwise <span class="code">nil</span> if <span class="argument">captureIndex</span> does not have a name associated with it.
 */
 - (NSString *)captureNameForCaptureIndex:(const RKUInteger)captureIndex;
+- (NSString *)captureNameForCaptureIndex:(const RKUInteger)captureIndex error:(NSError **)error;
 /*!
  @method     captureIndexForCaptureName:inMatchedRanges:
  @tocgroup   RKRegex Named Capture Information
@@ -317,6 +321,8 @@ extern "C" {
 */
 
 - (BOOL)matchesCharacters:(const void * const RK_C99(restrict))matchCharacters length:(const RKUInteger)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options;
+- (BOOL)matchesCharacters:(const void * const RK_C99(restrict))matchCharacters length:(const RKUInteger)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options error:(NSError **)error;
+
 /*!
  @method     rangeForCharacters:length:inRange:captureIndex:options:
  @tocgroup   RKRegex Matching Regular Expressions
@@ -333,6 +339,7 @@ extern "C" {
  @result     A @link NSRange NSRange @/link structure giving the location and length of <span class="argument">captureIndex</span> for the first match in <span class="argument">matchCharacters</span> of length <span class="argument">length</span> inside <span class="argument">searchRange</span>  with <span class="argument">options</span> that is matched by the receiver. Returns <span class="code">{</span>@link NSNotFound NSNotFound@/link<span class="code">, 0}</span> if the receiver does not match <span class="argument">matchCharacters</span>.
 */
 - (NSRange)rangeForCharacters:(const void * const RK_C99(restrict))matchCharacters length:(const RKUInteger)length inRange:(const NSRange)searchRange captureIndex:(const RKUInteger)captureIndex options:(const RKMatchOption)options;
+- (NSRange)rangeForCharacters:(const void * const RK_C99(restrict))matchCharacters length:(const RKUInteger)length inRange:(const NSRange)searchRange captureIndex:(const RKUInteger)captureIndex options:(const RKMatchOption)options error:(NSError **)error;
 /*!
  @method     rangesForCharacters:length:inRange:options:
  @tocgroup   RKRegex Matching Regular Expressions
@@ -362,6 +369,7 @@ if(captureRanges != NULL) {
     <p>Returns <span class="code">NULL</span> if the receiver does not match <span class="argument">matchCharacters</span> using the supplied arguments.</p>
 */
 - (NSRange *)rangesForCharacters:(const void * const RK_C99(restrict))matchCharacters length:(const RKUInteger)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options;
+- (NSRange *)rangesForCharacters:(const void * const RK_C99(restrict))matchCharacters length:(const RKUInteger)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options error:(NSError **)error;
 /*!
  @method    getRanges:withCharacters:length:inRange:options:
  @tocgroup   RKRegex Matching Regular Expressions
@@ -380,6 +388,7 @@ if(captureRanges != NULL) {
  @result Returns the number of captures matched (&gt;0) on success, otherwise a @link RKMatchErrorCode RKMatchErrorCode @/link (&lt;0) on failure.  The values in <span class="argument">ranges</span> are only modified on a successful match.
 */
 - (RKMatchErrorCode)getRanges:(NSRange * const RK_C99(restrict))ranges withCharacters:(const void * const RK_C99(restrict))charactersBuffer length:(const RKUInteger)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options;
+- (RKMatchErrorCode)getRanges:(NSRange * const RK_C99(restrict))ranges withCharacters:(const void * const RK_C99(restrict))charactersBuffer length:(const RKUInteger)length inRange:(const NSRange)searchRange options:(const RKMatchOption)options error:(NSError **)error;
 
 @end
 

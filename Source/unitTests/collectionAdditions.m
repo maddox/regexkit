@@ -1077,6 +1077,7 @@
    See SourceForge forum message 'Problem matching $ (end of string)'
    URL: http://sourceforge.net/forum/forum.php?thread_id=1929326&forum_id=731002
    Description: rangeOfRegex: @"$" does not report the expected range.
+   Note: Added several tests that exercise Unicode functionality as well.
   */
 
   NSString *subject = @"foo", *newString = NULL;
@@ -1140,7 +1141,7 @@
   STAssertNoThrow((r = [subjectUnicodeHardEnd rangeOfRegex:@"^."]), NULL);
   STAssertTrue((r.location == 0 && r.length == 1), @"Range: %@", NSStringFromRange(r));
   
-  // This test excercises the bug reported.  The STAssertTrue() gives the expected values, where as NSRange r is {2147483647, 0} with the bug present.
+  // This test exercises the bug reported.  The STAssertTrue() gives the expected values, where as NSRange r is {2147483647, 0} with the bug present.
   r = NSMakeRange(0xdeadbeef, 0xbad0f00d);
   STAssertNoThrow((r = [subject rangeOfRegex:@"$"]), NULL);
   STAssertTrue((r.location == [subject length] && r.length == 0), @"Range: %@", NSStringFromRange(r));

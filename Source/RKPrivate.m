@@ -143,7 +143,9 @@ NSArray *RKArrayOfPrettyNewlineTypes(NSString * const prefixString) {
     [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineCR,      prefixString), (unsigned int)RKCompileNewlineCR],
     [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineLF,      prefixString), (unsigned int)RKCompileNewlineLF],
     [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineCRLF,    prefixString), (unsigned int)RKCompileNewlineCRLF],
+#if       PCRE_MAJOR >= 7 && PCRE_MINOR >= 1
     [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineAnyCRLF, prefixString), (unsigned int)RKCompileNewlineAnyCRLF],
+#endif // PCRE_MAJOR >= 7 && PCRE_MINOR >= 1
     [NSString stringWithFormat:@"%@ 0x%8.8x", RKStringFromNewlineOption(RKCompileNewlineAny,     prefixString), (unsigned int)RKCompileNewlineAny],
     
     NULL]);
@@ -209,6 +211,20 @@ NSString *RKLocalizedStringForPCRECompileErrorCode(int errorCode) {
     case RKCompileErrorInconsistentNewlineOptions:                  localizeString = @"Inconsistent newline compile option."; break;
     case RKCompileErrorReferenceMustBeNonZeroNumberOrBraced:        localizeString = @"The '\\g' escape sequence must be followed by a non-zero number, or a braced name or number, e.g. '{name}' or '{0123}'."; break;
     case RKCompileErrorRelativeSubpatternNumberMustNotBeZero:       localizeString = @"The relative subpattern reference parameter to '(?+' , '(?-' , '(?(+', or '(?(-' must be followed by a non-zero number."; break;
+    case RKCompileErrorVERBWithAnArgumentIsNotSupported:            localizeString = @"PCRE does not support arguments to '(*VERB)' control verbs."; break;
+    case RKCompileErrorVERBNotRecognized:                           localizeString = @"Unrecognized '(*VERB)' control verb."; break;
+    case RKCompileErrorNumberIsTooBig:                              localizeString = @"The number is too large, valid numbers are less than 2147483647."; break;
+    case RKCompileErrorSubpatternNameExpected:                      localizeString = @"A named subpattern is required."; break;
+    case RKCompileErrorDigitExpectedAfterRelativeSubpattern:        localizeString = @"A number is required after a '(?+' relative subpattern reference."; break;
+      
+    /*
+     "(*VERB) with an argument is not supported\0"
+     / 60 /
+      "(*VERB) not recognized\0"
+      "number is too big\0"
+      "subpattern name expected\0"
+      "digit expected after (?+";
+     */
     default:                                                        returnString   = RKLocalizedFormatFromTable(@"Unknown error.  Code #%d.", @"pcre", errorCode); break;
   }
 

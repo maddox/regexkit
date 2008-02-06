@@ -91,6 +91,7 @@ extern "C" {
  @seealso    @link matchEnumeratorWithRegex: - matchEnumeratorWithRegex: @/link
 */
 + (id)enumeratorWithRegex:(id)aRegex string:(NSString * const)string;
++ (id)enumeratorWithRegex:(id)aRegex string:(NSString * const)string error:(NSError **)error;
 /*!
  @method     enumeratorWithRegex:string:inRange:
  @tocgroup   RKEnumerator Creating Regular Expression Enumerators
@@ -109,7 +110,7 @@ extern "C" {
  @seealso    @link initWithRegex:string:inRange: - initWithRegex:string:inRange: @/link
  @seealso    @link matchEnumeratorWithRegex:inRange: - matchEnumeratorWithRegex:inRange: @/link
 */
-+ (id)enumeratorWithRegex:(id)initRegex string:(NSString * const)initString inRange:(const NSRange)initRange error:(NSError **)error;
++ (id)enumeratorWithRegex:(id)initRegex string:(NSString * const)initString inRange:(const NSRange)range error:(NSError **)error;
 
 /*!
  @method     initWithRegex:string:
@@ -124,6 +125,7 @@ extern "C" {
  @seealso    @link nextRanges - nextRanges @/link
 */
 - (id)initWithRegex:(id)initRegex string:(NSString * const)initString;
+- (id)initWithRegex:(id)initRegex string:(NSString * const)initString error:(NSError **)error;
 
 /*!
  @method     initWithRegex:string:inRange:
@@ -268,6 +270,8 @@ extern "C" {
  @seealso    @link nextRanges - nextRanges @/link
 */
 - (BOOL)getCapturesWithReferences:(NSString * const)firstReference, ... RK_REQUIRES_NIL_TERMINATION;
+- (BOOL)getCapturesError:(NSError **)error references:(NSString * const)firstReference, ... RK_REQUIRES_NIL_TERMINATION;
+
 /*!
  @method     stringWithReferenceString:
  @tocgroup   RKEnumerator Creating Temporary Strings from the Current Enumerated Match
@@ -280,6 +284,8 @@ extern "C" {
  @seealso    @link stringByMatching:replace:withReferenceString: - stringByMatching:replace:withReferenceString: @/link
 */
 - (NSString *)stringWithReferenceString:(NSString * const)referenceString;
+- (NSString *)stringWithReferenceString:(NSString * const)referenceString error:(NSError **)error;
+
 /*!
  @method     stringWithReferenceFormat:
  @tocgroup   RKEnumerator Creating Temporary Strings from the Current Enumerated Match

@@ -40,7 +40,7 @@
 
 #ifdef USE_AUTORELEASED_MALLOC
 
-static int     RKAutoreleasedMemoryLoadInitialized  = 0;
+static int     RKAutoreleasedMemoryLoadInitialized    = 0;
 
 static NSZone *autoreleaseMallocZone                  = NULL;
 static Class   autoreleaseClass                       = NULL;
@@ -63,7 +63,7 @@ static size_t  classAlignedSize                       = 0;
   
   if(RKAtomicCompareAndSwapInt(0, 1, &RKAutoreleasedMemoryLoadInitialized)) {
     NSAutoreleasePool *initPool = [[NSAutoreleasePool alloc] init];
-    size_t  autoreleasePoolInstanceSize = 0;
+    size_t autoreleasePoolInstanceSize = 0;
     
     autoreleaseMallocZone                  = NSDefaultMallocZone();
     autoreleaseClass                       = [RKAutoreleasedMemory class];

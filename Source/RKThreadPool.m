@@ -47,8 +47,8 @@
 static double jobQueueDelays[3]    = {0.0120481927710843, 0.0112359550561797, 0.0103092783505154};
 static double threadStartDelays[5] = {0.0099009900990099, 0.0097087378640776, 0.0093457943925233, 0.0091743119266055, 0.0088495575221238};
 
-static id defaultThreadPoolSingleton = NULL;
-static RKUInteger threadPoolIsMultiThreaded = 0;
+static id         defaultThreadPoolSingleton = NULL;
+static RKUInteger threadPoolIsMultiThreaded  = 0;
 
 #if       defined(__MACOSX_RUNTIME__) || (__FreeBSD__ >= 5)
 
@@ -59,8 +59,8 @@ static time_t     lastActiveCPUCoresCheck = 0;
 #endif // __MACOSX_RUNTIME__
 
 static void updateCPUCounts(void) {
-  size_t sysctlUIntSize = sizeof(unsigned int);
-  unsigned int sysctlUInt = 0;
+  size_t       sysctlUIntSize = sizeof(unsigned int);
+  unsigned int sysctlUInt     = 0;
   
   if(RK_EXPECTED(cpuCores == 0, 0)) { if(sysctlbyname("hw.ncpu", &sysctlUInt, &sysctlUIntSize, NULL, 0) == 0) { cpuCores = sysctlUInt; } }
 
@@ -88,8 +88,8 @@ static RKUInteger activeCPUCores = 2;
 
 + (id)defaultThreadPool
 {
-  id currentDefaultThreadPoolSingleton = defaultThreadPoolSingleton;
-  BOOL cocoaIsMultiThreaded = [NSThread isMultiThreaded];
+  id   currentDefaultThreadPoolSingleton = defaultThreadPoolSingleton;
+  BOOL cocoaIsMultiThreaded              = [NSThread isMultiThreaded];
   
   if(RK_EXPECTED(threadPoolIsMultiThreaded == 0, 0) && RK_EXPECTED(cocoaIsMultiThreaded == YES, 1) && (currentDefaultThreadPoolSingleton != NULL)) {
     if(RKAtomicCompareAndSwapPtr(currentDefaultThreadPoolSingleton, NULL, &defaultThreadPoolSingleton)) {
@@ -226,7 +226,7 @@ errorExit:
 
   RKUInteger startedJobThreads = 0, jobQueueDelayIndex = 0, threadStartDelayIndex = 0;
   
-  RK_STRONG_REF RKThreadPoolJob *runJob = NULL;
+  RKThreadPoolJob RK_STRONG_REF *runJob = NULL;
 
   while(RK_EXPECTED(runJob == NULL, 1) && RK_EXPECTED(((threadPoolControl & RKThreadPoolStop) == 0), 1) && RK_EXPECTED(liveThreads > 0, 1)) {
     for(RKUInteger threadNumber = 0; threadNumber < threadCount; threadNumber++) {

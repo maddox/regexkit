@@ -86,7 +86,7 @@ NSString *RKStringFromCollectionType(RKCollectionType collectionType) {
 + (NSArray *)sortedArrayForSortedRegexCollection:(RKSortedRegexCollection *)sortedRegexCollection
 {  
   NSArray *returnObject = NULL;
-  id *regexObjects = NULL;
+  id      *regexObjects = NULL;
 
   if(RK_EXPECTED(sortedRegexCollection == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"sortedRegexCollection == NULL."] raise]; goto errorExit; }
 
@@ -112,7 +112,7 @@ errorExit:
 
 + (RKSortedRegexCollection *)sortedRegexCollectionForCollection:(id const RK_C99(restrict))initCollection library:(NSString * const RK_C99(restrict))initRegexLibraryString options:(const RKCompileOption)initRegexLibraryOptions error:(NSError ** const RK_C99(restrict))error
 {
-  if(RK_EXPECTED(initCollection        == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"initCollection == NULL."]        raise]; return(NULL); }
+  if(RK_EXPECTED(initCollection         == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"initCollection == NULL."]        raise]; return(NULL); }
   if(RK_EXPECTED(initRegexLibraryString == NULL, 0)) { [[NSException rkException:NSInvalidArgumentException for:self selector:_cmd localizeReason:@"initRegexLibraryString == NULL."] raise]; return(NULL); }
 
   RKSortedRegexCollection *sortedRegexCollection = NULL;
@@ -315,7 +315,7 @@ exitNow:
 
   if(sortedRegexCacheProbeEnabled != 0) { RKAtomicDecrementIntegerBarrier(&cacheMisses); } else { cacheMisses++; }
 
-  RK_STRONG_REF RKSortedRegexCollectionThreadMatchState threadMatchState;
+  RKSortedRegexCollectionThreadMatchState RK_STRONG_REF threadMatchState;
   memset(&threadMatchState, 0, sizeof(RKSortedRegexCollectionThreadMatchState));
   
   threadMatchState.highestMatchingArrayIndex = RKUIntegerMax;
@@ -350,8 +350,8 @@ exitNow:
 }
 
 static int threadMatchEntryFunction(void *startState) {
-  RK_STRONG_REF RKSortedRegexCollectionThreadMatchState *threadMatchState = (RK_STRONG_REF RKSortedRegexCollectionThreadMatchState *)startState;
-  RK_STRONG_REF RKSortedRegexCollection                 *self             = threadMatchState->self;
+  RKSortedRegexCollectionThreadMatchState RK_STRONG_REF *threadMatchState = (RKSortedRegexCollectionThreadMatchState RK_STRONG_REF *)startState;
+  RKSortedRegexCollection                               *self             = threadMatchState->self;
   
   if((threadMatchState->finished == NO) && (threadMatchState->matchedRegex == NULL) && (threadMatchState->atSortedIndex < self->collectionCount)) {
     for(RKUInteger threadAtSortedIndex = (RKAtomicIncrementIntegerBarrier(&threadMatchState->atSortedIndex) - 1);
@@ -415,7 +415,7 @@ static int threadMatchEntryFunction(void *startState) {
 
 
 static int sortRegexCollectionItems(const void *a, const void *b) {
-  RK_STRONG_REF RKCollectionElement *itemA = *((RK_STRONG_REF RKCollectionElement **)a), RK_STRONG_REF *itemB = *((RK_STRONG_REF RKCollectionElement **)b);
+  RKCollectionElement RK_STRONG_REF *itemA = *((RKCollectionElement RK_STRONG_REF **)a), RK_STRONG_REF *itemB = *((RKCollectionElement RK_STRONG_REF **)b);
   
   if(itemA->hitCount > itemB->hitCount) { return(-1); } else if(itemA->hitCount < itemB->hitCount) { return(1); } else { return(0); }
 }

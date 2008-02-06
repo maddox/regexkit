@@ -24,6 +24,7 @@
 <h3><a name="Contents">Contents:</a></h3>
 
 <ul class="contents">
+<li><a href="#Release_0_6_1" class="XXX UNKNOWN">Release 0.6.1 Beta</a></li>
 <li><a href="#Release_0_6_0">Release 0.6.0 Beta</a></li>
 <li><a href="#Release_0_5_0">Release 0.5.0 Beta</a></li>
 <li><a href="#Release_0_4_0">Release 0.4.0 Beta</a></li>
@@ -41,6 +42,43 @@
 </div>
 
 </div> <!-- changeLogContents -->
+
+<div class="Release_0_6_1_Beta">
+<h2 class="XXX UNKNOWN"><a name="Release_0_6_1">Change Log for 0.6.1 Beta</a></h2>
+
+  <!--
+  Added RKCompileErrorVERBWithAnArgumentIsNotSupported, RKCompileErrorVERBNotRecognized, RKCompileErrorNumberIsTooBig, RKCompileErrorSubpatternNameExpected, and RKCompileErrorDigitExpectedAfterRelativeSubpattern, where were introduced in earlier PCRE versions, but didn't make it in to RegexKit..
+  
+  Added RKRegexErrorKey, RKRegexCaptureReferenceStringErrorKey, RKRegexCaptureStringErrorKey, RKRegexConversionStringErrorKey, RKRegexReferenceStringErrorKey, RKRegexCaptureReferenceRangeErrorKey, RKRegexCaptureRangeErrorKey, RKRegexConversionRangeErrorKey, RKRegexReferenceRangeErrorKey, RKRegexCaptureIndexErrorKey.
+  These are for NSString NSError's.
+  -->
+
+<h3>Bug fixes</h3>
+
+<ul class="square">
+
+  <li>Fixed a typo in the document text of @link RKMatchPartial RKMatchPartial @/link in which the word '<span class="code">restrictions</span>' had somehow become '<span class="code">RK_C99(restrict)ions</span>'.</li>
+
+  <li><span class="file">Localizable.strings</span> was missing a <span class="code">;</span> semicolon at the end of one or two strings.  The was causing the message '<span class="code">CFPropertyListCreateFromXMLData(): Old-style plist parser: missing semicolon in dictionary.</span>' to be harmlessly logged.</li>
+
+  <li>A localized string (<span class="code">The capture number</span>&hellip;) had the <span class="code">%<b>#</b>$</span> positional arguments wrong.</li>
+
+  <li>Another bug reported and fixed by Doug Dickinson.  See the SourceForge RegexKit forum message '<a href="http://sourceforge.net/forum/forum.php?thread_id=1929326&amp;forum_id=731002" class="code">rangeOfRegex: @"$" does not report the expected range</a>'.  The description says it all.  Added the unit tests provided by Doug as well, and expanded on them to make sure that various Unicode corner cases are handled correctly as well.</li>
+  
+  <li>In <span class="file">NSString.m</span>, in the function <span class="code">RKStringFromCopyInstructionsX</span>, changed the memory allocation that holds the contents of the string from GC eligible to strictly manual memory management.  This has to due with Mac OS X 10.5's / Leopards Garbage Collection system, which despite the reasonable expectation that handing Core Foundation a pointer to a piece of memory that was allocated from the garbage collection system would be tracked for liveness, the reality is that the GC considers the pointer dead because Core Foundation does not perform the proper voodoo 'write barrier' ritual.</li>
+  <!--
+  Fixed createDocSet for typedef introduced in.
+  
+  -->
+</ul>
+
+<div class="seealso"><div class="header">See Also</div>
+  <ul class="seealso">
+      <li><a href="ReleaseNotes.html#Release_0_6_1" class="section-link">Release Information - Release Notes for 0.6.1 Beta</a></li>
+  </ul>
+</div>
+
+</div> <!-- Release_0_6_1_Beta -->
 
 <div class="Release_0_6_0_Beta">
 <h2><a name="Release_0_6_0">Change Log for 0.6.0 Beta</a></h2>

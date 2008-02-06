@@ -137,6 +137,11 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso @link NSString(RegexKitAdditions)/getCapturesWithRegexAndReferences: - getCapturesWithRegexAndReferences: @/link
 */
 - (BOOL)getCapturesWithRegex:(id)aRegex inRange:(const NSRange)range references:(NSString * const)firstReference, ... RK_REQUIRES_NIL_TERMINATION;
+
+- (BOOL)getCapturesWithRegex:(id)aRegex error:(NSError **)error references:(NSString * const)firstReference, ... RK_REQUIRES_NIL_TERMINATION;
+- (BOOL)getCapturesWithRegex:(id)aRegex inRange:(const NSRange)range error:(NSError **)error references:(NSString * const)firstReference, ... RK_REQUIRES_NIL_TERMINATION;
+- (BOOL)getCapturesWithRegex:(id)aRegex inRange:(const NSRange)range error:(NSError **)error arguments:(va_list)argList;
+
 /*!
  @method     rangesOfRegex:
  @tocgroup   NSString Determining the Range of a Match
@@ -147,6 +152,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso @link rangesForCharacters:length:inRange:options: - rangesForCharacters:length:inRange:options: @/link
 */
 - (NSRange *)rangesOfRegex:(id)aRegex;
+- (NSRange *)rangesOfRegex:(id)aRegex error:(NSError **)error;
 /*!
  @method     rangesOfRegex:inRange:
  @tocgroup   NSString Determining the Range of a Match
@@ -157,6 +163,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso @link rangesForCharacters:length:inRange:options: - rangesForCharacters:length:inRange:options: @/link
 */
 - (NSRange *)rangesOfRegex:(id)aRegex inRange:(const NSRange)range;
+- (NSRange *)rangesOfRegex:(id)aRegex inRange:(const NSRange)range error:(NSError **)error;
 /*!
  @method     rangeOfRegex:
  @tocgroup   NSString Determining the Range of a Match
@@ -165,6 +172,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso @link NSString(RegexKitAdditions)/rangeOfRegex:inRange:capture: - rangeOfRegex:inRange:capture: @/link
 */
 - (NSRange)rangeOfRegex:(id)aRegex;
+- (NSRange)rangeOfRegex:(id)aRegex error:(NSError **)error;
 /*!
  @method     rangeOfRegex:inRange:capture:
  @tocgroup   NSString Determining the Range of a Match
@@ -176,6 +184,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso @link NSString(RegexKitAdditions)/rangeOfRegex: - rangeOfRegex: @/link
 */
 - (NSRange)rangeOfRegex:(id)aRegex inRange:(const NSRange)range capture:(const RKUInteger)capture;
+- (NSRange)rangeOfRegex:(id)aRegex inRange:(const NSRange)range capture:(const RKUInteger)capture error:(NSError **)error;
 /*!
  @method     isMatchedByRegex:
  @tocgroup   NSString Identifying Matches
@@ -183,12 +192,14 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    @link NSString(RegexKitAdditions)/isMatchedByRegex:inRange: - isMatchedByRegex:inRange: @/link
 */
 - (BOOL)isMatchedByRegex:(id)aRegex;
+- (BOOL)isMatchedByRegex:(id)aRegex error:(NSError **)error;
 /*!
  @method     isMatchedByRegex:inRange:
  @tocgroup   NSString Identifying Matches
  @abstract   Returns a Boolean value that indicates whether the receiver is matched by <span class="argument">aRegex</span> within <span class="argument">range</span>.
 */
 - (BOOL)isMatchedByRegex:(id)aRegex inRange:(const NSRange)range;
+- (BOOL)isMatchedByRegex:(id)aRegex inRange:(const NSRange)range error:(NSError **)error;
 /*!
  @method     matchEnumeratorWithRegex:
  @tocgroup   NSString Enumerating Matches
@@ -203,6 +214,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    @link RKEnumerator/stringWithReferenceString: - stringWithReferenceString: @/link
 */
 - (RKEnumerator *)matchEnumeratorWithRegex:(id)aRegex;
+- (RKEnumerator *)matchEnumeratorWithRegex:(id)aRegex error:(NSError **)error;
 /*!
  @method     matchEnumeratorWithRegex:inRange:
  @tocgroup   NSString Enumerating Matches
@@ -214,6 +226,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    @link NSString/matchEnumeratorWithRegex: - matchEnumeratorWithRegex: @/link
 */
 - (RKEnumerator *)matchEnumeratorWithRegex:(id)aRegex inRange:(const NSRange)range;
+- (RKEnumerator *)matchEnumeratorWithRegex:(id)aRegex inRange:(const NSRange)range error:(NSError **)error;
 
 
 
@@ -226,6 +239,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    @link NSString(RegexKitAdditions)/stringByMatching:inRange:withReferenceString: - stringByMatching:inRange:withReferenceString: @/link
 */
 - (NSString *)stringByMatching:(id)aRegex withReferenceString:(NSString * const)referenceString;
+- (NSString *)stringByMatching:(id)aRegex withReferenceString:(NSString * const)referenceString error:(NSError **)error;
 /*!
  @method     stringByMatching:inRange:withReferenceString:
  @tocgroup   NSString Creating Temporary Strings from Match Results
@@ -233,6 +247,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    <a href="NSString.html#CaptureSubpatternReferenceSyntax" class="section-link">Capture Subpattern Reference Syntax</a>
 */
 - (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range withReferenceString:(NSString * const)referenceString;
+- (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range withReferenceString:(NSString * const)referenceString error:(NSError **)error;
 //- (NSString *)stringByMatching:(id)aRegex fromIndex:(const RKUInteger)anIndex withReferenceString:(NSString * const)referenceString;
 //- (NSString *)stringByMatching:(id)aRegex toIndex:(const RKUInteger)anIndex withReferenceString:(NSString * const)referenceString;
 
@@ -247,6 +262,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/Strings/Articles/formatSpecifiers.html#//apple_ref/doc/uid/TP40004265" class="section-link">String Format Specifiers</a>
 */
 - (NSString *)stringByMatching:(id)aRegex withReferenceFormat:(NSString * const)referenceFormatString, ...;
+- (NSString *)stringByMatching:(id)aRegex error:(NSError **)error withReferenceFormat:(NSString * const)referenceFormatString, ...;
 /*!
  @method     stringByMatching:inRange:withReferenceFormat:
  @tocgroup   NSString Creating Temporary Strings from Match Results
@@ -258,7 +274,9 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/Strings/Articles/formatSpecifiers.html#//apple_ref/doc/uid/TP40004265" class="section-link">String Format Specifiers</a>
 */
 - (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range withReferenceFormat:(NSString * const)referenceFormatString, ...;
+- (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range error:(NSError **)error withReferenceFormat:(NSString * const)referenceFormatString, ...;
 - (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range withReferenceFormat:(NSString * const)referenceFormatString arguments:(va_list)argList;
+- (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range error:(NSError **)error withReferenceFormat:(NSString * const)referenceFormatString arguments:(va_list)argList;
 //- (NSString *)stringByMatching:(id)aRegex fromIndex:(const RKUInteger)anIndex withReferenceFormat:(NSString * const)referenceFormatString, ...;
 //- (NSString *)stringByMatching:(id)aRegex toIndex:(const RKUInteger)anIndex withReferenceFormat:(NSString * const)referenceFormatString, ...;
 
@@ -273,6 +291,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    @link NSMutableString(RegexKitAdditions)/match:replace:withString: - match:replace:withString: @/link
 */
 - (NSString *)stringByMatching:(id)aRegex replace:(const RKUInteger)count withReferenceString:(NSString * const)referenceString;
+- (NSString *)stringByMatching:(id)aRegex replace:(const RKUInteger)count withReferenceString:(NSString * const)referenceString error:(NSError **)error;
 /*!
  @method     stringByMatching:inRange:replace:withReferenceString:
  @tocgroup   NSString Search and Replace
@@ -287,6 +306,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    @link NSMutableString(RegexKitAdditions)/match:replace:withString: - match:replace:withString: @/link
 */
 - (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count withReferenceString:(NSString * const)referenceString;
+- (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count withReferenceString:(NSString * const)referenceString error:(NSError **)error;
 //- (NSString *)stringByMatching:(id)aRegex fromIndex:(const RKUInteger)anIndex replace:(const RKUInteger)count withReferenceString:(NSString * const)referenceString;
 //- (NSString *)stringByMatching:(id)aRegex toIndex:(const RKUInteger)anIndex replace:(const RKUInteger)count withReferenceString:(NSString * const)referenceString;
 
@@ -304,6 +324,7 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    @link NSString(RegexKitAdditions)/stringByMatching:inRange:replace:withReferenceFormat: - stringByMatching:inRange:replace:withReferenceFormat: @/link
 */
 - (NSString *)stringByMatching:(id)aRegex replace:(const RKUInteger)count withReferenceFormat:(NSString * const)referenceFormatString, ...;
+- (NSString *)stringByMatching:(id)aRegex replace:(const RKUInteger)count error:(NSError **)error withReferenceFormat:(NSString * const)referenceFormatString, ...;
 /*!
  @method     stringByMatching:inRange:replace:withReferenceFormat:
  @tocgroup   NSString Search and Replace
@@ -320,10 +341,12 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
  @seealso    <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/Strings/Articles/formatSpecifiers.html#//apple_ref/doc/uid/TP40004265" class="section-link">String Format Specifiers</a>
 */
 - (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count withReferenceFormat:(NSString * const)referenceFormatString, ...;
+- (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count error:(NSError **)error withReferenceFormat:(NSString * const)referenceFormatString, ...;
 //- (NSString *)stringByMatching:(id)aRegex fromIndex:(const RKUInteger)anIndex replace:(const RKUInteger)count withReferenceFormat:(NSString * const)referenceFormatString, ...;
 //- (NSString *)stringByMatching:(id)aRegex toIndex:(const RKUInteger)anIndex replace:(const RKUInteger)count withReferenceFormat:(NSString * const)referenceFormatString, ...;
 
 - (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count withReferenceFormat:(NSString * const)referenceFormatString arguments:(va_list)argList;
+- (NSString *)stringByMatching:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count error:(NSError **)error withReferenceFormat:(NSString * const)referenceFormatString arguments:(va_list)argList;
 
 @end
 
@@ -350,12 +373,17 @@ NSString *subjectString = &#64;"Convert this value: 0xb1223dd8";
 - (RKUInteger)match:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count withString:(NSString * const)replacementString;
 //- (RKUInteger)match:(id)aRegex fromIndex:(const RKUInteger)anIndex replace:(const RKUInteger)count withString:(NSString * const)replacementString;
 //- (RKUInteger)match:(id)aRegex toIndex:(const RKUInteger)anIndex replace:(const RKUInteger)count withString:(NSString * const)replacementString;
+- (RKUInteger)match:(id)aRegex replace:(const RKUInteger)count withString:(NSString * const)replacementString error:(NSError **)error;
+- (RKUInteger)match:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count withString:(NSString * const)replacementString error:(NSError **)error;
 
 - (RKUInteger)match:(id)aRegex replace:(const RKUInteger)count withFormat:(NSString * const)formatString, ...;
 - (RKUInteger)match:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count withFormat:(NSString * const)formatString, ...;
 - (RKUInteger)match:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count withFormat:(NSString * const)formatString arguments:(va_list)argList;
 //- (RKUInteger)match:(id)aRegex fromIndex:(const RKUInteger)anIndex replace:(const RKUInteger)count withFormat:(NSString * const)formatString, ...;
 //- (RKUInteger)match:(id)aRegex toIndex:(const RKUInteger)anIndex replace:(const RKUInteger)count withFormat:(NSString * const)formatString, ...;
+- (RKUInteger)match:(id)aRegex replace:(const RKUInteger)count error:(NSError **)error withFormat:(NSString * const)formatString, ...;
+- (RKUInteger)match:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count error:(NSError **)error withFormat:(NSString * const)formatString, ...;
+- (RKUInteger)match:(id)aRegex inRange:(const NSRange)range replace:(const RKUInteger)count error:(NSError **)error withFormat:(NSString * const)formatString arguments:(va_list)argList;
 
 @end
 

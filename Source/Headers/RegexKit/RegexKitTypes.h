@@ -119,9 +119,15 @@ extern NSString * const RKRegexLibraryErrorStringErrorKey;
 /*!
 @const RKRegexStringErrorKey
  @tocgroup   Constants Error Keys in User Info Dictionaries
- @abstract   The corresponding value is the regular expression that caused the error.
+ @abstract   The corresponding value is the string of the regular expression that caused the error.
 */
 extern NSString * const RKRegexStringErrorKey;
+/*!
+@const RKRegexErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is the regular expression that caused the error.
+*/
+extern NSString * const RKRegexErrorKey;
 /*!
 @const RKRegexStringErrorRangeErrorKey
  @tocgroup   Constants Error Keys in User Info Dictionaries
@@ -205,6 +211,61 @@ extern NSString * const RKObjectErrorKey;
 */
 extern NSString * const RKCollectionErrorKey;
 
+/*!
+@const RKRegexCaptureReferenceStringErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is 
+*/
+extern NSString * const RKRegexCaptureReferenceStringErrorKey;
+/*!
+@const RKRegexCaptureStringErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is 
+*/
+extern NSString * const RKRegexCaptureStringErrorKey;
+/*!
+@const RKRegexConversionStringErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is 
+*/
+extern NSString * const RKRegexConversionStringErrorKey;
+/*!
+@const RKRegexReferenceStringErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is 
+*/
+extern NSString * const RKRegexReferenceStringErrorKey;
+/*!
+@const RKRegexCaptureReferenceRangeErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is 
+*/
+extern NSString * const RKRegexCaptureReferenceRangeErrorKey;
+/*!
+@const RKRegexCaptureRangeErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is 
+*/
+extern NSString * const RKRegexCaptureRangeErrorKey;
+/*!
+@const RKRegexConversionRangeErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is 
+*/
+extern NSString * const RKRegexConversionRangeErrorKey;
+/*!
+@const RKRegexReferenceRangeErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is 
+*/
+extern NSString * const RKRegexReferenceRangeErrorKey;
+/*!
+@const RKRegexCaptureIndexErrorKey
+ @tocgroup   Constants Error Keys in User Info Dictionaries
+ @abstract   The corresponding value is 
+*/
+extern NSString * const RKRegexCaptureIndexErrorKey;
+  
 /*!
  @toc DataTypes
 */
@@ -316,6 +377,11 @@ typedef enum {
  @constant RKCompileErrorInconsistentNewlineOptions Inconsistent @link RKCompileNewlineMask RKCompileNewlineMask @/link options.
  @constant RKCompileErrorReferenceMustBeNonZeroNumberOrBraced <span class="regex">\g</span> must be followed by a non-zero number or a braced name or number (ie, <span class="regex">{name}</span> or <span class="regex">{0123}</span>).
  @constant RKCompileErrorRelativeSubpatternNumberMustNotBeZero The relative subpattern reference parameter to <span class="regex">(?+</span> , <span class="regex">(?-</span> , <span class="regex">(?(+</span> , or <span class="regex">(?(-</span> must be followed by a non-zero number.
+ @constant RKCompileErrorVERBWithAnArgumentIsNotSupported PCRE does not support arguments to <span class="regex">(*VERB)</span> control verbs.
+ @constant RKCompileErrorVERBNotRecognized Unrecognized <span class="regex">(*VERB)</span> control verb.
+ @constant RKCompileErrorNumberIsTooBig The number is too large, valid numbers are less than 2147483647.
+ @constant RKCompileErrorSubpatternNameExpected A named subpattern is required.
+ @constant RKCompileErrorDigitExpectedAfterRelativeSubpattern A number is required after a <span class="regex">(?+</span> relative subpattern reference. 
 */
 
 typedef enum {
@@ -374,7 +440,12 @@ typedef enum {
   RKCompileErrorRepeatingDEFINEGroupNotAllowed = 55,
   RKCompileErrorInconsistentNewlineOptions = 56,
   RKCompileErrorReferenceMustBeNonZeroNumberOrBraced = 57,
-  RKCompileErrorRelativeSubpatternNumberMustNotBeZero = 58
+  RKCompileErrorRelativeSubpatternNumberMustNotBeZero = 58,
+  RKCompileErrorVERBWithAnArgumentIsNotSupported  = 59,
+  RKCompileErrorVERBNotRecognized = 60,
+  RKCompileErrorNumberIsTooBig = 61,
+  RKCompileErrorSubpatternNameExpected = 62,
+  RKCompileErrorDigitExpectedAfterRelativeSubpattern = 63
 } RKCompileErrorCode;
 
 
@@ -395,7 +466,7 @@ typedef enum {
  @constant RKMatchNoUTF8Check <p>When @link RKCompileUTF8 RKCompileUTF8 @/link is set at compile time, the validity of the subject as a UTF-8 string is automatically checked when @link getRanges:withCharacters:length:inRange:options: getRanges:withCharacters:length:inRange:options: @/link is subsequently called. The value of <i>searchRange</i> location is also checked to ensure that it points to the start of a UTF-8 character. If an invalid UTF-8 sequence of bytes is found, @link getRanges:withCharacters:length:inRange:options: getRanges:withCharacters:length:inRange:options: @/link returns the error @link RKMatchErrorBadUTF8Offset RKMatchErrorBadUTF8Offset @/link. If <i>searchRange</i> location contains an invalid value, @link RKMatchErrorBadUTF8Offset RKMatchErrorBadUTF8Offset @/link is returned.</p>
  
  <p>If you already know that your subject is valid, and you want to skip these checks for performance reasons, you can set the @link RKMatchNoUTF8Check RKMatchNoUTF8Check @/link option when calling @link getRanges:withCharacters:length:inRange:options: getRanges:withCharacters:length:inRange:options: @/link. You might want to do this for the second and subsequent calls to @link getRanges:withCharacters:length:inRange:options: getRanges:withCharacters:length:inRange:options: @/link if you are making repeated calls to find all the matches in a single subject string. However, you should be sure that the value of <span class="argument">searchRange</span> location points to the start of a UTF-8 character. When @link RKMatchNoUTF8Check RKMatchNoUTF8Check @/link is set, the effect of passing an invalid UTF-8 string as a <span class="argument">charactersBuffer</span>, or a value of <span class="argument">searchRange</span> location that does not point to the start of a UTF-8 character, is undefined. Your program may crash.</p>
- @constant RKMatchPartial This option turns on the partial matching feature. If the subject string fails to match the regular expression, but at some point during the matching process the end of the subject was reached (that is, the subject partially matches the pattern and the failure to match occurred only because there were not enough subject characters), @link getRanges:withCharacters:length:inRange:options: getRanges:withCharacters:length:inRange:options: @/link returns @link RKMatchErrorPartial RKMatchErrorPartial @/link instead of @link RKMatchErrorNoMatch RKMatchErrorNoMatch @/link. When @link RKMatchPartial RKMatchPartial @/link is used, there are RK_C99(restrict)ions on what may appear in the pattern. These are discussed in <a href="pcre/pcrepartial.html" class="section-link">Partial Matching in PCRE</a>.
+ @constant RKMatchPartial This option turns on the partial matching feature. If the subject string fails to match the regular expression, but at some point during the matching process the end of the subject was reached (that is, the subject partially matches the pattern and the failure to match occurred only because there were not enough subject characters), @link getRanges:withCharacters:length:inRange:options: getRanges:withCharacters:length:inRange:options: @/link returns @link RKMatchErrorPartial RKMatchErrorPartial @/link instead of @link RKMatchErrorNoMatch RKMatchErrorNoMatch @/link. When @link RKMatchPartial RKMatchPartial @/link is used, there are restrictions on what may appear in the pattern. These are discussed in <a href="pcre/pcrepartial.html" class="section-link">Partial Matching in PCRE</a>.
  @constant RKMatchNewlineDefault The default newline sequence defined when the <a href="pcre/index.html" class="section-link">PCRE</a> library was built.
  @constant RKMatchNewlineCR The character 13 (<i>carriage return</i>, <b>CR</b>) is used as the end of line character during the match.
  @constant RKMatchNewlineLF The character 10 (<i>linefeed</i>, <b>LF</b>) is used as the end of line character during the match.

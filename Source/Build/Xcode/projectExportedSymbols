@@ -26,6 +26,7 @@ _RKCompileOptionArrayErrorKey
 _RKCompileOptionArrayStringErrorKey
 _RKCompileOptionErrorKey
 _RKObjectErrorKey
+_RKRegexErrorKey
 _RKRegexErrorDomain
 _RKRegexLibraryErrorKey
 _RKRegexLibraryErrorStringErrorKey
@@ -33,6 +34,16 @@ _RKRegexPCRELibrary
 _RKRegexPCRELibraryErrorDomain
 _RKRegexStringErrorKey
 _RKRegexStringErrorRangeErrorKey
+#
+_RKRegexCaptureIndexErrorKey
+_RKRegexCaptureRangeErrorKey
+_RKRegexCaptureReferenceRangeErrorKey
+_RKRegexCaptureReferenceStringErrorKey
+_RKRegexCaptureStringErrorKey
+_RKRegexConversionRangeErrorKey
+_RKRegexConversionStringErrorKey
+_RKRegexReferenceRangeErrorKey
+_RKRegexReferenceStringErrorKey
 #
 #
 #
